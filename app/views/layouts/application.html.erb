@@ -26,48 +26,11 @@
   <body>
   <div class="main">
 
-    <nav class="navbar navbar-expand-lg bg-body-tertiary nav-bar mb-5">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">ペラFlash</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-bars" style="color: rgb(0, 0, 0);"></i>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Cards</a></li>
-                <li><a class="dropdown-item" href="#">Chat History</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item" %></li>
-              </ul>
-            </li>
-          </ul>
-          <i class="fa-solid fa-circle-half-stroke me-4 js-toggle-btn toggle-btn" style="color: rgb(0, 0, 0);"></i>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2 rounded-3" type="search" placeholder="Search cards" aria-label="Search"/>
-            <button class="btn search-btn js-dark-btn dark-btn rounded-3" type="submit">Search</button>
-          </form>
-        </div>
-      </div>
-    </nav>
+  <%= render "shared/navbar" %>
 
     <%= yield %>
   </div>
-
-    <footer class="d-flex align-items-center justify-content-between nav-bar p-2">
-      <div class="d-flex gap-4 ms-4">
-        <i class="fa-brands fa-github icon-link" style="color: rgb(0, 0, 0);"></i>
-        <i class="fa-brands fa-x-twitter icon-link" style="color: rgb(0, 0, 0);"></i>
-        <i class="fa-brands fa-instagram icon-link" style="color: rgb(0, 0, 0);"></i>
-      </div>
-      <div class="text-center me-4 text-dark">
-        ペラFlash
-      </div>
-    </footer>
+  <%= render "shared/footer" %>
     <script src="app/javascript/controllers/dark_mode_controller.js"></script>
   </body>
 </html>

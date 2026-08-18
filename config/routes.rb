@@ -18,4 +18,6 @@ Rails.application.routes.draw do
     resources :messages, only: [ :create ]
   end
   get "/dashboard", to: "users#dashboard", as: :dashboard
+
+  resources :decks, only: [ :create, :show, :index ]
 end

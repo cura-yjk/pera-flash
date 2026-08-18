@@ -17,9 +17,10 @@
     <h1><%= @conversation.title %></h1>
   </div> -->
   <div id="messages">
-    <%#= render 'messages/messages', messages: @conversation.messages.order(:created_at) %>
-  </div>
-  <div id="new_message">
-    <%#= render "messages/form", chat: @conversation, message: @message %>
-  </div>
+  <%= render @messages %>
+</div>
+
+<div id="new_message">
+  <%= render "messages/form", conversation: @conversation, message: @message %>
+</div>
 </div>

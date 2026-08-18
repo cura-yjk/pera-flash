@@ -11,11 +11,6 @@
   </div>
 
   <div class="col-3">
-    <%= simple_form_for @user do |f| %>
-      <%= f.input "email" %>
-      <%= f.input "password" %>
-      <%= f.submit "Log in", class: "btn pera-btn" %>
-      <p class="mt-3 text-secondary">Forgot your password?</p>
-    <% end %>
+   <%= link_to "Sign up!", new_user_registration_path %>
   </div>
 </div>

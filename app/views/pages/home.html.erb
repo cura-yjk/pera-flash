@@ -1,20 +1,10 @@
 <h1 class="text-center my-5">Welcome to ペラFlash!</h1>
-
 <div class="container d-flex align-items-center justify-content-around my-5" id="landing-container">
-
   <div>
     <p>Master Japanese with Pera!</p>
     <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn btn-primary" %>
   </div>
-
   <div>
-    <% unless user_signed_in? %>
-      <%= simple_form_for @user do |f| %>
-        <%= f.input "email" %>
-        <%= f.input "password" %>
-        <%= f.submit "Log in" %>
-      <% end %>
-    <% end %>
+    <%= link_to "Sign up!", new_user_registration_path  %>
   </div>
-
 </div>

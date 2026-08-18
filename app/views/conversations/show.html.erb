@@ -2,24 +2,20 @@
   <div class="d-flex justify-content-between align-items-center">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <!-- <li class="breadcrumb-item"><%#= link_to @chat.challenge.name, challenge_path(@chat.challenge)  %></li>-->
         <li class="breadcrumb-item active" aria-current="page"><%= @conversation.title %></li>
       </ol>
     </nav>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><%= link_to 'Home', root_path  %></li>
         <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }  %></li>
       </ol>
     </nav>
   </div>
-  <!-- <div id="chat_title">
-    <h1><%= @conversation.title %></h1>
-  </div> -->
   <div id="messages">
-    <%#= render 'messages/messages', messages: @conversation.messages.order(:created_at) %>
-  </div>
-  <div id="new_message">
-    <%#= render "messages/form", chat: @conversation, message: @message %>
-  </div>
+  <%= render @messages %>
+</div>
+
+<div id="new_message">
+  <%= render "messages/form", conversation: @conversation, message: @message %>
+</div>
 </div>

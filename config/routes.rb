@@ -16,6 +16,5 @@ Rails.application.routes.draw do
   resources :conversations, only: [ :create, :show ] do
     resources :messages, only: [ :create ]
   end
-
-  resources :users, only: [:create]
+  get "/dashboard", to: "users#dashboard", as: :dashboard
 end

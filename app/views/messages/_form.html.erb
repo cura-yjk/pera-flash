@@ -1,0 +1,4 @@
+<%= simple_form_for [conversation, message], html: { data: { controller: 'load' } } do |f| %>
+  <%= f.input :content, placeholder: "Ask something...", required: true, label: false %>
+  <%= f.button :submit, 'Send', class: 'btn btn-primary', data: { action: 'click->load#start'} %>
+<% end %>

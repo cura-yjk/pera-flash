@@ -1,8 +1,13 @@
 .nav-bar {
   background-color: #2BAE8F;
   background-image: linear-gradient(to right, #2BAE8F, #C5FFF1);
+
+  transition: 0.7s ease;
 }
 
-.nav-bar a:hover, i:hover{
-  color: #EBFFFA;
+.nav-bar a:hover,
+.icon-link:hover,
+.icon-link:hover i {
+  color: #EBFFFA !important;
+  cursor: pointer;
 }

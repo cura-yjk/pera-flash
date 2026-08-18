@@ -5,9 +5,29 @@
   transition: 0.7s ease;
 }
 
+.toggle-btn {
+  color: #3E3E3E;
+  transition: 0.5s ease-in-out;
+  cursor: pointer;
+}
+.toggle-btn:hover {
+  color: #EBFFFA !important;
+}
+
 .nav-bar a:hover,
 .icon-link:hover,
 .icon-link:hover i {
   color: #EBFFFA !important;
   cursor: pointer;
+}
+
+.search-btn {
+  background-color: #3E3E3E;
+  color: #EBFFFA;
+  transition: 0.5s ease-in-out;
+}
+.search-btn:hover {
+  background-color: #2BAE8F;
+  border: solid 1px #3E3E3E;
+  color: #3E3E3E;
 }

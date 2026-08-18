@@ -6,6 +6,6 @@ class Conversation < ApplicationRecord
   before_validation :set_title
 
   def set_title
-    self.title = "New chat" if title.nil?
+    self.title = "Untitled" if title.nil?
   end
 end

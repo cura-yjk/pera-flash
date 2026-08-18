@@ -13,7 +13,7 @@ class MessagesController < ApplicationController
       Message.create(
         content: response.content,
         role: 'assistant',
-        chat: @conversation
+        conversation: @conversation
       )
       redirect_to conversation_path(@conversation)
     else

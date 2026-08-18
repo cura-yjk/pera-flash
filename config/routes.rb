@@ -17,5 +17,5 @@ Rails.application.routes.draw do
     resources :messages, only: [ :create ]
   end
 
-
+  resources :users, only: [:create]
 end

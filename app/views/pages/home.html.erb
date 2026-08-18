@@ -8,9 +8,9 @@
     <% unless user_signed_in? %>
       <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
       <%= link_to "Log in", new_user_session_path, class: "btn search-btn rounded-3" %>
-    <% end %>                 
+    <% end %>
   </div>
-  
+
   <div class="col-3">
     <% if user_signed_in? %>
       <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>

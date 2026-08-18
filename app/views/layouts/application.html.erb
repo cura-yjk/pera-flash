@@ -8,21 +8,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
-
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-
   <body>
   <div class="main">
 
@@ -52,12 +47,10 @@
             <button class="btn search-btn js-dark-btn dark-btn rounded-3" type="submit">Search</button>
           </form>
         </div>
-      </div>
-    </nav>
-
-    <%= yield %>
-  </div>
-
+      </nav>
+      <%= render "shared/flashes" %>
+      <%= yield %>
+    </div>
     <footer class="d-flex align-items-center justify-content-between nav-bar p-2">
       <div class="d-flex gap-4 ms-4">
         <i class="fa-brands fa-github icon-link" style="color: rgb(0, 0, 0);"></i>

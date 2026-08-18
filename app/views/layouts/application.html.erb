@@ -19,13 +19,11 @@
     <%= javascript_importmap_tags %>
   </head>
   <body>
-  <div class="main">
-
-  <%= render "shared/navbar" %>
-
-    <%= yield %>
-  </div>
-  <%= render "shared/footer" %>
+    <div class="main">
+      <%= render "shared/navbar" %>
+      <%= yield %>
+    </div>
+    <%= render "shared/footer" %>
     <script src="app/javascript/controllers/dark_mode_controller.js"></script>
   </body>
 </html>

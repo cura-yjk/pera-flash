@@ -18,7 +18,12 @@
           </ul>
         </li>
       </ul>
-      <i class="fa-solid fa-circle-half-stroke me-4 js-toggle-btn toggle-btn" style="color: rgb(0, 0, 0);"></i>
+      <i class="fa-solid fa-circle-half-stroke me-4 js-toggle-btn toggle-btn"
+      style="color: rgb(0, 0, 0);"
+      data-dark-mode-target="dark-toggle"
+      data-controller="dark-mode"
+      data-action="click->dark-mode#toggle">
+      </i>
       <form class="d-flex" role="search">
         <input class="form-control me-2 rounded-3" type="search" placeholder="Search cards" aria-label="Search"/>
         <button class="btn search-btn js-dark-btn dark-btn rounded-3" type="submit">Search</button>

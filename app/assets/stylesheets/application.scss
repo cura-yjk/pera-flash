@@ -12,12 +12,15 @@
 @import "pages/index";
 
 @import "components/navbar";
+@import "config/darkmode";
 
 body {
   margin: 0;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+
+  background-color: #F6F7F7;
 }
 
 .main {

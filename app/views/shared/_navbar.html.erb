@@ -4,16 +4,15 @@
     <%= link_to "ペラFlash", root_path, class: "text-dark text-decoration-none me-3" %>
       <i class="fa-solid fa-circle-half-stroke js-toggle-btn toggle-btn"
         style="color: rgb(0, 0, 0);"
-        data-dark-mode-target="dark-toggle"
+        data-dark-mode-target="darkToggle"
         data-controller="dark-mode"
         data-action="click->dark-mode#toggle">
       </i>
-      <%= link_to conversations_path, data: { turbo_method: :post } do %>
-        <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);"></i>
-      <% end %>
-
       <%= link_to dashboard_path do %>
         <i class="fa-regular fa-rectangle-list icon-link" style="color: rgb(0, 0, 0);"></i>
+      <% end %>
+      <%= link_to conversations_path, data: { turbo_method: :post } do %>
+        <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);"></i>
       <% end %>
     </div>
 

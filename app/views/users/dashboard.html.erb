@@ -1,41 +1,48 @@
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Welcome back, <%= current_user.name %></h1>
-    <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn btn-primary" %>
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <h1 class="mb-0">Welcome back, <%= current_user.name %>!</h1>
+    <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
   </div>
   <!-- Stats -->
-  <div class="d-flex gap-3 mb-4">
-    <div class="card p-3 text-center flex-fill">
+  <div class="d-flex gap-5 mb-5">
+    <div class="card p-3 text-center flex-fill rounded-5 dash-card js-dash-card col-4"
+      data-dark-mode-target="darkDash"
+      data-controller="dark-mode">
       <h3><%= @deck_count %></h3>
       <p class="mb-0">Decks</p>
     </div>
-    <div class="card p-3 text-center flex-fill">
+
+  <!-- Random flashcard -->
+    <div class="card p-3 mb-5 rounded-5 dash-card js-dash-card col-5">
+      <h5>Flashcard of the moment</h5>
+      <% if @random_flashcard %>
+        <p><strong>Q:</strong> <%= @random_flashcard.question %></p>
+        <p><strong>A:</strong> <%= @random_flashcard.answer %></p>
+      <% else %>
+        <p class="pera-text">No flashcards yet — start a chat to generate some!</p>
+      <% end %>
+    </div>
+
+    <div class="card p-3 text-center flex-fill rounded-5 dash-card js-dash-card col-4">
       <h3><%= @flashcard_count %></h3>
       <p class="mb-0">Flashcards</p>
     </div>
   </div>
-  <!-- Random flashcard -->
-  <div class="card p-3 mb-4">
-    <h5>Flashcard of the moment</h5>
-    <% if @random_flashcard %>
-      <p><strong>Q:</strong> <%= @random_flashcard.question %></p>
-      <p><strong>A:</strong> <%= @random_flashcard.answer %></p>
-    <% else %>
-      <p class="text-muted">No flashcards yet — start a chat to generate some!</p>
-    <% end %>
-  </div>
+
   <!-- Conversation history -->
-  <h2>Your Conversations</h2>
+  <h2>Your Recent Conversations</h2>
   <% if @conversations.any? %>
-    <ul class="list-group mb-4">
+    <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
       <% @conversations.each do |conversation| %>
-        <li class="list-group-item">
-          <%= link_to (conversation.title.presence || "Untitled conversation"), conversation_path(conversation) %>
+        <li class="list-group-item js-dash-card conv-link">
+          <%= link_to (conversation.title.presence || "Untitled conversation"),
+          conversation_path(conversation),
+          class: "text-decoration-none text-secondary" %>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-muted mb-4">No conversations yet.</p>
+    <p class="text-muted mb-4 js-dash-card">No conversations yet.</p>
   <% end %>
   <!-- Decks -->
   <h2>Your Decks</h2>
@@ -46,6 +53,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="text-muted">No decks yet.</p>
+    <p class="text-secondary mb-5">No decks yet.</p>
   <% end %>
 </div>

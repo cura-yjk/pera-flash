@@ -8,15 +8,27 @@
 @import "font-awesome";
 
 // Your CSS partials
+
+// Components
 @import "components/index";
-@import "pages/index";
-
 @import "components/navbar";
-@import "config/darkmode";
 
-@import "pages/enteruser";
-@import "pages/messages";
+
+// Config
+@import "config/darkmode";
 @import "config/containers";
+
+// Pages
+@import "pages/index";
+@import "pages/messages";
+@import "pages/dashboard";
+
+
+
+
+
+
+
 
 body {
   margin: 0;

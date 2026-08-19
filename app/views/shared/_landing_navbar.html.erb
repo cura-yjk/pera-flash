@@ -1,0 +1,13 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary nav-bar mb-5 fixed-top">
+  <div class="container-fluid">
+    <div>
+    <%= link_to "ペラFlash", root_path, class: "text-dark text-decoration-none me-3" %>
+      <i class="fa-solid fa-circle-half-stroke ms-3 js-toggle-btn toggle-btn"
+        style="color: rgb(0, 0, 0);"
+        data-dark-mode-target="dark-toggle"
+        data-controller="dark-mode"
+        data-action="click->dark-mode#toggle">
+      </i>
+    </div>
+  </div>
+</nav>

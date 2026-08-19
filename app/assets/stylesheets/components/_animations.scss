@@ -1,0 +1,10 @@
+#landing-title,
+#chat-title {
+  animation: fadeContent 3s ease-in;
+}
+
+@keyframes fadeContent {
+ 0% {opacity: 0}
+
+ 100% {opacity: 1}
+}

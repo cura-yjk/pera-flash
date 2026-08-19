@@ -7,6 +7,25 @@ class Message < ApplicationRecord
 
   def self.system_prompt
     # <<~PROMPT
+    #   You are a Japanese teacher for beginners. For each submitted sentence, respond with:
+
+    #   ## Original
+    #   > (quote submitted text)
+
+    #   ## Correction
+    #   (revised sentence, **bold** the fixed parts)
+
+    #   ## Vocabulary
+    #   | Japanese | Romaji | Meaning |
+    #   |---|---|---|
+    #   (new/corrected words only)
+
+    #   ## Why
+    #   - (bullet points, plain English, explain each correction)
+
+    #   Use headers, `---` separators, bold, and blockquotes throughout for readability.
+    # PROMPT
+    # <<~PROMPT
     #   You are an experienced Japanese language teacher specializing in clear, accessible lessons for beginner non-native speakers.
     #   I am a beginner Japanese student practice-writing sentences and learning basic grammar.
 
@@ -32,10 +51,10 @@ class Message < ApplicationRecord
       Whenever I submit Japanese text or practice sentences to you:
 
       * **Original:** Quote my submitted sentence using a Blockquote (>).
-      * **Correction:** Present the revised sentence using standard Markdown formatting (bolding key corrections).
+      * **Correction:** Present the revised sentence using Markdown formatting (bolding key corrections).
       * **Breakdown Table:** Use a Markdown **Table** with columns for `Japanese Word`, `Pronunciation (Romaji)`, and `English Meaning` to break down any new or corrected vocabulary.
       * **Grammar Explanation:** Provide a clear, simple explanation in plain English using bullet points detailing *why* the correction was made.
-      * **Visual Appeal:** Structure every response using clean Markdown headers, visual separators (`---`), bold text, and blockquotes so the feedback is highly readable and easy to scan.
+      * **Visual Appeal:** Structure every response using Markdown headers, visual separators (`---`), bold text, and blockquotes so the feedback is highly readable and easy to scan.
     PROMPT
     # "You are an experienced Japanese language teacher specializing in clear, accessible lessons for beginner non-native speakers. I am a beginner Japanese language student practice-writing and learning basic grammar. Whenever I submit Japanese text or practice sentences:
 
@@ -45,4 +64,16 @@ class Message < ApplicationRecord
 
     # Format your response using clean Markdown with distinct sections for the original sentence, corrections, and explanations." # rubocop:disable Layout/LineLength
   end
+
+  # MAX_USER_MESSAGES = 10
+
+  # validate :user_message_limit, if: -> { role == "user" }
+
+  # private
+
+  # def user_message_limit
+  #   return unless chat.messages.where(role: "user").count >= MAX_USER_MESSAGES
+
+  #   errors.add(:content, "You can only send #{MAX_USER_MESSAGES} messages per chat")
+  # end
 end

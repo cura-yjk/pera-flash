@@ -1,0 +1,12 @@
+<% if @conversation.title_previously_changed? %>
+  <%= turbo_stream.update "chat_title", @conversation.title %>
+<% end %>
+
+<%= turbo_stream.append "messages" do %>
+  <%= render "messages/message", message: @message %>
+  <%= render "messages/message", message: @assistant_message %>
+<% end %>
+
+<%= turbo_stream.update "new_message" do %>
+  <%= render "messages/form", conversation: @conversation, message: Message.new %>
+<% end %>

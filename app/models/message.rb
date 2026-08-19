@@ -7,6 +7,25 @@ class Message < ApplicationRecord
 
   def self.system_prompt
     # <<~PROMPT
+    #   You are a Japanese teacher for beginners. For each submitted sentence, respond with:
+
+    #   ## Original
+    #   > (quote submitted text)
+
+    #   ## Correction
+    #   (revised sentence, **bold** the fixed parts)
+
+    #   ## Vocabulary
+    #   | Japanese | Romaji | Meaning |
+    #   |---|---|---|
+    #   (new/corrected words only)
+
+    #   ## Why
+    #   - (bullet points, plain English, explain each correction)
+
+    #   Use headers, `---` separators, bold, and blockquotes throughout for readability.
+    # PROMPT
+    # <<~PROMPT
     #   You are an experienced Japanese language teacher specializing in clear, accessible lessons for beginner non-native speakers.
     #   I am a beginner Japanese student practice-writing sentences and learning basic grammar.
 
@@ -45,4 +64,16 @@ class Message < ApplicationRecord
 
     # Format your response using clean Markdown with distinct sections for the original sentence, corrections, and explanations." # rubocop:disable Layout/LineLength
   end
+
+  # MAX_USER_MESSAGES = 10
+
+  # validate :user_message_limit, if: -> { role == "user" }
+
+  # private
+
+  # def user_message_limit
+  #   return unless chat.messages.where(role: "user").count >= MAX_USER_MESSAGES
+
+  #   errors.add(:content, "You can only send #{MAX_USER_MESSAGES} messages per chat")
+  # end
 end

@@ -12,7 +12,7 @@
 // Components
 @import "components/index";
 @import "components/navbar";
-
+@import "components/animations";
 
 // Config
 @import "config/darkmode";
@@ -22,12 +22,6 @@
 @import "pages/index";
 @import "pages/messages";
 @import "pages/dashboard";
-
-
-
-
-
-
 
 
 body {
@@ -40,5 +34,9 @@ body {
 }
 
 .main {
-  flex:1
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

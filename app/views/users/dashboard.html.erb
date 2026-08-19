@@ -33,7 +33,7 @@
   <h2>Your Recent Conversations</h2>
   <% if @conversations.any? %>
     <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
-      <% @conversations.each do |conversation| %>
+      <% @conversations.last(7).each do |conversation| %>
         <li class="list-group-item js-dash-card conv-link">
           <%= link_to (conversation.title.presence || "Untitled conversation"),
           conversation_path(conversation),

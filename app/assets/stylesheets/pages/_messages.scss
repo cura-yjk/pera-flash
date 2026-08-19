@@ -5,12 +5,10 @@
   font-size: 16px;
 }
 
-.assistant-message > h3, h2, h1 {
+.assistant-message > h3,
+.assistant-message > h2,
+.assistant-message > h1 {
   color: #2BAE8F;
-}
-
-#chat-input {
-  background-color: #edfffa !important;
 }
 
 #chat-input:focus {

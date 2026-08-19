@@ -1,4 +1,26 @@
-<%= simple_form_for [conversation, message], html: { data: { controller: 'load' } } do |f| %>
-  <%= f.input :content, input_html: { id: "chat-input", class: "rounded-4", placeholder: "Ask something..." }, required: true, label: false %>
-  <%= f.button :submit, 'Send', class: 'btn pera-btn rounded-3', data: { action: 'click->load#start'} %>
+
+<%#= simple_form_for [conversation, message], html: { data: { controller: 'load' } } do |f| %>
+  <%#= f.input :content, placeholder: "Ask something...", required: true, label: false %>
+  <%#= f.button :submit, 'Send', class: 'btn btn-primary', data: { action: 'click->load#start'} %>
+<%# end %>
+
+<%= simple_form_for [conversation, message],
+  html: {
+    data: {
+      controller: 'reset-form',
+      action: 'turbo:submit-start->reset-form#submit'
+    },
+    class: 'd-flex justify-content-between px-3 pb-2'
+  } do |f| %>
+
+  <%= f.input :content,
+        placeholder: "Ask something...",
+        required: true,
+        label: false,
+        input_html: { data: { id: "chat-input", reset_form_target: "input" } },
+        wrapper_html: { class: 'rounded-4 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
+
+  <%= f.button :submit, 'Send',
+        class: 'btn pera-btn rounded-3',
+        data: { reset_form_target: "submit" } %>
 <% end %>

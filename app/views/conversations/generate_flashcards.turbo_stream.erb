@@ -1,0 +1,17 @@
+<%= turbo_stream.append "messages" do %>
+  <div id="flashcard-preview">
+    <%= simple_form_for @conversation, url: conversation_flashcards_path(@conversation), method: :post do |f| %>
+      <% @flashcards.each_with_index do |flashcard, i| %>
+        <%= f.simple_fields_for :flashcards, flashcard do |ff| %>
+          <div class="flashcard-preview card p-2 mb-2">
+            <%#= ff.input "[#{i}][question]", as: :text, label: "Question" %>
+            <%= text_area_tag "conversation[flashcards][#{i}][question]", flashcard.question %>
+            <%#= ff.input "[#{i}][answer]", as: :text, label: "Answer" %>
+            <%= text_area_tag "conversation[flashcards][#{i}][answer]", flashcard.answer %>
+          </div>
+        <% end %>
+      <% end %>
+      <%= f.button :submit, "Save Flashcards", class: "btn btn-primary" %>
+    <% end %>
+  </div>
+<% end %>

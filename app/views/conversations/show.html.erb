@@ -7,15 +7,20 @@
     </nav>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <%= button_to "Generate Flashcards",
+                generate_flashcards_conversation_path(@conversation),
+                method: :post,
+                class: "btn btn-sm btn-outline-secondary" %>
+        </li>
         <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }  %></li>
       </ol>
     </nav>
   </div>
   <div id="messages">
-  <%= render @messages %>
-</div>
-
-<div id="new_message">
-  <%= render "messages/form", conversation: @conversation, message: @message %>
-</div>
+    <%= render @messages %>
+  </div>
+  <div id="new_message">
+    <%= render "messages/form", conversation: @conversation, message: @message %>
+  </div>
 </div>

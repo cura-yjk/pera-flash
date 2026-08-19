@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  get "users/dashboard"
   devise_for :users
   root to: "pages#home"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -15,8 +14,13 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   resources :conversations, only: [ :create, :show ] do
+    member do
+        post :generate_flashcards
+    end
     resources :messages, only: [ :create ]
+    resources :flashcards, only: [:create]   # step 6 — actually saving
   end
+
   get "/dashboard", to: "users#dashboard", as: :dashboard
 
   resources :decks, only: [ :create, :show, :index ]

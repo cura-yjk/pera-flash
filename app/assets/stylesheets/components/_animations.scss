@@ -1,10 +1,47 @@
-#landing-title,
-#chat-title {
-  animation: fadeContent 3s ease-in;
+#landing-title {
+  animation: fadeFall 2s ease-out forwards;
 }
 
-@keyframes fadeContent {
- 0% {opacity: 0}
+@keyframes fadeFall {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
 
- 100% {opacity: 1}
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#landing-text {
+  animation: fadeRise 2s ease-out forwards;
+}
+
+@keyframes fadeRise {
+  0% {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.button-container {
+  animation: fadeSwipe 2s ease-out forwards;
+}
+
+@keyframes fadeSwipe {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

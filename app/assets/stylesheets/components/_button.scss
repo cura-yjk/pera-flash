@@ -6,6 +6,16 @@
   transition: 0.5s ease-in-out;
 }
 
+.pera-btn-outline {
+  border: solid 2px #2BAE8F;
+  color: #EBFFFA;
+}
+
+.pera-btn-outline:hover {
+  border: solid 2px #EBFFFA;
+  color: #2BAE8F;
+}
+
 .pera-btn:hover {
   background-color: #7CDEC8;
 

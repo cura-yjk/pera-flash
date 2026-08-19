@@ -2,12 +2,12 @@
   <div class="d-flex justify-content-between align-items-center">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active" aria-current="page"><%= @conversation.title %></li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page"><%= @conversation.title %></li>
       </ol>
     </nav>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }  %></li>
+        <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }, class: "text-secondary" %></li>
       </ol>
     </nav>
   </div>

@@ -1,9 +1,28 @@
 .user-message {
-  border: 1px solid #2BAE8F;
-  background-color: #3E3E3E !important;
+  background-color: #2BAE8F !important;
   color:#EBFFFA;
+
+  font-size: 16px;
 }
 
 .assistant-message > h2 {
   color: #2BAE8F;
+}
+
+#chat-input {
+  background-color: #edfffa !important;
+}
+
+#chat-input:focus {
+  outline: none !important;
+  border: solid 3px rgb(43, 174, 143) !important;
+  box-shadow: 0 0 0 1px rgba(43, 174, 143, 0.25) !important;
+}
+
+li > a {
+  text-decoration: none !important;
+}
+
+li > a:hover {
+  color: #2BAE8F !important;
 }

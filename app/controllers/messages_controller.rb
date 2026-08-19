@@ -7,17 +7,35 @@ class MessagesController < ApplicationController
     @message.role = "user"
 
     if @message.save
-      chat = RubyLLM.chat
-      chat.with_instructions(Message.system_prompt)
-      response = chat.ask(@message.content)
-      Message.create(
+      @ruby_llm = RubyLLM.chat
+      build_conversation_history
+      response = @ruby_llm.with_instructions(Message.system_prompt).ask(@message.content)
+      @assistant_message = @conversation.messages.create(
         content: response.content,
         role: 'assistant',
         conversation: @conversation
       )
-      redirect_to conversation_path(@conversation)
+      # @conversation.generate_title_from_first_message
+      # redirect_to conversation_path(@conversation)
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to conversation_path(@conversation) }
+      end
     else
-      render "conversations/show", status: :unprocessable_entity
+      # render "conversations/show", status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update("new_message_container", partial: "messages/form",
+                                                                            locals: { conversation: @conversation, message: @message })
+        end
+        format.html { render "chats/show", status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def build_conversation_history
+    @conversation.messages.each do |message|
+      @ruby_llm.add_message(message)
     end
   end
 

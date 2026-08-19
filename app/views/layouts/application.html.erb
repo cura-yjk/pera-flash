@@ -20,7 +20,14 @@
   </head>
   <body>
     <div class="main">
-      <%= render "shared/navbar" %>
+      <% unless user_signed_in? %>
+        <%= render "shared/landing_navbar" %>
+      <% end %>
+
+      <% if user_signed_in? %>
+        <%= render "shared/navbar" %>
+      <% end %>
+
       <%= yield %>
     </div>
     <%= render "shared/footer" %>

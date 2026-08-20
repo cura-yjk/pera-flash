@@ -35,7 +35,7 @@ class MessagesController < ApplicationController
 
   def build_conversation_history
     @conversation.messages.each do |message|
-      @ruby_llm.add_message(message)
+      @ruby_llm.add_message(role: message.role, content: message.content)
     end
   end
 

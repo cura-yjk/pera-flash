@@ -9,5 +9,5 @@
 #   end
 puts("clearing DB...")
 User.destroy_all
-User.create( email: "admin@mail.com", name: "admin", password: "qwerty" )
+User.create!( email: "admin@mail.com", name: "admin", password: "qwerty" )
 puts("Succesfully created admin account...")

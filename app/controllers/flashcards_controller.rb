@@ -3,7 +3,9 @@ class FlashcardsController < ApplicationController
     conversation = current_user.conversations.find(params[:conversation_id])
     cards = params.require(:conversation).permit(flashcards: %i[question answer])
 
-    created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card) }
+    deck = current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
+
+    created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
 
     Message.create!(
       content: "✅ #{created.size} cards added! [View your flashcards](#{flashcards_path})",
@@ -37,9 +39,6 @@ class FlashcardsController < ApplicationController
   end
 
   def destroy
-    @flashcard = current_user_flashcard(params[:id])
-    @flashcard.destroy!
-    redirect_to flashcards_path, notice: "Flashcard deleted!"
   end
 
   private

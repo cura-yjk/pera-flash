@@ -2,7 +2,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input"]
+  static targets = ["input", "form"]
 
   connect() {
     this.composing = false
@@ -26,6 +26,6 @@ export default class extends Controller {
 
     if (this.inputTarget.value.trim().length === 0) return
 
-    this.element.closest("form").requestSubmit()
+    this.formTarget.requestSubmit()
   }
 }

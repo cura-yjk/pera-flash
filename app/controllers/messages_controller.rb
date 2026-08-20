@@ -28,7 +28,7 @@ class MessagesController < ApplicationController
           render turbo_stream: turbo_stream.update("new_message_container", partial: "messages/form",
                                                                             locals: { conversation: @conversation, message: @message })
         end
-        format.html { render "chats/show", status: :unprocessable_entity }
+        format.html { render "conversations/show", status: :unprocessable_entity }
       end
     end
   end

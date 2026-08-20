@@ -6,6 +6,7 @@ class Conversation < ApplicationRecord
 
   validates :title, presence: true
   before_validation :set_title
+  scope :empty, -> { left_joins(:messages).where(messages: { id: nil }) }
 
   def set_title
     self.title = "Untitled" if title.nil?

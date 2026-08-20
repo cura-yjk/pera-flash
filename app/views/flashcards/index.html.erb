@@ -1,8 +1,8 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0"><%= @deck.name %></h1>
-    <%= form_with url: deck_path(@deck), method: :get, class: "d-flex" do |f| %>
-      <%= f.text_field :query, value: params[:query], placeholder: "Search this deck...", class: "form-control me-2" %>
+    <h1 class="mb-0">All Flashcards</h1>
+    <%= form_with url: flashcards_path, method: :get, class: "d-flex" do |f| %>
+      <%= f.text_field :query, value: params[:query], placeholder: "Search flashcards...", class: "form-control me-2" %>
       <%= f.submit "Search", class: "btn btn-outline-primary" %>
     <% end %>
   </div>
@@ -21,7 +21,7 @@
     </div>
   <% else %>
     <p class="text-muted">
-      <%= params[:query].present? ? "No flashcards match \"#{params[:query]}\"." : "No flashcards in this deck yet." %>
+      <%= params[:query].present? ? "No flashcards match \"#{params[:query]}\"." : "No flashcards yet." %>
     </p>
   <% end %>
 </div>

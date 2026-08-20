@@ -7,19 +7,19 @@
     </nav>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <%= button_to "Generate Flashcards",
-                generate_flashcards_conversation_path(@conversation),
-                method: :post,
-                class: "btn btn-sm btn-outline-secondary" %>
-        </li>
         <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }, class: "text-secondary" %></li>
       </ol>
     </nav>
   </div>
-
   <div id="messages">
     <%= render @messages %>
+    <div class="d-flex justify-content-end my-3">
+      <%= button_to generate_flashcards_conversation_path(@conversation),
+          method: :post,
+          class: "btn btn-primary d-flex align-items-center gap-2" do %>
+        <i class="fa-solid fa-layer-group"></i> Generate Flashcards
+      <% end %>
+    </div>
   </div>
   <div id="new_message" class="fixed-bottom mb-5">
     <%= render "messages/form", conversation: @conversation, message: @message %>

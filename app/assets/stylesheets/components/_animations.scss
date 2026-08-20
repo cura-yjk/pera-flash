@@ -60,3 +60,17 @@
     box-shadow: 0 0 0 0 #2BAE8F;
   }
 }
+
+@keyframes bounce {
+  0% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}

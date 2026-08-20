@@ -12,6 +12,7 @@ class ConversationsController < ApplicationController
   def create
     current_user.conversations.empty.destroy_all
     @conversation = current_user.conversations.empty.first || current_user.conversations.new
+
     if @conversation.persisted? || @conversation.save
       redirect_to conversation_path(@conversation)
     else
@@ -19,12 +20,6 @@ class ConversationsController < ApplicationController
       # home page (where conversations presumably get kicked off) on failure
       render "pages/home", status: :unprocessable_entity
     end
-
-    respond_to_new_message
-  rescue ActiveRecord::RecordInvalid
-    @conversation = current_user.conversations.new
-    @message = Message.new(message_params)
-    render :new, status: :unprocessable_entity
   end
 
   # Given an existing conversation, ask the LLM to turn it into 3-5 flashcards
@@ -66,21 +61,5 @@ class ConversationsController < ApplicationController
     @flashcards = response.content["flashcards"].map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])
     end
-  end
-
-  private
-
-  def message_params
-    params.require(:message).permit(:content)
-  end
-
-  def respond_to_new_message
-    ruby_llm = RubyLLM.chat
-    @conversation.messages.each { |m| ruby_llm.add_message(m) }
-    response = ruby_llm.with_instructions(Message.system_prompt).ask(@message.content)
-    @conversation.messages.create(content: response.content, role: "assistant")
-    @conversation.generate_title_from_first_message
-
-    redirect_to conversation_path(@conversation)
   end
 end

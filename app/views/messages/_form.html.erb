@@ -2,35 +2,31 @@
   <%= simple_form_for [conversation, message],
     html: {
       data: {
-        controller: 'reset-form enter-submit',
-        action: 'turbo:submit-start->reset-form#submit'
+        controller: 'reset-form load',
+        action: 'turbo:submit-start->reset-form#submit submit->load#start'
       },
       class: 'd-flex justify-content-between px-3 pb-2'
     } do |f| %>
 
   <div class="chat-input">
     <%= f.input :content,
-      placeholder: "Ask something...",
-      required: true,
-      label: false,
-      input_html: {
-        data: {
-          reset_form_target: "input",
-          enter_submit_target: "input",
-          action: "keydown->enter-submit#submit"
-        },
-        id: "chat-input",
-        style: "resize: none;",
-        class: "rounded-4 me-3"
-      },
-      wrapper_html: { class: 'rounded-4 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
-  </div>
+          placeholder: "Ask something...",
+          required: true,
+          label: false,
+          input_html: { data: { reset_form_target: "input" }, id: "chat-input", class: "rounded-4 me-3" },
+          wrapper_html: { class: 'rounded-5 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
+    </div>
 
-  <div>
-    <%= f.button :submit, 'Send',
-          class: 'submit-btn rounded-5',
-          data: { reset_form_target: "submit" } %>
-    <% end %>
+    <div class="d-flex align-items-center">
+        <%= f.button :submit, 'Send',
+              class: 'submit-btn js-submit-btn rounded-5 me-3',
+              data: { reset_form_target: "submit" }
+              %>
+        <% end %>
+      <i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon"
+        data-load-target="icon"
+      ></i>
+    </div>
   </div>
 
 </div>

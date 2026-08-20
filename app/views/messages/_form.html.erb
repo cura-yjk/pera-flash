@@ -2,7 +2,7 @@
   <%= simple_form_for [conversation, message],
     html: {
       data: {
-        controller: 'reset-form load',
+        controller: 'reset-form enter-submit load',
         action: 'turbo:submit-start->reset-form#submit submit->load#start'
       },
       class: 'd-flex justify-content-between px-3 pb-2'
@@ -22,7 +22,7 @@
               class: 'submit-btn js-submit-btn rounded-5 me-3',
               data: { reset_form_target: "submit" }
               %>
-        <% end %>
+  <% end %>
       <i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon"
         data-load-target="icon"
       ></i>

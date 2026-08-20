@@ -1,0 +1,7 @@
+<% if messages.any? %>
+  <%= button_to generate_flashcards_conversation_path(conversation),
+          method: :post,
+          class: "btn gen-flash-btn d-flex align-items-center gap-2 rounded-4 mb-5" do %>
+    <i class="fa-solid fa-layer-group"></i> Generate Flashcards
+  <% end %>
+<% end %>

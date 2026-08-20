@@ -1,5 +1,5 @@
 <!-- app/views/flashcards/edit.html.erb -->
-<%= turbo_frame_tag "modal" do %>
+<%= turbo_frame_tag "modal-#{@flashcard.id}", target: "_top" do %>
   <div class="modal-backdrop show"></div>
   <div class="modal d-block" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -10,9 +10,21 @@
                 onclick: "document.getElementById('modal').innerHTML = ''; return false;" %>
         </div>
         <%= simple_form_for @flashcard do |f| %>
+          <%= f.input :deck_id,
+                collection: @decks,
+                label_method: :name,
+                value_method: :id,
+                include_blank: "No deck",
+                label: "Deck" %>
           <%= f.input :question, as: :text %>
           <%= f.input :answer, as: :text %>
-          <%= f.button :submit, "Save", class: "btn btn-primary" %>
+          <div class="d-flex justify-content-between mt-2">
+            <%= f.button :submit, "Save", class: "btn btn-primary" %>
+            <%= button_to "Delete", flashcard_path(@flashcard),
+                  method: :delete,
+                  class: "btn btn-outline-danger",
+                  form: { data: { turbo_frame: "_top", turbo_confirm: "Delete this flashcard?" } } %>
+          </div>
         <% end %>
       </div>
     </div>

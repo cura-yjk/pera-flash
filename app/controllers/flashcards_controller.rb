@@ -3,7 +3,9 @@ class FlashcardsController < ApplicationController
     conversation = current_user.conversations.find(params[:conversation_id])
     cards = params.require(:conversation).permit(flashcards: %i[question answer])
 
-    created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card) }
+    deck = current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
+
+    created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
 
     Message.create!(
       content: "✅ #{created.size} cards added! [View your flashcards](#{flashcards_path})",
@@ -15,7 +17,7 @@ class FlashcardsController < ApplicationController
   end
 
   def index
-    @flashcards = Flashcard.where(conversation: current_user.conversations)
+    @flashcards = Flashcard.where(conversation: current_user.conversations).order(created_at: :desc)
 
     return unless params[:query].present?
 
@@ -24,24 +26,28 @@ class FlashcardsController < ApplicationController
 
   def edit
     @flashcard = current_user_flashcard(params[:id])
+    @decks = current_user.decks
   end
 
   def update
     @flashcard = current_user_flashcard(params[:id])
     if @flashcard.update(flashcard_params)
-      redirect_back fallback_location: flashcards_path, notice: "Flashcard updated!"
+      redirect_to flashcards_path, notice: "Flashcard updated!"
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
+    @flashcard = current_user_flashcard(params[:id])
+    @flashcard.destroy!
+    redirect_to request.referer || flashcards_path, notice: "Flashcard deleted."
   end
 
   private
 
   def flashcard_params
-    params.require(:flashcard).permit(:question, :answer)
+    params.require(:flashcard).permit(:question, :answer, :deck_id)
   end
 
   def current_user_flashcard(id)

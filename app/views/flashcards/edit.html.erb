@@ -18,7 +18,13 @@
                 label: "Deck" %>
           <%= f.input :question, as: :text %>
           <%= f.input :answer, as: :text %>
-          <%= f.button :submit, "Save", class: "btn btn-primary" %>
+          <div class="d-flex justify-content-between mt-2">
+            <%= f.button :submit, "Save", class: "btn btn-primary" %>
+            <%= button_to "Delete", flashcard_path(@flashcard),
+                  method: :delete,
+                  class: "btn btn-outline-danger",
+                  form: { data: { turbo_frame: "_top", turbo_confirm: "Delete this flashcard?" } } %>
+          </div>
         <% end %>
       </div>
     </div>

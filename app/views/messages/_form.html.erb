@@ -10,19 +10,20 @@
 
   <div class="chat-input">
     <%= f.input :content,
-          placeholder: "Ask something...",
-          required: true,
-          label: false,
-          input_html: {
-            data: {
-              reset_form_target: "input",
-              action: "keydown->enter-submit#submit"
-            },
-            id: "chat-input",
-            style: "resize: none;",
-            class: "rounded-4 me-3"
-          },
-          wrapper_html: { class: 'rounded-4 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
+      placeholder: "Ask something...",
+      required: true,
+      label: false,
+      input_html: {
+        data: {
+          reset_form_target: "input",
+          enter_submit_target: "input",
+          action: "keydown->enter-submit#submit"
+        },
+        id: "chat-input",
+        style: "resize: none;",
+        class: "rounded-4 me-3"
+      },
+      wrapper_html: { class: 'rounded-4 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
   </div>
 
   <div>

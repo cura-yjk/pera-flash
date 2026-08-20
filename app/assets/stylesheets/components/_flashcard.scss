@@ -1,0 +1,21 @@
+.flashcard-preview-card {
+  border: solid 2px #2BAE8F;
+
+  height: 340px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stack-icon,
+.pera-green {
+  color:#2BAE8F;
+}
+
+.wand-icon {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.qa-box {
+  border: solid 2px #2BAE8F !important;
+}

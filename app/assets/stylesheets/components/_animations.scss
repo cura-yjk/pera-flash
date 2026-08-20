@@ -1,7 +1,3 @@
-#landing-title {
-  animation: fadeFall 2s ease-out forwards;
-}
-
 @keyframes fadeFall {
   0% {
     opacity: 0;
@@ -14,9 +10,6 @@
   }
 }
 
-#landing-text {
-  animation: fadeRise 2s ease-out forwards;
-}
 
 @keyframes fadeRise {
   0% {
@@ -28,10 +21,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.button-container {
-  animation: fadeSwipe 2s ease-out forwards;
 }
 
 @keyframes fadeSwipe {
@@ -60,3 +49,24 @@
     box-shadow: 0 0 0 0 #2BAE8F;
   }
 }
+
+@keyframes bounce {
+  0% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+// delays here
+
+.play-1 { animation-delay: 0.5s; }
+.play-2 { animation-delay: 2s; }
+.play-3 { animation-delay: 3s; }
+.play-4 { animation-delay: 5s; }

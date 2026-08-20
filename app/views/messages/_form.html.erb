@@ -1,20 +1,14 @@
-<%#= simple_form_for [conversation, message], html: { data: { controller: 'load' } } do |f| %>
-  <%#= f.input :content, placeholder: "Ask something...", required: true, label: false %>
-  <%#= f.button :submit, 'Send', class: 'btn btn-primary', data: { action: 'click->load#start'} %>
-<%# end %>
-
 <div class="chat-input-container">
-
   <%= simple_form_for [conversation, message],
     html: {
       data: {
-        controller: 'reset-form',
-        action: 'turbo:submit-start->reset-form#submit'
+        controller: 'reset-form load',
+        action: 'turbo:submit-start->reset-form#submit submit->load#start'
       },
       class: 'd-flex justify-content-between px-3 pb-2'
     } do |f| %>
 
-    <div class="chat-input">
+  <div class="chat-input">
     <%= f.input :content,
           placeholder: "Ask something...",
           required: true,
@@ -23,11 +17,16 @@
           wrapper_html: { class: 'rounded-5 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
     </div>
 
-    <div>
+    <div class="d-flex align-items-center">
         <%= f.button :submit, 'Send',
-              class: 'submit-btn rounded-5',
-              data: { reset_form_target: "submit" } %>
-      <% end %>
+              class: 'submit-btn js-submit-btn rounded-5 me-3',
+              data: { reset_form_target: "submit" }
+              %>
+        <% end %>
+      <i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon"
+        data-load-target="icon"
+      ></i>
     </div>
-
   </div>
+
+</div>

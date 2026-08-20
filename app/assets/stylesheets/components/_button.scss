@@ -53,3 +53,22 @@ input[type="checkbox"].pera-check:checked {
 .submit-btn:hover {
   border: solid 2px #2BAE8F;
 }
+
+.hidden {
+  visibility: hidden;
+}
+
+.gen-flash-btn {
+  border: solid 2px #2BAE8F;
+  color: #2BAE8F;
+
+  transition: 0.5s ease-in-out;
+
+  height: 40px;
+  width: 220px;
+}
+
+.gen-flash-btn:hover {
+  background-color: #2BAE8F;
+  color: #3E3E3E;
+}

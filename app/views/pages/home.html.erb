@@ -2,8 +2,8 @@
 <div class="container d-flex flex-column align-items-center justify-content-around my-5 gap-5" id="landing-container">
 
   <% unless user_signed_in? %>
-    <h1 class="text-center" id="landing-title">Welcome to ペラFlash!</h1>
-      <div class="col-5 welcome-container" id="landing-text">
+    <h1 class="text-center landing-title play-1">Welcome to ペラFlash!</h1>
+      <div class="col-5 welcome-container landing-text play-2">
         <div class="landing-left">
           <h2 class="fw-bold">Master Japanese with Pera!</h2>
             <ul>
@@ -12,12 +12,12 @@
               <li>Generate</li>
               <li>Export to Anki</li>
             </ul>
-            <div class="button-container">
+            <div class="button-container play-3">
                 <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
                 <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
             </div>
           </div>
-        <div class="landing-right">
+        <div class="landing-right play-4">
           <%= image_tag "landingclear.png", alt: "Robot teaching Japanese", id: "pera-landing" %>
         </div>
       </div>

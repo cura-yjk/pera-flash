@@ -1,5 +1,5 @@
-<% if @conversation.title_previously_changed? %>
-  <%= turbo_stream.update "chat_title", @conversation.title %>
+<%= turbo_stream.replace "conversation_title" do %>
+  <%= render "conversations/title", conversation: @conversation %>
 <% end %>
 <%= turbo_stream.append "messages" do %>
   <%= render "messages/message", message: @message %>

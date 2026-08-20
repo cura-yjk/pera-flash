@@ -10,7 +10,7 @@
     <div class="row">
       <% @flashcards.each do |flashcard| %>
         <div class="col-md-4 mb-3">
-          <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal" }, class: "text-decoration-none text-dark" do %>
+          <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
             <div class="card p-3">
               <p class="mb-1"><strong>Q:</strong> <%= flashcard.question %></p>
               <p class="mb-0 text-muted"><strong>A:</strong> <%= flashcard.answer %></p>

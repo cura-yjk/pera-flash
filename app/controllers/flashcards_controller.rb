@@ -15,7 +15,7 @@ class FlashcardsController < ApplicationController
   end
 
   def index
-    @flashcards = Flashcard.where(conversation: current_user.conversations)
+    @flashcards = Flashcard.where(conversation: current_user.conversations).order(created_at: :desc)
 
     return unless params[:query].present?
 
@@ -24,12 +24,13 @@ class FlashcardsController < ApplicationController
 
   def edit
     @flashcard = current_user_flashcard(params[:id])
+    @decks = current_user.decks
   end
 
   def update
     @flashcard = current_user_flashcard(params[:id])
     if @flashcard.update(flashcard_params)
-      redirect_back fallback_location: flashcards_path, notice: "Flashcard updated!"
+      redirect_to flashcards_path, notice: "Flashcard updated!"
     else
       render :edit, status: :unprocessable_entity
     end
@@ -41,7 +42,7 @@ class FlashcardsController < ApplicationController
   private
 
   def flashcard_params
-    params.require(:flashcard).permit(:question, :answer)
+    params.require(:flashcard).permit(:question, :answer, :deck_id)
   end
 
   def current_user_flashcard(id)

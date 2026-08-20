@@ -1,10 +1,13 @@
 class DecksController < ApplicationController
-  def index
-    @decks = Deck.all
+  def create
   end
 
-  def create
-    @deck = Deck.new
-    raise
+  def show
+  end
+
+  def destroy
+  end
+
+  def export
   end
 end

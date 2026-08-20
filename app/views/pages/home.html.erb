@@ -13,30 +13,31 @@
       <div class="button-container">
           <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
           <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
-        <% end %>
-      </div>
-    </div>
-
-  <%# when user is signed in %>
-
-    <% if user_signed_in? %>
-    <div class="menu-nav d-flex gap-5 align-items-center">
-      <div class="col-3" id="landing-btn">
-        <h1 class="mb-5">Some sample text for now</h1>
-        <div class="left-side col-6 rounded-5 gap-3">
-          <h2>Dashboard</h2>
-          <p>Review cards and more!</p>
-          <i class="fa-regular fa-rectangle-list icon-link" style="color: rgb(0, 0, 0);"></i>
-          <%= link_to "Go", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
-        </div>
-
-        <div class="right-side col-6 rounded-5 gap-3">
-          <h2>New Chat</h2>
-          <p>Chat with Pera and learn!</p>
-          <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);"></i>
-          <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
       </div>
     </div>
     <% end %>
-  </div>
+  <%# when user is signed in %>
+
+    <% if user_signed_in? %>
+    <div class="menu-nav form-container">
+        <h1 class="text-center">Some sample text for now</h1>
+        <div class="menu-container my-5">
+
+            <div class="left-side rounded-5 gap-3">
+              <h2>Dashboard</h2>
+              <i class="fa-regular fa-rectangle-list menu-icon"></i>
+              <p>Review cards and more!</p>
+              <%= link_to "Go", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
+            </div>
+
+            <div class="right-side rounded-5 gap-3">
+              <h2>New Chat</h2>
+              <i class="fa-regular fa-message menu-icon"></i>
+              <p>Chat with Pera and learn!</p>
+              <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
+            </div>
+
+        </div>
+    </div>
+  <% end %>
 </div>

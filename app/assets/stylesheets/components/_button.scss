@@ -4,21 +4,29 @@
   background-color: #2BAE8F;
 
   transition: 0.5s ease-in-out;
+
+  height: 40px;
+  width: 120px;
+}
+
+.pera-btn:hover {
+  background-color: #3E3E3E;
+  color: #EBFFFA;
+  border: solid 2px #2BAE8F;
 }
 
 .pera-btn-outline {
   border: solid 2px #2BAE8F;
-  color: #EBFFFA;
+  color: #2BAE8F;
+
+  height: 40px;
+  width: 120px;
+
+  transition: 0.5s ease-in-out;
 }
 
 .pera-btn-outline:hover {
-  border: solid 2px #EBFFFA;
-  color: #2BAE8F;
-}
-
-.pera-btn:hover {
-  background-color: #7CDEC8;
-
+  background-color: #2BAE8F;
   color: #EBFFFA;
 }
 

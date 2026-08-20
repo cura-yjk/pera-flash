@@ -19,17 +19,18 @@
     <%= javascript_importmap_tags %>
   </head>
   <body>
+    <% unless user_signed_in? %>
+      <%= render "shared/landing_navbar" %>
+    <% end %>
+
+    <% if user_signed_in? %>
+      <%= render "shared/navbar" %>
+    <% end %>
+
     <div class="main">
-      <% unless user_signed_in? %>
-        <%= render "shared/landing_navbar" %>
-      <% end %>
-
-      <% if user_signed_in? %>
-        <%= render "shared/navbar" %>
-      <% end %>
-
       <%= yield %>
     </div>
+
     <%= render "shared/footer" %>
   </body>
 </html>

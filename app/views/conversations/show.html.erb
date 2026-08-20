@@ -21,7 +21,9 @@
   <div id="messages">
     <%= render @messages %>
   </div>
-  <div id="new_message">
+  <div id="new_message" class="fixed-bottom mb-5">
     <%= render "messages/form", conversation: @conversation, message: @message %>
   </div>
 </div>
+
+<%# ^^ fix the fixed position of the input box %>

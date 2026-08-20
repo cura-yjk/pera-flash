@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["dark-toggle", "dark-dash"];
+  static targets = ["dark-toggle", "dark-dash",'rotate-icon'];
 
   connect () {
   const savedTheme = localStorage.getItem("theme");

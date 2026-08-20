@@ -36,8 +36,10 @@ class DecksController < ApplicationController
     @flashcards = @flashcards.where("question ILIKE :q OR answer ILIKE :q", q: "%#{params[:query]}%")
   end
 
-  # TODO: not yet implemented
   def destroy
+    @deck = current_user.decks.find(params[:id])
+    @deck.destroy!
+    redirect_to decks_path, notice: "Deck deleted."
   end
 
   # TODO: not yet implemented

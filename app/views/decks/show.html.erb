@@ -1,35 +1,34 @@
-<%# Deck show page — displays a single deck's flashcards, with search %>
 <div class="container mt-4">
-
-  <%# Header: deck name + search form %>
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0"><%= @deck.name %></h1>
-
-    <%# Search form; GETs back to this same deck's show action with a ?query= param,
-        handled by DecksController#show (ILIKE match on question/answer) %>
     <%= form_with url: deck_path(@deck), method: :get, class: "d-flex" do |f| %>
       <%= f.text_field :query, value: params[:query], placeholder: "Search this deck...", class: "form-control me-2" %>
       <%= f.submit "Search", class: "btn btn-outline-primary" %>
     <% end %>
   </div>
-
-  <%# List matching flashcards, or show an empty/no-results state %>
   <% if @flashcards.any? %>
     <div class="row">
       <% @flashcards.each do |flashcard| %>
         <div class="col-md-4 mb-3">
-          <%# Opens the edit form in a Turbo Frame modal instead of a full page navigation %>
-          <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal" }, class: "text-decoration-none text-dark" do %>
-            <div class="card p-3">
-              <p class="mb-1"><strong>Q:</strong> <%= flashcard.question %></p>
-              <p class="mb-0 text-muted"><strong>A:</strong> <%= flashcard.answer %></p>
-            </div>
-          <% end %>
+          <div class="position-relative">
+            <%= button_to flashcard_path(flashcard),
+                  method: :delete,
+                  class: "btn btn-sm btn-light border-0 position-absolute top-0 end-0 m-2",
+                  style: "z-index: 1;",
+                  form: { data: { turbo_confirm: "Delete this flashcard?" } } do %>
+              <i class="fa-solid fa-trash text-danger"></i>
+            <% end %>
+            <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
+              <div class="card p-3">
+                <p class="mb-1"><strong>Q:</strong> <%= flashcard.question %></p>
+                <p class="mb-0 text-muted"><strong>A:</strong> <%= flashcard.answer %></p>
+              </div>
+            <% end %>
+          </div>
         </div>
       <% end %>
     </div>
   <% else %>
-    <%# Different empty-state message depending on whether a search was actually run %>
     <p class="text-muted">
       <%= params[:query].present? ? "No flashcards match \"#{params[:query]}\"." : "No flashcards in this deck yet." %>
     </p>

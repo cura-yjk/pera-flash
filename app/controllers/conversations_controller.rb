@@ -10,9 +10,9 @@ class ConversationsController < ApplicationController
 
   # Start a new, empty conversation for the current user
   def create
-    @conversation = Conversation.new
-    @conversation.user = current_user
-    if @conversation.save
+    current_user.conversations.empty.destroy_all
+    @conversation = current_user.conversations.empty.first || current_user.conversations.new
+    if @conversation.persisted? || @conversation.save
       redirect_to conversation_path(@conversation)
     else
       # No dedicated "new" view/route, so fall back to re-rendering the

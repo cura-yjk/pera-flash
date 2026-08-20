@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   def dashboard
-    @conversations = current_user.conversations.order(created_at: :asc)
+    @conversations = current_user.conversations.where.associated(:messages).distinct.order(created_at: :desc)
     @decks = current_user.decks.left_joins(:flashcards)
                          .select("decks.*, COUNT(flashcards.id) AS flashcards_count")
                          .group("decks.id")

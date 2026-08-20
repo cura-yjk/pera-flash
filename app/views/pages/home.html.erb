@@ -1,26 +1,33 @@
 <%# when user is NOT signed in %>
-<div class="container d-flex align-items-center justify-content-around my-5 gap-5" id="landing-container">
+<div class="container d-flex flex-column align-items-center justify-content-around my-5 gap-5" id="landing-container">
 
-    <% unless user_signed_in? %>
-    <div class="col-5" id="landing-text">
-      <div id="landing-title">
-        <h1 class="text-center my-5">Welcome to ペラFlash!</h1>
+  <% unless user_signed_in? %>
+    <h1 class="text-center" id="landing-title">Welcome to ペラFlash!</h1>
+      <div class="col-5 welcome-container" id="landing-text">
+        <div class="landing-left">
+          <h2 class="fw-bold">Master Japanese with Pera!</h2>
+            <ul>
+              <li>Chat about grammar</li>
+              <li>Get instant corrections</li>
+              <li>Generate</li>
+              <li>Export to Anki</li>
+            </ul>
+            <div class="button-container">
+                <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
+                <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
+            </div>
+          </div>
+        <div class="landing-right">
+          <%= image_tag "clearlanding.png", alt: "Robot teaching Japanese", id: "pera-landing" %>
+        </div>
       </div>
-      <h2 class="fw-bold">Master Japanese with Pera!</h2>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore, rem soluta? Quia eius expedita rem mollitia magnam voluptatibus repellat reiciendis magni temporibus eum iure, perferendis enim necessitatibus suscipit laboriosam, cumque consectetur reprehenderit earum ut ducimus. Optio eveniet possimus eos blanditiis voluptatem repellat, tenetur enim voluptates, quod exercitationem dolore dolor? Eaque voluptatem velit, ut natus voluptatibus fugit nisi doloremque voluptates.
-      </p>
-      <div class="button-container">
-          <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
-          <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
-      </div>
-    </div>
     <% end %>
+
   <%# when user is signed in %>
 
     <% if user_signed_in? %>
     <div class="menu-nav form-container">
-        <h1 class="text-center">Some sample text for now</h1>
+        <h1 class="text-center">Ready to study?</h1>
         <div class="menu-container my-5">
 
             <div class="left-side rounded-5 gap-3">
@@ -36,7 +43,6 @@
               <p>Chat with Pera and learn!</p>
               <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
             </div>
-
         </div>
     </div>
   <% end %>

@@ -45,3 +45,14 @@
     transform: translateX(0);
   }
 }
+
+@keyframes greenGlow {
+
+  0% {
+    box-shadow: 0 0 0 0 #2BAE8F;
+  }
+
+  100% {
+    box-shadow: 0 0 24px 12px #2BAE8F;
+  }
+}

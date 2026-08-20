@@ -31,6 +31,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
               <li><%= link_to "Decks", decks_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
               <li><a class="dropdown-item" href="#">Chat History</a></li>
+              <%# <li><%= link_to "Flashcards", flashcard_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
               <li><hr class="dropdown-divider"></li>
               <li><%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item text-pera" %></li>
             </ul>

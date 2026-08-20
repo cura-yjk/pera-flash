@@ -1,4 +1,4 @@
-<div>
+<div class="chat-input-container">
   <%= simple_form_for [conversation, message],
     html: {
       data: {
@@ -8,22 +8,28 @@
       class: 'd-flex justify-content-between px-3 pb-2'
     } do |f| %>
 
+  <div class="chat-input">
     <%= f.input :content,
           placeholder: "Ask something...",
           required: true,
           label: false,
           input_html: {
             data: {
-              id: "chat-input",
               reset_form_target: "input",
               action: "keydown->enter-submit#submit"
             },
-            style: "resize: none;"
+            id: "chat-input",
+            style: "resize: none;",
+            class: "rounded-4 me-3"
           },
           wrapper_html: { class: 'rounded-4 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
+  </div>
 
+  <div>
     <%= f.button :submit, 'Send',
-          class: 'btn pera-btn rounded-3',
+          class: 'submit-btn rounded-5',
           data: { reset_form_target: "submit" } %>
-  <% end %>
+    <% end %>
+  </div>
+
 </div>

@@ -11,7 +11,16 @@
 }
 
 .menu-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  gap: 50px;
+}
+
+.menu-container {
+  display: flex;
+  gap: 50px;
 }
 
 .left-side, .right-side {
@@ -22,5 +31,19 @@
 
   border: solid 2px #2BAE8F;
 
-  height: 240px;
+  height: 372px;
+  width: 296px;
+}
+
+.left-side {
+  animation: fadeFall 2.5s ease-out forwards;
+}
+
+.menu-icon {
+  color: #2BAE8F;
+  font-size: 32px;
+}
+
+.right-side {
+  animation: fadeRise 2.5s ease-out forwards;
 }

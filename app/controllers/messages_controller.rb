@@ -15,14 +15,14 @@ class MessagesController < ApplicationController
         role: 'assistant',
         conversation: @conversation
       )
-      # @conversation.generate_title_from_first_message
-      # redirect_to conversation_path(@conversation)
+
+      @conversation.generate_title_from_first_message if @conversation.messages.where(role: "user").count == 1
+
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to conversation_path(@conversation) }
       end
     else
-      # render "conversations/show", status: :unprocessable_entity
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: turbo_stream.update("new_message_container", partial: "messages/form",

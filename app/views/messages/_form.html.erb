@@ -1,10 +1,4 @@
-<%#= simple_form_for [conversation, message], html: { data: { controller: 'load' } } do |f| %>
-  <%#= f.input :content, placeholder: "Ask something...", required: true, label: false %>
-  <%#= f.button :submit, 'Send', class: 'btn btn-primary', data: { action: 'click->load#start'} %>
-<%# end %>
-
 <div class="chat-input-container">
-
   <%= simple_form_for [conversation, message],
     html: {
       data: {
@@ -14,7 +8,7 @@
       class: 'd-flex justify-content-between px-3 pb-2'
     } do |f| %>
 
-    <div class="chat-input">
+  <div class="chat-input">
     <%= f.input :content,
           placeholder: "Ask something...",
           required: true,
@@ -34,3 +28,5 @@
       ></i>
     </div>
   </div>
+
+</div>

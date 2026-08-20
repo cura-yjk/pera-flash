@@ -1,4 +1,9 @@
 class ConversationsController < ApplicationController
+  def new
+    @conversation = current_user.conversations.new
+    @message = Message.new
+  end
+
   def show
     @conversation = current_user.conversations.find(params[:id])
     @messages = @conversation.messages.order(:created_at)
@@ -6,13 +11,20 @@ class ConversationsController < ApplicationController
   end
 
   def create
-    @conversation = Conversation.new
-    @conversation.user = current_user
-    if @conversation.save
-      redirect_to conversation_path(@conversation)
-    else
-      render "pages/home", status: :unprocessable_entity
+    @conversation = current_user.conversations.new(title: "Untitled")
+
+    ActiveRecord::Base.transaction do
+      @conversation.save!
+      @message = @conversation.messages.new(message_params)
+      @message.role = "user"
+      @message.save!
     end
+
+    respond_to_new_message
+  rescue ActiveRecord::RecordInvalid
+    @conversation = current_user.conversations.new
+    @message = Message.new(message_params)
+    render :new, status: :unprocessable_entity
   end
 
   def generate_flashcards # rubocop:disable Metrics/MethodLength
@@ -33,5 +45,21 @@ class ConversationsController < ApplicationController
     @flashcards = response.content["flashcards"].map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])
     end
+  end
+
+  private
+
+  def message_params
+    params.require(:message).permit(:content)
+  end
+
+  def respond_to_new_message
+    ruby_llm = RubyLLM.chat
+    @conversation.messages.each { |m| ruby_llm.add_message(m) }
+    response = ruby_llm.with_instructions(Message.system_prompt).ask(@message.content)
+    @conversation.messages.create(content: response.content, role: "assistant")
+    @conversation.generate_title_from_first_message
+
+    redirect_to conversation_path(@conversation)
   end
 end

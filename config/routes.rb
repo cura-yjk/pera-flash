@@ -18,11 +18,15 @@ Rails.application.routes.draw do
         post :generate_flashcards
     end
     resources :messages, only: [ :create ]
-    resources :flashcards, only: [:create]   # step 6 — actually saving
+    resources :flashcards, only: [:create, :edit, :update, :destroy]   # step 6 — actually saving
   end
 
   get "/dashboard", to: "users#dashboard", as: :dashboard
 
-  resources :decks, only: [ :create, :show, :index ]
+  resources :decks, only: [ :create, :show, :destroy ] do
+    member do
+      get :export
+    end
+  end
 
 end

@@ -15,7 +15,7 @@ class ConversationsController < ApplicationController
     end
   end
 
-  def generate_flashcards
+  def generate_flashcards # rubocop:disable Metrics/MethodLength
     @conversation = current_user.conversations.find(params[:id])
     transcript = @conversation.messages.order(:created_at)
                               .map { |m| "#{m.role}: #{m.content}" }.join("\n\n")

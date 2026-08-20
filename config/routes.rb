@@ -24,7 +24,7 @@ Rails.application.routes.draw do
   get "/dashboard", to: "users#dashboard", as: :dashboard
   resources :flashcards, only: [:index, :show, :edit, :update, :destroy]
 
-  resources :decks, only: [ :create, :show, :destroy ] do
+  resources :decks, only: [ :index, :create, :show, :destroy ] do
     member do
       get :export
     end

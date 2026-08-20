@@ -1,0 +1,39 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Your Decks</h1>
+  </div>
+  <%= form_with model: @deck || Deck.new, url: decks_path do |f| %>
+    <div class="input-group mb-3">
+      <%= f.text_field :name, class: "form-control", placeholder: "New deck name" %>
+      <%= f.submit "Create", class: "btn pera-btn" %>
+    </div>
+    <% if @deck&.errors&.any? %>
+      <div class="text-danger small"><%= @deck.errors.full_messages.to_sentence %></div>
+    <% end %>
+  <% end %>
+  <% if @decks.any? %>
+    <div class="row">
+      <% @decks.each do |deck| %>
+        <div class="col-md-4 mb-3">
+          <div class="position-relative">
+            <%= button_to deck_path(deck),
+                  method: :delete,
+                  class: "btn btn-sm btn-light border-0 position-absolute top-0 end-0 m-2",
+                  style: "z-index: 1;",
+                  form: { data: { turbo_confirm: "Delete this deck?" } } do %>
+              <i class="fa-solid fa-trash text-danger"></i>
+            <% end %>
+            <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
+              <div class="card p-3 d-flex flex-row justify-content-between align-items-center">
+                <span><%= deck.name %></span>
+                <span class="badge rounded-pill pera-btn"><%= deck.flashcards_count %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-muted">No decks yet.</p>
+  <% end %>
+</div>

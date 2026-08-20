@@ -11,4 +11,13 @@ class FlashcardsController < ApplicationController
     )
     redirect_to conversation_path(conversation), notice: "Flashcards saved!"
   end
+
+  def edit
+  end
+
+  def update
+  end
+
+  def destroy
+  end
 end

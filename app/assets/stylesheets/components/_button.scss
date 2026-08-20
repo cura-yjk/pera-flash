@@ -38,3 +38,18 @@ input[type="checkbox"].pera-check:checked {
 .pera-text {
   color: #2BAE8F;
 }
+
+.submit-btn {
+  cursor: pointer;
+
+  background-color: #2BAE8F;
+
+  transition: 0.5s ease-in-out;
+
+  height: 62px;
+  width: 120px;
+}
+
+.submit-btn:hover {
+  border: solid 2px #2BAE8F;
+}

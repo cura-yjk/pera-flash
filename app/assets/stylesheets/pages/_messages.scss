@@ -11,6 +11,13 @@
   color: #2BAE8F;
 }
 
+#chat-input {
+  width: 700px;
+  align-items: center;
+
+  animation: greenGlow 3.5s ease-in-out;
+}
+
 #chat-input:focus {
   outline: none !important;
   border: solid 3px rgb(43, 174, 143) !important;

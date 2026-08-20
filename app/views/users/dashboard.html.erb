@@ -3,17 +3,24 @@
     <h1 class="mb-0">Welcome back, <%= current_user.name %>!</h1>
     <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
   </div>
+
+  <!-- Decks -->
+  <h2>Your Decks</h2>
+  <% if @decks.any? %>
+    <ul class="list-group">
+      <% @decks.each do |deck| %>
+        <li class="list-group-item"><%= deck.name %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-secondary mb-5">No decks yet.</p>
+  <% end %>
+
   <!-- Stats -->
   <div class="d-flex gap-5 mb-5">
-    <div class="card p-3 text-center flex-fill rounded-5 dash-card js-dash-card col-4"
-      data-dark-mode-target="darkDash"
-      data-controller="dark-mode">
-      <h3><%= @deck_count %></h3>
-      <p class="mb-0">Decks</p>
-    </div>
 
   <!-- Random flashcard -->
-    <div class="card p-3 mb-5 rounded-5 dash-card js-dash-card col-5">
+    <div class="card p-3 mb-5 rounded-5 dash-card js-dash-card col-8">
       <h5>Flashcard of the moment</h5>
       <% if @random_flashcard %>
         <p><strong>Q:</strong> <%= @random_flashcard.question %></p>
@@ -43,16 +50,5 @@
     </ul>
   <% else %>
     <p class="text-muted mb-4 js-dash-card">No conversations yet.</p>
-  <% end %>
-  <!-- Decks -->
-  <h2>Your Decks</h2>
-  <% if @decks.any? %>
-    <ul class="list-group">
-      <% @decks.each do |deck| %>
-        <li class="list-group-item"><%= deck.name %></li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-secondary mb-5">No decks yet.</p>
   <% end %>
 </div>

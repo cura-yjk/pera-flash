@@ -13,15 +13,12 @@
   </div>
   <div id="messages">
     <%= render @messages %>
-    <div class="d-flex justify-content-end my-3">
-      <%= button_to generate_flashcards_conversation_path(@conversation),
-          method: :post,
-          class: "btn gen-flash-btn d-flex align-items-center gap-2 rounded-4" do %>
-        <i class="fa-solid fa-layer-group"></i> Generate Flashcards
-      <% end %>
-    </div>
+  </div>
+  <div class="d-flex justify-content-end my-3" id="flashcard-btn">
+    <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages %>
   </div>
   <div id="new_message" class="fixed-bottom mb-5">
     <%= render "messages/form", conversation: @conversation, message: @message %>
   </div>
 </div>
+<%# ^^ fix the fixed position of the input box %>

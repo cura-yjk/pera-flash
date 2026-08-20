@@ -1,0 +1,20 @@
+<!-- app/views/flashcards/edit.html.erb -->
+<%= turbo_frame_tag "modal" do %>
+  <div class="modal-backdrop show"></div>
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Edit Flashcard</h5>
+          <%= link_to "", "#", data: { turbo_frame: "modal" }, class: "btn-close",
+                onclick: "document.getElementById('modal').innerHTML = ''; return false;" %>
+        </div>
+        <%= simple_form_for @flashcard do |f| %>
+          <%= f.input :question, as: :text %>
+          <%= f.input :answer, as: :text %>
+          <%= f.button :submit, "Save", class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -5,10 +5,10 @@
   </div>
 
   <!-- Decks -->
-  <h2>Your Decks</h2>
+  <h2>Recent Decks</h2>
   <% if @decks.any? %>
     <div class="row mb-5">
-      <% @decks.each do |deck| %>
+      <% @decks.last(3).each do |deck| %>
         <div class="col-md-4 mb-3">
           <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
             <div class="card p-3 rounded-5 dash-card js-dash-card d-flex flex-row justify-content-between align-items-center">

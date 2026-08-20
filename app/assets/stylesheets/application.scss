@@ -17,6 +17,7 @@
 // Config
 @import "config/darkmode";
 @import "config/containers";
+@import "config/images";
 
 // Pages
 @import "pages/index";
@@ -25,7 +26,7 @@
 
 
 body {
-  margin: 70px 0 0 0;
+  margin: 50px 0 0 0;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;

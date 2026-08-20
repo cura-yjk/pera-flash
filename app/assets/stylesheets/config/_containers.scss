@@ -47,3 +47,11 @@
 .right-side {
   animation: fadeRise 2.5s ease-out forwards;
 }
+
+.welcome-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  width: 100%;
+}

@@ -1,7 +1,9 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary nav-bar mb-5 fixed-top">
   <div class="container-fluid">
     <div class="d-flex align-items-center gap-5">
-    <%= link_to "ペラFlash", root_path, class: "text-dark text-decoration-none me-3" %>
+      <%= link_to root_path, class: "logo-link" do %>
+        <%= image_tag "logo.png", alt: "Pera Flash logo", id: "pera-logo" %>
+      <% end %>
       <i class="fa-solid fa-circle-half-stroke js-toggle-btn toggle-btn"
         style="color: rgb(0, 0, 0);"
         data-dark-mode-target="darkToggle"

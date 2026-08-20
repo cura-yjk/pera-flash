@@ -13,6 +13,7 @@
 @import "components/index";
 @import "components/navbar";
 @import "components/animations";
+@import "components/flashcard";
 
 // Config
 @import "config/darkmode";
@@ -23,6 +24,7 @@
 @import "pages/index";
 @import "pages/messages";
 @import "pages/dashboard";
+@import "pages/landing";
 
 
 body {

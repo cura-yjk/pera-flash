@@ -1,0 +1,32 @@
+.landing-title {
+  animation-name: fadeFall;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
+}
+
+.landing-text {
+  animation-name: fadeRise;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
+}
+
+.button-container {
+  animation-name: fadeSwipe;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
+}
+
+.landing-right {
+  animation-name: fadeFall, bounce;
+  animation-duration: 2s, 3.5s;
+  animation-iteration-count: 1, infinite;
+  animation-timing-function: ease-out, ease-in-out;
+  animation-fill-mode: forwards, none;
+  opacity: 0;
+}

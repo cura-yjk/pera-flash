@@ -5,7 +5,7 @@
       <%= f.text_field :query, value: params[:query], placeholder: "Search this deck...", class: "form-control me-2 rounded-4 user-details-input" %>
       <%= f.submit "Search", class: "btn rounded-4 pera-btn" %>
     <% end %>
-    <%= link_to export_deck_path(@deck), class: "btn btn-primary d-flex align-items-center gap-2" do %>
+    <%= link_to export_deck_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center gap-2" do %>
       <i class="fa-solid fa-file-export"></i> Export
     <% end %>
   </div>
@@ -22,7 +22,7 @@
               <i class="fa-solid fa-trash pera-green"></i>
             <% end %>
             <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
-              <div class="card p-3 flashcard-preview-card dash-card js-dash-card dash-card-dark rounded-5">
+              <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
                 <p class="mb-1"><strong class="pera-green">Q:</strong> <%= flashcard.question %></p>
                 <p class="mb-0"><strong class="pera-green">A:</strong> <%= flashcard.answer %></p>
               </div>

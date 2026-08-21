@@ -20,8 +20,8 @@
               <i class="fa-solid fa-trash pera-green"></i>
             <% end %>
             <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" },
-            class: "text-decoration-none text-dark rounded-5" do %>
-              <div class="card p-3 flashcard-preview-card dash-card js-dash-card dash-card-dark rounded-5">
+            class: "text-decoration-none text-dark rounded-5 " do %>
+              <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
                 <p class="mb-1"><strong class="pera-green">Q:</strong> <%= flashcard.question %></p>
                 <p class="mb-0"><strong class="pera-green">A:</strong> <%= flashcard.answer %></p>
               </div>

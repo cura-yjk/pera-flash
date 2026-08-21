@@ -9,7 +9,7 @@ class Conversation < ApplicationRecord
   scope :empty, -> { left_joins(:messages).where(messages: { id: nil }) }
 
   def set_title
-    self.title = "Untitled" if title.nil?
+    self.title = "Let's chat!" if title.nil?
   end
 
   def generate_title_from_first_message

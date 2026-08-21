@@ -35,7 +35,7 @@ class ConversationsController < ApplicationController
     # Ask the LLM for flashcards, constrained to a JSON schema (FlashcardsSchema)
     # so the response comes back structured rather than free text
     response = RubyLLM.chat.with_schema(FlashcardsSchema).ask(<<~PROMPT)
-      Based on the conversation below, generate 3-5 flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Only generate flashcards for concepts that were actually covered — if fewer than 3 distinct concepts exist, return fewer rather than inventing filler or padding with near-duplicates.
+      Based on the conversation below, generate 3-6 flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Only generate flashcards for concepts that were actually covered — if fewer than 3 distinct concepts exist, return fewer rather than inventing filler or padding with near-duplicates.
 
       Language: Write the question and answer text (not the Japanese content itself) in the same language predominantly used in the conversation below. Japanese words/sentences being taught always stay in Japanese with romaji; only the surrounding question/explanation language should match the conversation's language. If the conversation mixes languages inconsistently, default to English.
 

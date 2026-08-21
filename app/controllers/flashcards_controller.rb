@@ -7,7 +7,7 @@ class FlashcardsController < ApplicationController
 
     created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
 
-    Message.create!(
+    @message = Message.create!(
       content: "✅ #{created.size} cards added! [View your flashcards](#{flashcards_path})",
       role: 'assistant',
       conversation: conversation

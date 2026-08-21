@@ -13,7 +13,10 @@ class FlashcardsController < ApplicationController
       conversation: conversation
     )
 
-    redirect_to conversation_path(conversation), notice: "Flashcards saved!"
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to conversation_path(conversation), notice: "Flashcards saved!" }
+    end
   end
 
   def index

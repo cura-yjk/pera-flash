@@ -1,5 +1,5 @@
 <%= turbo_stream.update "flashcard-preview" do %>
 <% end %>
-<%#= turbo_stream.append "messages" do %>
-  <%#= render "messages/message", message: @message %>
-<%# end %>
+<%= turbo_stream.append "messages" do %>
+  <%= render "messages/message", message: @message %>
+<% end %>

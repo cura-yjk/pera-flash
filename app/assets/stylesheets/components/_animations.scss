@@ -64,9 +64,25 @@
   }
 }
 
+@keyframes fadeInOut {
+
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 // delays here
 
 .play-1 { animation-delay: 0.5s; }
-.play-2 { animation-delay: 2s; }
-.play-3 { animation-delay: 3s; }
-.play-4 { animation-delay: 5s; }
+.play-2 { animation-delay: 1s; }
+.play-3 { animation-delay: 1.5s; }
+.play-4 { animation-delay: 2.3s; }

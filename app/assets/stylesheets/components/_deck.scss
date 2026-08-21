@@ -1,0 +1,20 @@
+.deck-card {
+  border: solid 2px #2BAE8F;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around !important;
+}
+
+.deck-card-dash {
+  border: solid 2px #2BAE8F;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around !important;
+
+  animation-name: fadeFall;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}

@@ -4,3 +4,9 @@
   right: 16px;
   z-index: 1000;
 }
+
+.pera-flash {
+  border: solid 2px #2BAE8F;
+
+  animation: fadeInOut 3.5s ease-in-out forwards;
+}

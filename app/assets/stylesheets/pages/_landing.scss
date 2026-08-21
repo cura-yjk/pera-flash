@@ -30,3 +30,9 @@
   animation-fill-mode: forwards, none;
   opacity: 0;
 }
+
+.user-details-input:focus {
+  outline: none !important;
+  border: solid 3px rgb(43, 174, 143) !important;
+  box-shadow: 0 0 0 1px rgba(43, 174, 143, 0.25) !important;
+}

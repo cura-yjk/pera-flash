@@ -6,8 +6,7 @@
       <div class="modal-content p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">Edit Flashcard</h5>
-          <%= link_to "", "#", data: { turbo_frame: "modal" }, class: "btn-close",
-                onclick: "document.getElementById('modal').innerHTML = ''; return false;" %>
+          <%= link_to "", flashcards_path, class: "btn-close" %>
         </div>
         <%= simple_form_for @flashcard do |f| %>
           <%= f.input :deck_id,
@@ -18,13 +17,7 @@
                 label: "Deck" %>
           <%= f.input :question, as: :text %>
           <%= f.input :answer, as: :text %>
-          <div class="d-flex justify-content-between mt-2">
-            <%= f.button :submit, "Save", class: "btn btn-primary" %>
-            <%= button_to "Delete", flashcard_path(@flashcard),
-                  method: :delete,
-                  class: "btn btn-outline-danger",
-                  form: { data: { turbo_frame: "_top", turbo_confirm: "Delete this flashcard?" } } %>
-          </div>
+          <%= f.button :submit, "Save", class: "btn btn-primary" %>
         <% end %>
       </div>
     </div>

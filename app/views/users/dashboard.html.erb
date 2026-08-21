@@ -13,7 +13,7 @@
           <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
             <div class="card p-3 rounded-5 dash-card js-dash-card deck-card-dash">
               <span><%= deck.name %></span>
-              <span class="badge rounded-5 pera-btn d-flex align-items-center justify-content-center"><%= deck.flashcards_count %></span>
+              <span class="badge rounded-5 pera-btn d-flex align-items-center justify-content-center fs-6"><%= deck.flashcards_count %></span>
             </div>
           <% end %>
         </div>
@@ -72,7 +72,7 @@
   <% end %>
 
   <!-- Conversation history -->
-  <h2 class="mb-3">Your Recent Conversations</h2>
+  <h2 class="mb-3">Recent Conversations</h2>
   <% if @conversations.any? %>
     <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
       <% @conversations.last(7).each do |conversation| %>

@@ -1,18 +1,18 @@
 <div class="form-container">
-  <h2>Log in</h2>
+  <h2 class="my-5">Log in</h2>
   <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
     <div class="form-inputs">
       <%= f.input :email,
                   required: false,
                   autofocus: true,
-                  input_html: { autocomplete: "email", class: "form-input rounded-3" } %>
+                  input_html: { autocomplete: "email", class: "form-input rounded-3 user-details-input" } %>
       <%= f.input :password,
                   required: false,
-                  input_html: { autocomplete: "current-password", class: "form-input rounded-3" } %>
+                  input_html: { autocomplete: "current-password", class: "form-input rounded-3 user-details-input" } %>
       <%= f.input :remember_me, as: :boolean, input_html: { class: "pera-check" } if devise_mapping.rememberable? %>
     </div>
     <div class="form-actions">
-      <%= f.button :submit, "Log in", class: "btn pera-btn" %>
+      <%= f.button :submit, "Log in", class: "btn pera-btn rounded-4" %>
     </div>
   <% end %>
 </div>

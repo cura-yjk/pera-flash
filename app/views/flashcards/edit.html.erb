@@ -3,10 +3,12 @@
   <div class="modal-backdrop show"></div>
   <div class="modal d-block" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-3">
+
+      <div class="modal-content p-3 rounded-5 pera-modal dash-card js-dash-card dash-card-dark">
+
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">Edit Flashcard</h5>
-          <%= link_to "", flashcards_path, class: "btn-close" %>
+          <h4 class="mb-0 pera-green">Edit Flashcard</h4>
+          <%= link_to "", flashcards_path, class: "btn-close pera-green" %>
         </div>
         <%= simple_form_for @flashcard do |f| %>
           <%= f.input :deck_id,
@@ -14,10 +16,11 @@
                 label_method: :name,
                 value_method: :id,
                 include_blank: "No deck",
-                label: "Deck" %>
-          <%= f.input :question, as: :text %>
-          <%= f.input :answer, as: :text %>
-          <%= f.button :submit, "Save", class: "btn btn-primary" %>
+                label: "Deck",
+                input_html: { class: 'dash-card js-dash-card rounded-4' } %>
+          <%= f.input :question, as: :text, input_html: { class: 'dash-card js-dash-card rounded-4' } %>
+          <%= f.input :answer, as: :text, input_html: { class: 'dash-card js-dash-card rounded-4' } %>
+          <%= f.button :submit, "Save", class: "btn pera-btn rounded-4 my-2" %>
         <% end %>
       </div>
     </div>

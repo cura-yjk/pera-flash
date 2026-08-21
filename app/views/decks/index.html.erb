@@ -1,9 +1,9 @@
-<div class="container mt-4">
+<div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Your Decks</h1>
+    <h1 class="mb-2">Your Decks</h1>
   </div>
   <%= form_with model: @deck || Deck.new, url: decks_path do |f| %>
-    <div class="input-group mb-3">
+    <div class="input-group mb-5">
       <%= f.text_field :name, class: "form-control", placeholder: "New deck name" %>
       <%= f.submit "Create", class: "btn pera-btn" %>
     </div>
@@ -18,15 +18,15 @@
           <div class="position-relative">
             <%= button_to deck_path(deck),
                   method: :delete,
-                  class: "btn btn-sm btn-light border-0 position-absolute top-0 end-0 m-2",
+                  class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
                   style: "z-index: 1;",
                   form: { data: { turbo_confirm: "Delete this deck?" } } do %>
-              <i class="fa-solid fa-trash text-danger"></i>
+              <i class="fa-solid fa-trash pera-green"></i>
             <% end %>
             <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
-              <div class="card p-3 d-flex flex-row justify-content-between align-items-center">
+              <div class="card deck-card p-3 dash-card js-dash-card dash-card-dark rounded-5">
                 <span><%= deck.name %></span>
-                <span class="badge rounded-pill pera-btn"><%= deck.flashcards_count %></span>
+                <span class="badge pera-btn rounded-4 d-flex align-items-center justify-content-center"><%= deck.flashcards_count %></span>
               </div>
             <% end %>
           </div>

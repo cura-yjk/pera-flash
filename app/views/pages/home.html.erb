@@ -1,49 +1,44 @@
 <%# when user is NOT signed in %>
 <div class="container d-flex flex-column align-items-center justify-content-around my-5 gap-5" id="landing-container">
-
   <% unless user_signed_in? %>
     <h1 class="text-center landing-title play-1">Welcome to ペラFlash!</h1>
-      <div class="col-5 welcome-container landing-text play-2">
-        <div class="landing-left">
-          <h2 class="fw-bold">Master Japanese with Pera!</h2>
-            <ul>
-              <li>Chat about grammar</li>
-              <li>Get instant corrections</li>
-              <li>Generate</li>
-              <li>Export to Anki</li>
-            </ul>
-            <div class="button-container play-3">
-                <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
-                <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
-            </div>
-          </div>
-        <div class="landing-right play-4">
-          <%= image_tag "landingclear.png", alt: "Robot teaching Japanese", id: "pera-landing" %>
+    <div class="col-5 welcome-container landing-text play-2">
+      <div class="landing-left">
+        <h2 class="fw-bold">Master Japanese with Pera!</h2>
+        <ul>
+          <li>Chat about grammar</li>
+          <li>Get instant corrections</li>
+          <li>Generate flashcards</li>
+          <li>Export to Anki</li>
+        </ul>
+        <div class="button-container play-3">
+          <%= link_to "Get started", new_user_registration_path, class: "btn pera-btn rounded-3" %>
+          <%= link_to "Log in", new_user_session_path, class: "btn pera-btn-outline rounded-3" %>
         </div>
       </div>
-    <% end %>
-
+      <div class="landing-right play-4">
+        <%= image_tag "landingclear.png", alt: "Robot teaching Japanese", id: "pera-landing" %>
+      </div>
+    </div>
+  <% end %>
   <%# when user is signed in %>
-
-    <% if user_signed_in? %>
+  <% if user_signed_in? %>
     <div class="menu-nav form-container">
-        <h1 class="text-center">Ready to study?</h1>
-        <div class="menu-container my-5">
-
-            <div class="left-side rounded-5 gap-3">
-              <h2>Dashboard</h2>
-              <i class="fa-regular fa-rectangle-list menu-icon"></i>
-              <p>Review cards and more!</p>
-              <%= link_to "Go", dashboard_path, class: "btn pera-btn rounded-3" %>
-            </div>
-
-            <div class="right-side rounded-5 gap-3">
-              <h2>New Chat</h2>
-              <i class="fa-regular fa-message menu-icon"></i>
-              <p>Chat with Pera and learn!</p>
-              <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
-            </div>
+      <h1 class="text-center">Ready to study?</h1>
+      <div class="menu-container my-5">
+        <div class="left-side rounded-5 gap-3">
+          <h2>Dashboard</h2>
+          <i class="fa-regular fa-rectangle-list menu-icon"></i>
+          <p>Review cards and more!</p>
+          <%= link_to "Go", dashboard_path, class: "btn pera-btn rounded-3" %>
         </div>
+        <div class="right-side rounded-5 gap-3">
+          <h2>New Chat</h2>
+          <i class="fa-regular fa-message menu-icon"></i>
+          <p>Chat with Pera and learn!</p>
+          <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
+        </div>
+      </div>
     </div>
   <% end %>
 </div>

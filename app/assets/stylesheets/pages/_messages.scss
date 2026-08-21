@@ -37,3 +37,30 @@ li > a:hover {
 
   color: #2BAE8F;
 }
+
+.system-notification hr {
+  border-color: rgba(0, 0, 0, 0.08);
+  opacity: 1;
+}
+
+.notification-pill {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+    height: 44px;
+    width: 360px;
+
+  a {
+    color: #2BAE8F;
+    font-weight: 600;
+
+    text-decoration: none;
+  }
+}
+
+.notification-pill > p {
+    margin: 0;
+    // display: inline;
+}

@@ -5,6 +5,9 @@
       <%= f.text_field :query, value: params[:query], placeholder: "Search this deck...", class: "form-control me-2" %>
       <%= f.submit "Search", class: "btn btn-outline-primary" %>
     <% end %>
+    <%= link_to export_deck_path(@deck), class: "btn btn-primary d-flex align-items-center gap-2" do %>
+      <i class="fa-solid fa-file-export"></i> Export
+    <% end %>
   </div>
   <% if @flashcards.any? %>
     <div class="row">

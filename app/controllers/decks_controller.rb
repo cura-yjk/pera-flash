@@ -1,3 +1,5 @@
+require "csv"
+
 class DecksController < ApplicationController
   # List the current user's decks, annotated with each deck's flashcard
   # count via a LEFT JOIN + COUNT (so decks with zero flashcards still show)
@@ -44,6 +46,18 @@ class DecksController < ApplicationController
 
   # TODO: not yet implemented
   def export
+    @deck = current_user.decks.find(params[:id])
+
+    csv_data = CSV.generate do |csv|
+      csv << ["Question", "Answer"]
+      @deck.flashcards.each do |flashcard|
+        csv << [flashcard.question, flashcard.answer]
+      end
+    end
+
+    send_data "\uFEFF" + csv_data,
+              filename: "#{@deck.name.parameterize}-flashcards.csv",
+              type: "text/csv; charset=utf-8"
   end
 
   private

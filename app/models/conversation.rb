@@ -13,7 +13,7 @@ class Conversation < ApplicationRecord
   end
 
   def generate_title_from_first_message
-    return unless title == "Untitled"
+    return unless title == "Let's chat!"
 
     first_message = messages.where(role: "user").first
     return unless first_message

@@ -1,0 +1,12 @@
+<div class="container my-5">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <i class="fa-solid fa-layer-group fs-4 pera-green me-2"></i>
+    <h2 class="mb-0 pera-green"><%= @deck ? @deck.name : "All decks" %></h2>
+  </div>
+
+  <% if @card %>
+    <%= render "card", card: @card, remaining: @remaining, deck: @deck %>
+  <% else %>
+    <%= render "empty", studied_any: Flashcard.for_user(current_user).exists? %>
+  <% end %>
+</div>

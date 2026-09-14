@@ -1,0 +1,37 @@
+<%# One card mid-session. The answer is hidden until asked for -- the recall
+    attempt is the part that makes spaced repetition work, so revealing early
+    defeats the exercise. %>
+<div id="review-card" class="text-center" data-controller="reveal">
+  <p class="text-uppercase small fw-semibold pera-green mb-4">
+    <%= remaining %> <%= "card".pluralize(remaining) %> to go
+  </p>
+
+  <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">
+    <div class="p-4">
+      <p class="fs-4 mb-0"><%= card.question %></p>
+
+      <div data-reveal-target="answer" hidden>
+        <hr class="my-4 opacity-25">
+        <p class="fs-4 mb-0 pera-green"><%= card.answer %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4" data-reveal-target="prompt">
+    <button type="button" class="btn gen-flash-btn rounded-4 px-4"
+            data-action="reveal#show">Show answer</button>
+  </div>
+
+  <%# Grades are only offered after the answer is visible: grading before
+      seeing it would be meaningless. %>
+  <div class="mt-4 d-flex justify-content-center gap-2" data-reveal-target="grades" hidden>
+    <% { "again" => "Again", "good" => "Good", "easy" => "Easy" }.each do |grade, label| %>
+      <%= button_to label,
+            deck ? deck_review_card_path(deck, card) : review_card_path(card),
+            method: :patch,
+            params: { grade: grade },
+            class: "btn rounded-4 px-4 #{grade == 'again' ? 'btn-outline-secondary' : 'gen-flash-btn'}",
+            form: { data: { turbo_stream: true } } %>
+    <% end %>
+  </div>
+</div>

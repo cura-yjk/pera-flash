@@ -32,6 +32,7 @@ class DecksController < ApplicationController
   def show
     @deck = current_user.decks.find(params[:id])
     @flashcards = @deck.flashcards
+    @due_count = @deck.flashcards.due.count
 
     return unless params[:query].present?
 

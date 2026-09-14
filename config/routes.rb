@@ -24,10 +24,19 @@ Rails.application.routes.draw do
   get "/dashboard", to: "users#dashboard", as: :dashboard
   resources :flashcards, only: [:index, :show, :edit, :update, :destroy]
 
+  # Studying cards. Across every deck, or within one.
+  get "/review", to: "reviews#show", as: :review
+  patch "/review/:id", to: "reviews#update", as: :review_card
+
   resources :decks, only: [ :index, :create, :show, :destroy ] do
     member do
       get :export
     end
+
+    # Nested, not member: this gives :deck_id, so the card's own :id stays
+    # unambiguous in the update route.
+    get "review", to: "reviews#show", as: :review
+    patch "review/:id", to: "reviews#update", as: :review_card
   end
 
 end

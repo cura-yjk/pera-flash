@@ -1,13 +1,13 @@
 class UsersController < ApplicationController
   def dashboard
+    @due_count = Flashcard.for_user(current_user).due.count
     @conversations = current_user.conversations.where.associated(:messages).distinct.order(created_at: :desc)
     @decks = current_user.decks.left_joins(:flashcards)
                          .select("decks.*, COUNT(flashcards.id) AS flashcards_count")
                          .group("decks.id")
                          .order(created_at: :desc)
 
-    flashcards = Flashcard.left_joins(:deck, :conversation)
-                          .where("decks.user_id = :uid OR conversations.user_id = :uid", uid: current_user.id)
+    flashcards = Flashcard.for_user(current_user)
 
     @deck_count = current_user.decks.count
     @flashcard_count = flashcards.count

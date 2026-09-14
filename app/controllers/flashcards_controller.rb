@@ -20,7 +20,7 @@ class FlashcardsController < ApplicationController
   end
 
   def index
-    @flashcards = Flashcard.where(conversation: current_user.conversations).order(created_at: :desc)
+    @flashcards = Flashcard.for_user(current_user).order(created_at: :desc)
 
     return unless params[:query].present?
 
@@ -54,8 +54,6 @@ class FlashcardsController < ApplicationController
   end
 
   def current_user_flashcard(id)
-    Flashcard.left_joins(:deck, :conversation)
-             .where("decks.user_id = :uid OR conversations.user_id = :uid", uid: current_user.id)
-             .find(id)
+    Flashcard.for_user(current_user).find(id)
   end
 end

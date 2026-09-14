@@ -22,12 +22,28 @@ Rails.application.routes.draw do
   end
 
   get "/dashboard", to: "users#dashboard", as: :dashboard
+  patch "/furigana", to: "users#toggle_furigana", as: :toggle_furigana
   resources :flashcards, only: [:index, :show, :edit, :update, :destroy]
+
+  # Studying cards. Across every deck, or within one.
+  get "/review", to: "reviews#show", as: :review
+  patch "/review/:id", to: "reviews#update", as: :review_card
+
+  # Quizzing over them. Shares the review schedule -- see QuizzesController.
+  get "/quiz", to: "quizzes#show", as: :quiz
+  post "/quiz", to: "quizzes#answer", as: :quiz_answer
 
   resources :decks, only: [ :index, :create, :show, :destroy ] do
     member do
       get :export
     end
+
+    # Nested, not member: this gives :deck_id, so the card's own :id stays
+    # unambiguous in the update route.
+    get "review", to: "reviews#show", as: :review
+    patch "review/:id", to: "reviews#update", as: :review_card
+    get "quiz", to: "quizzes#show", as: :quiz
+    post "quiz", to: "quizzes#answer", as: :quiz_answer
   end
 
 end

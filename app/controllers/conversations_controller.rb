@@ -35,6 +35,7 @@ class ConversationsController < ApplicationController
     return render :no_new_material if messages.none?
 
     @flashcards = build_flashcards(transcript_of(messages))
+    render :generation_failed if @flashcards.nil?
   end
 
   private
@@ -43,12 +44,19 @@ class ConversationsController < ApplicationController
     messages.map { |m| "#{m.role}: #{m.content}" }.join("\n\n")
   end
 
+  # Returns the built (unsaved) cards, or nil when the provider could not be
+  # reached -- the conversation is untouched either way, so the learner can
+  # simply try again.
   def build_flashcards(transcript)
     response = RubyLLM.chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript))
 
     Array(response.content["flashcards"]).map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])
     end
+  rescue StandardError => e
+    Rails.logger.error("Could not generate flashcards for conversation #{@conversation.id}: " \
+                       "#{e.class}: #{e.message}")
+    nil
   end
 
   # The transcript is already scoped to new material, so this no longer has to
@@ -62,7 +70,8 @@ class ConversationsController < ApplicationController
 
       Guidelines:
       - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
-      - Answer = concise, correct answer. Include romaji for any Japanese word or phrase in the answer.
+      - Answer = concise, correct answer.
+      - Furigana: annotate every kanji with its reading in square brackets immediately after it -- 猫[ねこ], 学生[がくせい]. Annotate only the kanji, never the okurigana: 食[た]べる, not 食べる[たべる]. This replaces romaji; do not also write the reading in parentheses.
       - Keep difficulty appropriate for a beginner (hiragana/katakana known, minimal kanji/grammar).
       - The first message may be lead-in context from earlier. Only card it if the exchange below actually teaches it.
       - If nothing here teaches a distinct concept, return an empty array.

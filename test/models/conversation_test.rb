@@ -29,6 +29,17 @@ class ConversationTest < ActiveSupport::TestCase
     assert_equal @conversation.messages.count, @conversation.messages_for_flashcards.count
   end
 
+  # Titling is cosmetic -- a conversation keeping its default title is a far
+  # better outcome than failing the message that triggered the attempt.
+  test "a failed title attempt does not raise" do
+    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+    conversation = conversations(:lesson)
+    conversation.update!(title: "Let's chat!")
+
+    assert_nothing_raised { conversation.generate_title_from_first_message }
+    assert_equal "Let's chat!", conversation.reload.title
+  end
+
   # Regression: lead-in context was returned even with nothing new after it,
   # which made "nothing to generate" look like "one message to generate".
   test "offers nothing at all when no messages follow the last flashcard" do

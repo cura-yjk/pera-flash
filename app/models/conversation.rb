@@ -46,13 +46,19 @@ class Conversation < ApplicationRecord
     first_message = messages.where(role: "user").first
     return unless first_message
 
-    response = RubyLLM.chat.ask(<<~PROMPT)
+    update(title: titled_from(first_message))
+  rescue StandardError => e
+    # Cosmetic. The conversation keeps its default title, which is a far better
+    # outcome than failing the message that triggered this.
+    Rails.logger.warn("Could not title conversation #{id}: #{e.class}: #{e.message}")
+  end
+
+  def titled_from(message)
+    RubyLLM.chat.ask(<<~PROMPT).content.strip
       Reply with only a short 3-6 word title summarizing the topic of this message.
       No quotes, no trailing punctuation, no explanation — just the title.
 
-      Message: "#{first_message.content}"
+      Message: "#{message.content}"
     PROMPT
-
-    update(title: response.content.strip)
   end
 end

@@ -1,0 +1,23 @@
+<div class="container my-5 text-center">
+  <i class="fa-solid fa-circle-check fs-1 pera-green mb-3 d-block"></i>
+  <h2 class="pera-green mb-3">
+    <%= @score %> of <%= @total %>
+  </h2>
+
+  <%# Anything missed has already been rescheduled to come back today -- the
+      score is a moment, the schedule is what carries it forward. %>
+  <p class="mb-4">
+    <% if @total.positive? && @score == @total %>
+      Everything correct. Those cards move further out.
+    <% elsif @total.positive? %>
+      The ones you missed will come back today.
+    <% else %>
+      No cards to quiz on yet.
+    <% end %>
+  </p>
+
+  <div class="d-flex justify-content-center gap-2">
+    <%= link_to "Quiz again", quiz_path_for(@deck), class: "btn gen-flash-btn rounded-4 px-4" %>
+    <%= link_to "Back to decks", decks_path, class: "btn btn-outline-secondary rounded-4 px-4" %>
+  </div>
+</div>

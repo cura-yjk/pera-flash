@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_19_143755) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_081851) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,9 +35,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_19_143755) do
     t.bigint "conversation_id"
     t.datetime "created_at", null: false
     t.bigint "deck_id"
+    t.datetime "due_at"
+    t.float "ease", default: 2.5, null: false
+    t.float "interval_days", default: 0.0, null: false
+    t.integer "lapse_count", default: 0, null: false
+    t.datetime "last_reviewed_at"
     t.string "question"
+    t.integer "review_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["conversation_id"], name: "index_flashcards_on_conversation_id"
+    t.index ["deck_id", "due_at"], name: "index_flashcards_on_deck_id_and_due_at"
     t.index ["deck_id"], name: "index_flashcards_on_deck_id"
   end
 
@@ -59,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_19_143755) do
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.boolean "show_furigana", default: true, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

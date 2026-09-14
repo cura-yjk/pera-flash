@@ -62,6 +62,24 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # A provider outage used to 500 the whole action.
+  test "says so when flashcards cannot be generated" do
+    stub_request(:post, LLM_URL).to_timeout
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_response :success
+    assert_match(/couldn't make flashcards/i, response.body)
+  end
+
+  test "a failed generation leaves the conversation untouched" do
+    stub_request(:post, LLM_URL).to_timeout
+
+    assert_no_difference -> { conversations(:lesson).flashcards.count } do
+      post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+    end
+  end
+
   private
 
   LLM_URL = "https://api.openai.com/v1/chat/completions".freeze

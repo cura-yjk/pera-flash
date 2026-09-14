@@ -1,0 +1,7 @@
+<%= turbo_stream.update "review-card" do %>
+  <% if @next_card %>
+    <%= render "card", card: @next_card, remaining: @remaining, deck: @deck %>
+  <% else %>
+    <%= render "empty", studied_any: true %>
+  <% end %>
+<% end %>

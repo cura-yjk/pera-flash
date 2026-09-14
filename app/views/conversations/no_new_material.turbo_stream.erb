@@ -1,0 +1,14 @@
+<%# Shown when nothing has been said since the last flashcards were made, so
+    there is nothing to generate. Costs no LLM call. %>
+<%= turbo_stream.update "flashcard-preview" do %>
+  <div class="my-5 response">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <i class="fa-solid fa-circle-check fs-4 pera-green me-2"></i>
+      <h3 class="mb-0 pera-green">You're all caught up</h3>
+    </div>
+    <p class="mb-0">
+      Everything from this chat is already in your flashcards. Keep chatting, then
+      generate again to turn the new material into cards.
+    </p>
+  </div>
+<% end %>

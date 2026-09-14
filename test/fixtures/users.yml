@@ -1,0 +1,12 @@
+# Password is "password123". Sign in with Devise::Test::IntegrationHelpers.
+learner:
+  name: Learner One
+  email: learner@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+
+# A second user, for checking one person's conversations aren't reachable
+# from another's session.
+other:
+  name: Learner Two
+  email: other@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>

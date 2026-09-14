@@ -1,0 +1,7 @@
+# Made after the early exchange but before the late one, so it is the cutoff
+# that messages_for_flashcards keys off.
+neko_card:
+  conversation: lesson
+  question: What does 猫 mean?
+  answer: Cat (neko)
+  created_at: <%= 2.hours.ago %>

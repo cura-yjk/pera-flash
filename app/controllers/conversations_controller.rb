@@ -22,20 +22,41 @@ class ConversationsController < ApplicationController
     end
   end
 
-  # Given an existing conversation, ask the LLM to turn it into 3-5 flashcards
-  # and build (but not yet save) them as associated Flashcard records
-  def generate_flashcards # rubocop:disable Metrics/MethodLength
+  # Turn what has been discussed since the last generation into flashcards.
+  #
+  # Deliberately not the whole conversation: see
+  # Conversation#messages_for_flashcards for why the input is scoped.
+  def generate_flashcards
     @conversation = current_user.conversations.find(params[:id])
+    messages = @conversation.messages_for_flashcards
 
-    # Flatten the message history into a plain "role: content" transcript
-    # to feed to the LLM as context
-    transcript = @conversation.messages.order(:created_at)
-                              .map { |m| "#{m.role}: #{m.content}" }.join("\n\n")
+    # Nothing said since the last batch -- answer without paying for a
+    # generation that could only return an empty array.
+    return render :no_new_material if messages.none?
 
-    # Ask the LLM for flashcards, constrained to a JSON schema (FlashcardsSchema)
-    # so the response comes back structured rather than free text
-    response = RubyLLM.chat.with_schema(FlashcardsSchema).ask(<<~PROMPT)
-      Based on the conversation below, generate 6-12 flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Only generate flashcards for concepts that were actually covered — if fewer than 3 distinct concepts exist, return fewer rather than inventing filler or padding with near-duplicates.
+    @flashcards = build_flashcards(transcript_of(messages))
+  end
+
+  private
+
+  def transcript_of(messages)
+    messages.map { |m| "#{m.role}: #{m.content}" }.join("\n\n")
+  end
+
+  def build_flashcards(transcript)
+    response = RubyLLM.chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript))
+
+    Array(response.content["flashcards"]).map do |card|
+      @conversation.flashcards.build(question: card["question"], answer: card["answer"])
+    end
+  end
+
+  # The transcript is already scoped to new material, so this no longer has to
+  # ask the model to focus on recent topics or avoid the existing cards -- it
+  # cannot see the old material to repeat it.
+  def flashcard_prompt(transcript)
+    <<~PROMPT
+      Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
 
       Language: Write the question and answer text (not the Japanese content itself) in the same language predominantly used in the conversation below. Japanese words/sentences being taught always stay in Japanese with romaji; only the surrounding question/explanation language should match the conversation's language. If the conversation mixes languages inconsistently, default to English.
 
@@ -43,23 +64,11 @@ class ConversationsController < ApplicationController
       - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
       - Answer = concise, correct answer. Include romaji for any Japanese word or phrase in the answer.
       - Keep difficulty appropriate for a beginner (hiragana/katakana known, minimal kanji/grammar).
-      - Focus on the MOST RECENT topics in the conversation. Do not duplicate or closely rephrase any of these existing flashcard questions: #{@conversation.flashcards.pluck(:question).join(', ')}
-      - If the conversation didn't cover any new distinct concepts beyond the existing flashcards, return an empty array instead of forcing new ones.
-
-      Return ONLY valid JSON in this exact format, no other text:
-      [
-        { "question": "...", "answer": "..." }
-      ]
+      - The first message may be lead-in context from earlier. Only card it if the exchange below actually teaches it.
+      - If nothing here teaches a distinct concept, return an empty array.
 
       Conversation:
       #{transcript}
     PROMPT
-
-    # Build (not save) a Flashcard per item returned, associated to this
-    # conversation — presumably rendered for the user to review/confirm
-    # before they're persisted (see flashcards#create, "step 6")
-    @flashcards = response.content["flashcards"].map do |card|
-      @conversation.flashcards.build(question: card["question"], answer: card["answer"])
-    end
   end
 end

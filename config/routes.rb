@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   end
 
   get "/dashboard", to: "users#dashboard", as: :dashboard
+  patch "/furigana", to: "users#toggle_furigana", as: :toggle_furigana
   resources :flashcards, only: [:index, :show, :edit, :update, :destroy]
 
   # Studying cards. Across every deck, or within one.

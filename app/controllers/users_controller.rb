@@ -1,4 +1,11 @@
 class UsersController < ApplicationController
+  # Show or hide readings. A preference rather than a per-session toggle: once
+  # someone can read the kanji they want them off everywhere, not just here.
+  def toggle_furigana
+    current_user.update!(show_furigana: !current_user.show_furigana)
+    redirect_back fallback_location: dashboard_path
+  end
+
   def dashboard
     @due_count = Flashcard.for_user(current_user).due.count
     @conversations = current_user.conversations.where.associated(:messages).distinct.order(created_at: :desc)

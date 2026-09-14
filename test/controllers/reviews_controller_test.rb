@@ -82,6 +82,35 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/not in deck/, response.body)
   end
 
+  # --- furigana -------------------------------------------------------------
+
+  test "renders readings as ruby when they are on" do
+    flashcards(:neko_card).update!(question: "猫[ねこ]が好[す]きですか？")
+
+    get review_path
+
+    assert_match "<ruby>猫<rt>ねこ</rt></ruby>", response.body
+  end
+
+  test "strips readings when the learner has turned them off" do
+    users(:learner).update!(show_furigana: false)
+    flashcards(:neko_card).update!(question: "猫[ねこ]が好[す]きですか？")
+
+    get review_path
+
+    assert_no_match(/<ruby>/, response.body)
+    assert_match "猫が好きですか？", response.body
+  end
+
+  test "toggling the preference flips it and comes back" do
+    assert users(:learner).show_furigana
+
+    patch toggle_furigana_path, headers: { "HTTP_REFERER" => review_path }
+
+    assert_redirected_to review_path
+    assert_not users(:learner).reload.show_furigana
+  end
+
   test "says so when nothing is due" do
     Flashcard.for_user(users(:learner)).find_each { |c| c.update!(due_at: 3.days.from_now, review_count: 1) }
 

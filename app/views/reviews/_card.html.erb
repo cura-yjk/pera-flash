@@ -8,11 +8,11 @@
 
   <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">
     <div class="p-4">
-      <p class="fs-4 mb-0"><%= card.question %></p>
+      <p class="fs-4 mb-0"><%= with_furigana(card.question, show: show_furigana?) %></p>
 
       <div data-reveal-target="answer" hidden>
         <hr class="my-4 opacity-25">
-        <p class="fs-4 mb-0 pera-green"><%= card.answer %></p>
+        <p class="fs-4 mb-0 pera-green"><%= with_furigana(card.answer, show: show_furigana?) %></p>
       </div>
     </div>
   </div>

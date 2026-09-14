@@ -2,6 +2,13 @@
   <div class="d-flex align-items-center gap-2 mb-4">
     <i class="fa-solid fa-layer-group fs-4 pera-green me-2"></i>
     <h2 class="mb-0 pera-green"><%= @deck ? @deck.name : "All decks" %></h2>
+
+    <%# Hiding readings is how you check whether the kanji has actually stuck. %>
+    <%= button_to toggle_furigana_path, method: :patch,
+          class: "btn btn-sm btn-outline-secondary rounded-4 ms-auto" do %>
+      <i class="fa-solid fa-language me-1"></i>
+      <%= show_furigana? ? "Hide readings" : "Show readings" %>
+    <% end %>
   </div>
 
   <% if @card %>

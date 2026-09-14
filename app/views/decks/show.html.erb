@@ -29,8 +29,8 @@
             <% end %>
             <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
               <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
-                <p class="mb-1"><strong class="pera-green">Q:</strong> <%= flashcard.question %></p>
-                <p class="mb-0"><strong class="pera-green">A:</strong> <%= flashcard.answer %></p>
+                <p class="mb-1"><strong class="pera-green">Q:</strong> <%= with_furigana(flashcard.question, show: show_furigana?) %></p>
+                <p class="mb-0"><strong class="pera-green">A:</strong> <%= with_furigana(flashcard.answer, show: show_furigana?) %></p>
               </div>
             <% end %>
           </div>

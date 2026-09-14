@@ -1,0 +1,24 @@
+# Ordered so "before" / "after" the flashcard cutoff is unambiguous.
+early_question:
+  conversation: lesson
+  role: user
+  content: How do I say "cat" in Japanese?
+  created_at: <%= 3.hours.ago %>
+
+early_answer:
+  conversation: lesson
+  role: assistant
+  content: 猫 (neko) means cat.
+  created_at: <%= 3.hours.ago + 1.minute %>
+
+late_question:
+  conversation: lesson
+  role: user
+  content: And how do I say "I like cats"?
+  created_at: <%= 1.hour.ago %>
+
+late_answer:
+  conversation: lesson
+  role: assistant
+  content: 猫が好きです (neko ga suki desu).
+  created_at: <%= 1.hour.ago + 1.minute %>

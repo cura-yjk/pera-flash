@@ -1,0 +1,7 @@
+lesson:
+  user: learner
+  title: Talking about cats
+
+other_users_lesson:
+  user: other
+  title: Somebody else's lesson

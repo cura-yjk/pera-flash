@@ -1,0 +1,13 @@
+<%# A multiple-choice question needs something to choose between. Rather than
+    show one option, send the learner to the review flow, which works with a
+    single card. %>
+<div class="container my-5 text-center">
+  <i class="fa-solid fa-layer-group fs-1 pera-green mb-3 d-block"></i>
+  <h3 class="pera-green">Not enough cards to quiz yet</h3>
+  <p class="mb-4">
+    A quiz needs a few cards to choose between. Save some more from your chats,
+    or study what you have.
+  </p>
+  <%= link_to "Review instead", @deck ? deck_review_path(@deck) : review_path,
+        class: "btn gen-flash-btn rounded-4 px-4" %>
+</div>

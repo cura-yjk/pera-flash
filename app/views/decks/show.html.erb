@@ -11,6 +11,11 @@
         Review <span class="badge rounded-5 bg-light text-dark"><%= @due_count %></span>
       <% end %>
     <% end %>
+    <% if @flashcards.size >= QuizQuestion::OPTION_COUNT %>
+      <%= link_to deck_quiz_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center gap-2" do %>
+        <i class="fa-solid fa-list-check"></i> Quiz
+      <% end %>
+    <% end %>
     <%= link_to export_deck_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center gap-2" do %>
       <i class="fa-solid fa-file-export"></i> Export
     <% end %>

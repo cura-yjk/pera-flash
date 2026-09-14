@@ -1,0 +1,27 @@
+<div class="container my-5">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <i class="fa-solid fa-list-check fs-4 pera-green me-2"></i>
+    <h2 class="mb-0 pera-green">Quiz<%= " · #{@deck.name}" if @deck %></h2>
+  </div>
+
+  <p class="text-uppercase small fw-semibold pera-green mb-4">
+    Question <%= @position %> of <%= @total %>
+  </p>
+
+  <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">
+    <div class="p-4 text-center">
+      <p class="fs-4 mb-0"><%= with_furigana(@question.card.question, show: show_furigana?) %></p>
+    </div>
+  </div>
+
+  <%# One form per option rather than radios plus a submit: a tap is the whole
+      interaction, and the answer text is what the controller grades on. %>
+  <div class="d-grid gap-2 mx-auto mt-4" style="max-width: 34rem;">
+    <% @question.options.each do |option| %>
+      <%= button_to quiz_path_for(@deck), method: :post, params: { choice: option },
+            class: "btn btn-outline-secondary rounded-4 text-start py-3 px-4 w-100" do %>
+        <%= with_furigana(option, show: show_furigana?) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

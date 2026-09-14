@@ -29,6 +29,10 @@ Rails.application.routes.draw do
   get "/review", to: "reviews#show", as: :review
   patch "/review/:id", to: "reviews#update", as: :review_card
 
+  # Quizzing over them. Shares the review schedule -- see QuizzesController.
+  get "/quiz", to: "quizzes#show", as: :quiz
+  post "/quiz", to: "quizzes#answer", as: :quiz_answer
+
   resources :decks, only: [ :index, :create, :show, :destroy ] do
     member do
       get :export
@@ -38,6 +42,8 @@ Rails.application.routes.draw do
     # unambiguous in the update route.
     get "review", to: "reviews#show", as: :review
     patch "review/:id", to: "reviews#update", as: :review_card
+    get "quiz", to: "quizzes#show", as: :quiz
+    post "quiz", to: "quizzes#answer", as: :quiz_answer
   end
 
 end

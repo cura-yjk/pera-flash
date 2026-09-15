@@ -93,12 +93,12 @@ class ConversationsController < ApplicationController
     <<~PROMPT
       Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
 
-      Language: Write the question and answer text (not the Japanese content itself) in the same language predominantly used in the conversation below. Japanese words/sentences being taught always stay in Japanese with romaji; only the surrounding question/explanation language should match the conversation's language. If the conversation mixes languages inconsistently, default to English.
+      #{Message::EXPLANATION_LANGUAGE_RULE}
 
+      #{Message::FURIGANA_RULE}
       Guidelines:
       - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
       - Answer = concise, correct answer.
-      - Furigana: annotate every kanji with its reading in square brackets immediately after it -- 猫[ねこ], 学生[がくせい]. Annotate only the kanji, never the okurigana: 食[た]べる, not 食べる[たべる]. This replaces romaji; do not also write the reading in parentheses.
       - Keep difficulty appropriate for a beginner (hiragana/katakana known, minimal kanji/grammar).
       - The first message may be lead-in context from earlier. Only card it if the exchange below actually teaches it.
       - If nothing here teaches a distinct concept, return an empty array.

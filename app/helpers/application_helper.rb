@@ -21,7 +21,29 @@ module ApplicationHelper
     @navbar_card_count >= QuizQuestion::OPTION_COUNT
   end
 
+  # Chat content -- both the learner's messages and Pera's replies -- rendered
+  # as markdown and then sanitized.
+  #
+  # The sanitize step is not optional. Kramdown passes raw HTML straight
+  # through, and this output was being handed to raw(), so anything a user
+  # typed into the chat executed in their browser: <script>alert(1)</script>
+  # came back verbatim, and [x](javascript:...) became a live link.
+  #
+  # The allowlist is spelled out because Rails' default one strips <table>,
+  # and Pera's vocabulary breakdown is a table -- the default would quietly
+  # delete the most useful part of every reply. RUBY_TAGS are what
+  # with_furigana_html inserts.
+  MARKDOWN_TAGS = %w[
+    p br hr div span strong em b i u del ins code pre blockquote
+    h1 h2 h3 h4 h5 h6 ul ol li a
+    table thead tbody tfoot tr th td
+    ruby rt rp
+  ].freeze
+  MARKDOWN_ATTRIBUTES = %w[href title class colspan rowspan].freeze
+
   def render_markdown(text)
-    Kramdown::Document.new(text, input: 'GFM', syntax_highlighter: "rouge").to_html
+    html = Kramdown::Document.new(text.to_s, input: "GFM", syntax_highlighter: "rouge").to_html
+
+    sanitize(html, tags: MARKDOWN_TAGS, attributes: MARKDOWN_ATTRIBUTES)
   end
 end

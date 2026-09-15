@@ -26,6 +26,25 @@ module FuriganaHelper
     escaped.gsub(ANNOTATION) { "<ruby>#{Regexp.last_match(1)}<rt>#{Regexp.last_match(2)}</rt></ruby>" }.html_safe
   end
 
+  # The same annotation pass, but over HTML that has already been rendered and
+  # sanitized -- chat messages, which are markdown before they are Japanese.
+  #
+  # with_furigana escapes its input first, which is right for a flashcard field
+  # and wrong here: it would escape the markup we just produced. Instead this
+  # substitutes only in the text between tags, so an annotation can never land
+  # inside an attribute and turn href="..." into markup.
+  def with_furigana_html(html, show: true)
+    annotated = html.to_s.split(/(<[^>]*>)/).map do |part|
+      next part if part.start_with?("<")
+
+      next part.gsub(ANNOTATION, '\1') unless show
+
+      part.gsub(ANNOTATION) { "<ruby>#{Regexp.last_match(1)}<rt>#{Regexp.last_match(2)}</rt></ruby>" }
+    end
+
+    annotated.join.html_safe
+  end
+
   # Whether this reader wants readings shown. Defaults to on: a beginner who
   # cannot read the kanji is stuck without them.
   def show_furigana?

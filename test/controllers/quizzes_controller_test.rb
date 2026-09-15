@@ -21,7 +21,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     get quiz_path
 
     assert_response :success
-    assert_not_requested :post, /api\.openai\.com/
+    assert_not_requested :post, llm_url
   end
 
   test "asks a question with several options" do
@@ -99,6 +99,12 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
+  end
 
   # The quiz asks due cards in schedule order, so pin exactly one as due to
   # know which card an answer is being graded against.

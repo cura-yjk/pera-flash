@@ -27,7 +27,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     # The prompt must carry the new exchange and not the already-carded one.
-    assert_requested :post, LLM_URL do |req|
+    assert_requested :post, llm_url do |req|
       body = req.body.to_s
       body.include?("I like cats") && !body.include?("How do I say \"cat\" in Japanese?")
     end
@@ -41,7 +41,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match(/caught up/i, response.body)
-    assert_not_requested :post, LLM_URL
+    assert_not_requested :post, llm_url
   end
 
   test "generates from the whole conversation the first time" do
@@ -51,7 +51,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
     assert_response :success
-    assert_requested :post, LLM_URL do |req|
+    assert_requested :post, llm_url do |req|
       req.body.to_s.include?("cat") && req.body.to_s.include?("I like cats")
     end
   end
@@ -64,7 +64,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
 
   # A provider outage used to 500 the whole action.
   test "says so when flashcards cannot be generated" do
-    stub_request(:post, LLM_URL).to_timeout
+    stub_request(:post, llm_url).to_timeout
 
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
@@ -73,7 +73,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "a failed generation leaves the conversation untouched" do
-    stub_request(:post, LLM_URL).to_timeout
+    stub_request(:post, llm_url).to_timeout
 
     assert_no_difference -> { conversations(:lesson).flashcards.count } do
       post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
@@ -82,12 +82,17 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
 
   private
 
-  LLM_URL = "https://api.openai.com/v1/chat/completions".freeze
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
+  end
 
+  
   def stub_llm_success(cards)
-    stub_request(:post, LLM_URL)
+    stub_request(:post, llm_url)
       .to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: {
-        "choices" => [{ "message" => { "content" => { flashcards: cards }.to_json } }]
+        "candidates" => [{ "content" => { "parts" => [{ "text" => { flashcards: cards }.to_json }] } }]
       }.to_json)
   end
 end

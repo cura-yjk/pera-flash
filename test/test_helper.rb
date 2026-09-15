@@ -5,6 +5,7 @@ ENV["RAILS_ENV"] ||= "test"
 # refuses to build a request without a key, so without this the stubs below
 # would never be reached -- and it guarantees the suite can never spend a real
 # credential.
+ENV["GEMINI_API_KEY"] = "test-gemini-key-not-a-real-credential"
 ENV["OPENAI_API_KEY"] = "test-openai-key-not-a-real-credential"
 
 require_relative "../config/environment"

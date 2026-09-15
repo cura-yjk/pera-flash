@@ -1,12 +1,16 @@
 <%= turbo_stream.replace "conversation_title" do %>
   <%= render "conversations/title", conversation: @conversation %>
 <% end %>
+<%= turbo_stream.update "new_message" do %>
+  <%= render "messages/form", conversation: @conversation, message: Message.new %>
+<% end %>
+
+<%# Appended after the form is back in place: the streaming bubble disables
+    the input while it writes, and a form replaced afterwards would arrive
+    enabled. %>
 <%= turbo_stream.append "messages" do %>
   <%= render "messages/message", message: @message %>
   <%= render "messages/pending", conversation: @conversation %>
-<% end %>
-<%= turbo_stream.update "new_message" do %>
-  <%= render "messages/form", conversation: @conversation, message: Message.new %>
 <% end %>
 <%= turbo_stream.update "flashcard-btn" do %>
   <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages %>

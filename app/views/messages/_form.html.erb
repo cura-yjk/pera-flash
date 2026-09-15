@@ -1,9 +1,18 @@
 <div class="chat-input-container">
+  <%# enter-submit needs its targets and a keydown to listen for -- it had
+      neither, so it raised "Missing target element" on every page load and
+      Enter did nothing. Its IME handling matters here: Enter also confirms a
+      kana-to-kanji conversion, and sending mid-conversion would cut a word in
+      half. %>
   <%= simple_form_for [conversation, message],
     html: {
       data: {
-        controller: 'reset-form enter-submit load',
-        action: 'turbo:submit-start->reset-form#submit submit->load#start'
+        controller: 'reset-form enter-submit load autogrow char-count',
+        enter_submit_target: 'form',
+        char_count_limit_value: Message::MAX_USER_CONTENT_LENGTH,
+        char_count_template_value: t(".characters_left", count: "%{count}"),
+        action: 'turbo:submit-start->reset-form#submit submit->load#start ' \
+                'keydown->enter-submit#submit input->autogrow#resize input->char-count#update'
       },
       class: 'd-flex justify-content-between px-3 pb-2'
     } do |f| %>
@@ -13,10 +22,17 @@
           placeholder: t(".placeholder"),
           required: true,
           label: false,
-          input_html: { data: { reset_form_target: "input" }, id: "chat-input", class: "rounded-4 me-3",
+          input_html: { data: { reset_form_target: "input", enter_submit_target: "input",
+                                autogrow_target: "input", char_count_target: "input" },
+                        id: "chat-input", class: "rounded-4 me-3", rows: 1,
                         maxlength: Message::MAX_USER_CONTENT_LENGTH },
           wrapper_html: { class: 'rounded-5 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
     </div>
+
+    <%# Only appears near the limit: a counter on an empty box is noise, and
+        silently swallowing keystrokes at 2,000 characters is worse. %>
+    <p class="chat-count small text-muted mb-0 me-2 align-self-center" hidden
+       data-char-count-target="counter"></p>
 
     <div class="d-flex align-items-center">
         <%= f.button :submit, 'Send',

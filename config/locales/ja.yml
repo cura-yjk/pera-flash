@@ -122,6 +122,7 @@ ja:
     rate_limited: "メッセージの送信が速すぎます。少し待ってください。"
     form:
       placeholder: "質問してみましょう..."
+      characters_left: "残り%{count}文字"
     empty:
       greeting: "こんにちは、ペラです"
       blurb: "日本語の文を書いてみてください。添削します。使い方の質問もどうぞ。"

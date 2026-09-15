@@ -121,6 +121,7 @@ ko:
     rate_limited: "메시지를 너무 빠르게 보내고 있습니다. 잠시 기다려 주세요."
     form:
       placeholder: "무엇이든 물어보세요..."
+      characters_left: "%{count}자 남음"
     empty:
       greeting: "안녕하세요, 페라입니다"
       blurb: "일본어 문장을 써 보세요. 고쳐 드립니다. 앱 사용법도 물어보셔도 됩니다."

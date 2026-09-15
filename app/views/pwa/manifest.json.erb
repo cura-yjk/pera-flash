@@ -1,22 +1,42 @@
 {
-  "name": "PeraFlash",
+  "name": "ペラFlash — Japanese practice",
+  "short_name": "ペラFlash",
+  "description": "Chat your way through Japanese, then review what you learned as flashcards.",
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
     {
       "src": "/icon.png",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/icon.png",
+      "src": "/icon-maskable.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "scope": "/",
-  "description": "PeraFlash.",
-  "theme_color": "red",
-  "background_color": "red"
+  "theme_color": "#2BAE8F",
+  "background_color": "#F4F4F4",
+  "lang": "en",
+  "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Review due cards",
+      "short_name": "Review",
+      "url": "/review"
+    },
+    {
+      "name": "Take a quiz",
+      "short_name": "Quiz",
+      "url": "/quiz"
+    }
+  ]
 }

@@ -33,6 +33,13 @@
           transition-duration: 0s !important;
           transition-delay: 0s !important;
         }
+
+        /* Bootstrap sets scroll-behavior: smooth on html. A browser driver
+           scrolls an element into view and then clicks its coordinates, so
+           while that scroll is still animating the click lands where the
+           element used to be -- silently, with no error and no overlay to
+           find. That is the phantom click that made these tests flaky. */
+        html { scroll-behavior: auto !important; }
       </style>
     <% end %>
   </head>

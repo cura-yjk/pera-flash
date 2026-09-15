@@ -15,7 +15,7 @@ class ChattingTest < ApplicationSystemTestCase
 
     visit conversation_path(@conversation)
     fill_in "message[content]", with: "ねこがすきです"
-    click_on "Send"
+    click_and_confirm("Send", expect: "ねこがすきです")
 
     # Rendered as it arrives: bold is bold, and the reading is a ruby tag --
     # not raw asterisks and brackets waiting to be rewritten at the end.

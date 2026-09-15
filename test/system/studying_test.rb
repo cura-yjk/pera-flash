@@ -18,9 +18,7 @@ class StudyingTest < ApplicationSystemTestCase
     visit deck_quiz_path(@deck)
     assert_text(/Question 1 of/i)
 
-    first(".btn.btn-outline-secondary").click
-
-    assert_text(/Question 2 of/i)
+    answer_current_question(expect: /Question 2 of/i)
   end
 
   test "working through the whole quiz reaches a score" do
@@ -35,7 +33,7 @@ class StudyingTest < ApplicationSystemTestCase
     # button classes, so an unscoped "first button" clicks "Back to decks".
     (1..@cards.size).each do |question|
       assert_text(/Question #{question} of/i)
-      answer_current_question
+      answer_current_question(expect: question == @cards.size ? /Quiz again/i : /Question #{question + 1} of/i)
     end
 
     assert_text(/Quiz again/i)
@@ -45,8 +43,10 @@ class StudyingTest < ApplicationSystemTestCase
   # The same selector the single-click test uses. `within(".d-grid")` looked
   # tidier but scopes to a node Turbo replaces, so the click after it goes
   # nowhere.
-  def answer_current_question
-    first(".btn.btn-outline-secondary").click
+  def answer_current_question(expect:)
+    option = first(".btn.btn-outline-secondary").text
+
+    click_and_confirm(option, expect: expect)
   end
 
   test "a review reveals the answer only when asked, then grades it" do
@@ -59,16 +59,13 @@ class StudyingTest < ApplicationSystemTestCase
     assert_text card.question
     assert_no_text card.answer
 
-    click_on "Show answer"
-    assert_text card.answer
+    click_and_confirm("Show answer", expect: card.answer)
 
-    click_on "Good"
-
-    # Wait for the screen to show the grading landed before looking at the
-    # database. Capybara returns as soon as the click is dispatched, so
-    # checking the card first races the request that updates it -- which is
-    # exactly how this failed in CI while passing locally.
-    assert_text "Nothing due right now"
+    # Waits for the screen before looking at the database: Capybara returns as
+    # soon as a click is dispatched, so checking the card first races the
+    # request that updates it -- which is how this failed in CI while passing
+    # locally.
+    click_and_confirm("Good", expect: "Nothing due right now")
 
     # And the card really moved, rather than the queue just looking empty.
     assert_operator card.reload.interval_days, :>, 0
@@ -81,12 +78,10 @@ class StudyingTest < ApplicationSystemTestCase
     visit review_path
     assert_selector "ruby rt", text: "ねこ"
 
-    click_on "Hide readings"
-
     # Waits for the round trip before looking at the card: asserting straight
     # after the click races the page swap, and a stale node reads as a
     # perfectly healthy failure.
-    assert_button "Show readings", wait: 5
+    click_and_confirm("Hide readings", expect: "Show readings")
     assert_no_selector "ruby rt"
     assert_text "猫が好きです"
   end

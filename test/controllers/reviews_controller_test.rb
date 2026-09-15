@@ -45,6 +45,36 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/<ruby>猫<rt>ねこ<\/rt><\/ruby>/, response.body)
   end
 
+  # The heading named the scope and never said what the page was, so a global
+  # review was titled "All decks".
+  test "the heading says what the page is" do
+    get review_path
+
+    assert_select "h2", text: /Review/
+  end
+
+  test "a deck review names the deck alongside it" do
+    deck = decks(:starter)
+    deck.flashcards.create!(question: "Q", answer: "A", due_at: 1.hour.ago)
+
+    get deck_review_path(deck)
+
+    assert_select "h2", text: /Review.*#{deck.name}/
+  end
+
+  # Rendered twice-escaped, an apostrophe in a card reached the screen as
+  # &#39; -- worst with readings switched off, which is exactly when a learner
+  # is reading the card most carefully.
+  test "an apostrophe in a card is not double escaped" do
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.from_now)
+    flashcards(:neko_card).update!(question: "What does it mean? It's tricky.", due_at: 1.hour.ago)
+
+    get review_path
+
+    assert_no_match(/&amp;#39;/, response.body)
+    assert_match(/It&#39;s tricky/, response.body)
+  end
+
   test "shows a due card" do
     get review_path
 

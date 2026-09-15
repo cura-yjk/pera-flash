@@ -21,7 +21,12 @@ module FuriganaHelper
     # our own markup; not escaping at all would be an injection hole.
     escaped = ERB::Util.html_escape(text.to_s)
 
-    return escaped.gsub(ANNOTATION, '\1') unless show
+    # html_safe on this branch too. gsub on a SafeBuffer hands back a plain
+    # String, which the view then escapes a second time -- so a card reading
+    # "It's polite" rendered as "It&#39;s polite" the moment readings were
+    # switched off. Safe to mark: the text was escaped above, and stripping the
+    # bracket annotations cannot reintroduce markup.
+    return escaped.gsub(ANNOTATION, '\1').html_safe unless show
 
     escaped.gsub(ANNOTATION) { "<ruby>#{Regexp.last_match(1)}<rt>#{Regexp.last_match(2)}</rt></ruby>" }.html_safe
   end

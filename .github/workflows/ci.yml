@@ -69,6 +69,15 @@ jobs:
       - name: Run tests
         run: bin/rails test
 
+      # Browser-level tests. ubuntu-latest ships Chrome, so nothing needs
+      # installing; selenium-webdriver finds it. These are separate from the
+      # step above so a failure says which layer broke.
+      - name: Run system tests
+        run: bin/rails test:system
+        env:
+          # Selenium needs a writable home for its profile directories.
+          HOME: ${{ github.workspace }}
+
       - name: Upload failure screenshots
         uses: actions/upload-artifact@v4
         if: failure()

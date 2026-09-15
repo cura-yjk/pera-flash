@@ -28,8 +28,14 @@ self.addEventListener("activate", (event) => {
 })
 
 self.addEventListener("fetch", (event) => {
-  // Only page navigations get the offline answer. An asset or an API call that
-  // fails should fail normally, so the page's own error handling still runs.
+  // GET navigations only.
+  //
+  // Handling every navigation meant form submissions went through here too,
+  // and passing a POST Request back to fetch() intermittently lost it: a
+  // quiz answer or a settings toggle would click through to nothing, once in
+  // every few attempts. Nothing about a POST benefits from an offline page
+  // anyway -- there is no cached answer to a form.
+  if (event.request.method !== "GET") return
   if (event.request.mode !== "navigate") return
 
   event.respondWith(

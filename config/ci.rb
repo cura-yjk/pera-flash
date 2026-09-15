@@ -11,8 +11,10 @@ CI.run do
   step "Tests: Rails", "bin/rails test"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
-  # Optional: Run system tests
-  # step "Tests: System", "bin/rails test:system"
+  # Needs a browser. Runs here and in CI, where Chrome is installed on the
+  # runner -- the flows these cover are the ones that have actually shipped
+  # broken, because nothing below the browser can see them.
+  step "Tests: System", "bin/rails test:system"
 
   # Optional: set a green GitHub commit status to unblock PR merge.
   # Requires the `gh` CLI and `gh extension install basecamp/gh-signoff`.

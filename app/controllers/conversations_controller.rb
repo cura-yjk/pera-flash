@@ -1,5 +1,15 @@
 # Handles the "chat with AI to learn Japanese, then turn it into flashcards" flow
 class ConversationsController < ApplicationController
+  # A generation is a second LLM call per press, and the button sits right in
+  # the chat -- cheaper to press repeatedly than to type a message.
+  rate_limit to: 5, within: 1.minute,
+             by: -> { current_user.id }, with: -> { generation_rate_limited }, name: "generate_burst"
+  rate_limit to: 60, within: 1.hour,
+             by: -> { current_user.id }, with: -> { generation_rate_limited }, name: "generate_hourly"
+  # Creating a conversation costs no LLM call, only rows -- limited to keep a
+  # script from filling the table.
+  rate_limit to: 20, within: 1.minute, by: -> { current_user.id }, only: :create
+
   # Every chat the user has actually used, newest first. The navbar's "Chat
   # History" link pointed at href="#" until this existed.
   def index
@@ -45,6 +55,15 @@ class ConversationsController < ApplicationController
   end
 
   private
+
+  def generation_rate_limited
+    notice = "Give Pera a moment before making more cards."
+
+    respond_to do |format|
+      format.turbo_stream { render :generation_rate_limited, locals: { notice: notice }, status: :too_many_requests }
+      format.html { redirect_to conversation_path(params[:id]), alert: notice }
+    end
+  end
 
   def transcript_of(messages)
     messages.map { |m| "#{m.role}: #{m.content}" }.join("\n\n")

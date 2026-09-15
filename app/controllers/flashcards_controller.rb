@@ -46,7 +46,7 @@ class FlashcardsController < ApplicationController
   def destroy
     @flashcard = current_user_flashcard(params[:id])
     @flashcard.destroy!
-    redirect_to request.referer || flashcards_path, notice: "Flashcard deleted."
+    redirect_to request.referer || flashcards_path, notice: t("flashcards.deleted")
   end
 
   private

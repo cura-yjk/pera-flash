@@ -42,6 +42,7 @@ de:
     confirm_delete: "Diese Karte löschen?"
     saved: "Karten gespeichert!"
     updated: "Karte aktualisiert!"
+    deleted: "Karte gelöscht."
     no_match: 'Keine Karten passen zu "%{query}".'
     added: "%{count} Karten hinzugefügt! [Karten ansehen](%{path})"
     index:

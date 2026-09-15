@@ -45,6 +45,7 @@ zh-TW:
     confirm_delete: "刪除這張卡片？"
     saved: "卡片已儲存！"
     updated: "卡片已更新！"
+    deleted: "卡片已刪除。"
     no_match: "沒有符合「%{query}」的卡片。"
     added: "已新增 %{count} 張卡片！[查看卡片](%{path})"
     index:

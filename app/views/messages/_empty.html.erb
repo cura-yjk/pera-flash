@@ -1,0 +1,27 @@
+<%# A new chat was a blank page, which tells a beginner nothing -- least of all
+    that Pera can explain the app itself. The suggestions send as ordinary
+    messages, so whatever comes back is a normal exchange the student can carry
+    on from (and can be turned into flashcards like any other). %>
+<div class="text-center my-5 response">
+  <%= image_tag "pera.png", alt: "Pera", id: "pera-chat", class: "mb-3" %>
+
+  <h3 class="pera-green">Hello, I'm ペラ</h3>
+  <p class="text-muted mb-4">
+    Write a Japanese sentence and I'll check it — or ask me anything,
+    including how this app works.
+  </p>
+
+  <div class="d-flex flex-wrap justify-content-center gap-2">
+    <% [
+         "How does this app work?",
+         "What should I learn first?",
+         "ねこが すきです。Is this right?"
+       ].each do |suggestion| %>
+      <%= button_to suggestion,
+            conversation_messages_path(conversation),
+            params: { message: { content: suggestion } },
+            class: "btn pera-btn-outline rounded-4 px-3 w-auto",
+            form: { data: { turbo_stream: true } } %>
+    <% end %>
+  </div>
+</div>

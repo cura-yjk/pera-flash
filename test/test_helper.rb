@@ -5,6 +5,12 @@ ENV["RAILS_ENV"] ||= "test"
 # refuses to build a request without a key, so without this the stubs below
 # would never be reached -- and it guarantees the suite can never spend a real
 # credential.
+#
+# Both spellings are pinned. GEMINI_API_KEYS is the one LlmChat#keys reads
+# first, and it is the only one .env defines -- so pinning the singular alone
+# left the suite running on the real production keys, one unstubbed request
+# away from spending live quota.
+ENV["GEMINI_API_KEYS"] = "test-gemini-key-not-a-real-credential"
 ENV["GEMINI_API_KEY"] = "test-gemini-key-not-a-real-credential"
 ENV["OPENAI_API_KEY"] = "test-openai-key-not-a-real-credential"
 

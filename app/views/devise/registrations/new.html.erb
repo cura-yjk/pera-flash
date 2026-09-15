@@ -1,7 +1,7 @@
 
 <div class="form-container mt-5">
 
-  <h2 class="text-center mb-5">Sign up</h2>
+  <h2 class="text-center mb-5"><%= t("registrations.sign_up") %></h2>
 
   <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
     <%= f.error_notification %>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="form-actions">
-      <%= f.button :submit, "Sign up", class: "pera-btn rounded-3" %>
+      <%= f.button :submit, t("registrations.sign_up"), class: "pera-btn rounded-3" %>
     </div>
     <%= render "devise/shared/links", class: "pera-btn" %>
   <% end %>

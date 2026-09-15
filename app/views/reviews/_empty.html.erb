@@ -2,13 +2,13 @@
     system working. %>
 <div id="review-card" class="text-center my-5">
   <i class="fa-solid fa-circle-check fs-1 pera-green mb-3 d-block"></i>
-  <h3 class="pera-green">Nothing due right now</h3>
+  <h3 class="pera-green"><%= t(".title") %></h3>
   <p class="mb-4">
     <% if studied_any %>
-      You're up to date. Cards come back as you're about to forget them.
+      <%= t(".up_to_date") %>
     <% else %>
-      Chat with Pera and save some flashcards, then come back to study them.
+      <%= t(".nothing_studied") %>
     <% end %>
   </p>
-  <%= link_to "Back to decks", decks_path, class: "btn gen-flash-btn rounded-4 px-4" %>
+  <%= link_to t("decks.back"), decks_path, class: "btn gen-flash-btn rounded-4 px-4" %>
 </div>

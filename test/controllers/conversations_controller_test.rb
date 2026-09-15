@@ -128,7 +128,9 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
     assert_response :success
-    assert_match(/couldn't make flashcards/i, response.body)
+    # Matched against the translation so it stays true in any locale, and
+    # escaped because t() escapes the apostrophe on its way into the page.
+    assert_match ERB::Util.html_escape(I18n.t("conversations.generation_failed.title")), response.body
   end
 
   test "a failed generation leaves the conversation untouched" do

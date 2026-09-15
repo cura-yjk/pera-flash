@@ -17,7 +17,7 @@ class FlashcardsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to conversation_path(conversation), notice: "Flashcards saved!" }
+      format.html { redirect_to conversation_path(conversation), notice: t("flashcards.saved") }
     end
   end
 
@@ -37,7 +37,7 @@ class FlashcardsController < ApplicationController
   def update
     @flashcard = current_user_flashcard(params[:id])
     if @flashcard.update(flashcard_params)
-      redirect_to flashcards_path, notice: "Flashcard updated!"
+      redirect_to flashcards_path, notice: t("flashcards.updated")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -61,7 +61,7 @@ class FlashcardsController < ApplicationController
   # Shown in the chat as a system notification -- see messages/_message.
   def confirmation_message(conversation, count)
     Message.create!(
-      content: "✅ #{count} cards added! [View your flashcards](#{flashcards_path})",
+      content: "✅ #{t('flashcards.added', count: count, path: flashcards_path)}",
       role: "assistant",
       conversation: conversation
     )

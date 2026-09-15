@@ -1,7 +1,7 @@
 <div class="container mt-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <h1 class="mb-0">Chat History</h1>
-    <%= link_to "New Chat", conversations_path,
+    <h1 class="mb-0"><%= t(".title") %></h1>
+    <%= link_to t("conversations.new_chat"), conversations_path,
                 data: { turbo_method: :post },
                 class: "btn pera-btn rounded-3" %>
   </div>
@@ -12,8 +12,7 @@
     </ul>
   <% else %>
     <p class="text-muted mb-4">
-      No conversations yet. <%= link_to "Start one", conversations_path, data: { turbo_method: :post } %>
-      and Pera will turn what you talk about into flashcards.
+      <%= t(".empty_html", start: link_to(t(".start_one"), conversations_path, data: { turbo_method: :post })) %>
     </p>
   <% end %>
 </div>

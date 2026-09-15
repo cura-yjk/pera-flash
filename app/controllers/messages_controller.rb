@@ -119,7 +119,7 @@ class MessagesController < ApplicationController
   class Stop < StandardError; end
 
   def rate_limited
-    notice = "You are sending messages faster than Pera can answer them. Give it a moment."
+    notice = t("messages.rate_limited")
 
     respond_to do |format|
       format.turbo_stream { render :rate_limited, locals: { notice: notice }, status: :too_many_requests }
@@ -136,7 +136,7 @@ class MessagesController < ApplicationController
       format.turbo_stream { render :reply_failed }
       format.html do
         redirect_to conversation_path(@conversation),
-                    alert: "Pera could not reply just now. Your message was saved -- try again."
+                    alert: t("messages.reply_failed")
       end
     end
   end

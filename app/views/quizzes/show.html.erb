@@ -1,11 +1,11 @@
 <div class="container my-5">
   <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
     <i class="fa-solid fa-list-check fs-4 pera-green me-2"></i>
-    <h2 class="mb-0 pera-green">Quiz<%= " · #{@deck.name}" if @deck %></h2>
+    <h2 class="mb-0 pera-green"><%= @deck ? t(".title_for_deck", deck: @deck.name) : t(".title") %></h2>
   </div>
 
   <p class="text-uppercase small fw-semibold pera-green mb-4">
-    Question <%= @position %> of <%= @total %>
+    <%= t(".progress", position: @position, total: @total) %>
   </p>
 
   <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">

@@ -33,6 +33,12 @@ de:
     zh-TW: "繁體中文"
     ko: "한국어"
     de: "Deutsch"
+  pagination:
+    label: "Seitennavigation"
+    previous: "Zurück"
+    next: "Weiter"
+    position: "Seite %{current} von %{total}"
+
   flashcards:
     question: "Frage"
     answer: "Antwort"

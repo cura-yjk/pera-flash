@@ -10,6 +10,8 @@
     <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
       <%= render @conversations %>
     </ul>
+
+    <%= render "shared/pagination", page: @page, link_data: {} %>
   <% else %>
     <p class="text-muted mb-4">
       <%= t(".empty_html", start: link_to(t(".start_one"), conversations_path, data: { turbo_method: :post })) %>

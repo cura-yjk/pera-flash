@@ -15,7 +15,8 @@ class ConversationsController < ApplicationController
   # Every chat the user has actually used, newest first. The navbar's "Chat
   # History" link pointed at href="#" until this existed.
   def index
-    @conversations = current_user.conversations.started.order(created_at: :desc)
+    @page = Page.of(current_user.conversations.started.order(created_at: :desc), params[:page])
+    @conversations = @page.records
   end
 
   # Show a single conversation and its message history, plus a blank

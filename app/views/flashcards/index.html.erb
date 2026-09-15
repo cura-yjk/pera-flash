@@ -1,6 +1,7 @@
 <div class="container mt-5">
-  <div class="d-flex justify-content-between align-items-center my-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-5">
     <h1 class="mb-0"><%= t(".title") %></h1>
+
     <%# Searches as you type. The results live in their own frame, so the field
         keeps focus and what you have typed while they are replaced; the URL
         still advances, so a search can be shared and the back button works.
@@ -10,37 +11,22 @@
                   data: { controller: "live-search", action: "input->live-search#submit",
                           turbo_frame: "flashcard_results", turbo_action: "advance" } do |f| %>
       <%= f.text_field :query, value: params[:query], placeholder: t(".search_placeholder"),
-      class: "form-control me-2 rounded-4 user-details-input" %>
+                       class: "form-control me-2 rounded-4 user-details-input" %>
       <%= f.submit t("search.submit"), class: "btn pera-btn rounded-4" %>
     <% end %>
   </div>
+
   <%# target: "_top" so the delete and edit controls inside keep behaving as
       they did -- navigating the page rather than trying to redraw themselves
-      inside this frame. The search form outside still updates it by name. %>
+      inside this frame. The search form outside still updates it by name, and
+      so do the pagination links, which pass the frame explicitly. %>
   <%= turbo_frame_tag "flashcard_results", target: "_top" do %>
     <% if @flashcards.any? %>
-    <div class="row mb-5">
-      <% @flashcards.each do |flashcard| %>
-        <div class="col-md-4 mb-3">
-          <div class="position-relative">
-            <%= button_to flashcard_path(flashcard),
-                  method: :delete,
-                  class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
-                  style: "z-index: 1;",
-                  form: { data: { turbo_confirm: t("flashcards.confirm_delete") } } do %>
-              <i class="fa-solid fa-trash pera-green"></i>
-            <% end %>
-            <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" },
-            class: "text-decoration-none text-dark rounded-5 " do %>
-              <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
-                <p class="mb-1"><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(flashcard.question, show: show_furigana?) %></p>
-                <p class="mb-0"><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(flashcard.answer, show: show_furigana?) %></p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
+      <div class="row mb-5">
+        <%= render @flashcards %>
+      </div>
+
+      <%= render "shared/pagination", page: @page, link_data: { turbo_frame: "flashcard_results" } %>
     <% else %>
       <p class="text-muted">
         <%= params[:query].present? ? t("flashcards.no_match", query: params[:query]) : t(".empty") %>

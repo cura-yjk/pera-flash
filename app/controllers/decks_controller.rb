@@ -14,10 +14,7 @@ class DecksController < ApplicationController
   # List the current user's decks, annotated with each deck's flashcard
   # count via a LEFT JOIN + COUNT (so decks with zero flashcards still show)
   def index
-    @decks = current_user.decks.left_joins(:flashcards)
-                         .select("decks.*, COUNT(flashcards.id) AS flashcards_count")
-                         .group("decks.id")
-                         .order(created_at: :desc)
+    @decks = Deck.with_card_counts(current_user)
   end
 
   # Create a new deck for the current user
@@ -41,12 +38,9 @@ class DecksController < ApplicationController
   # against question/answer text (case-insensitive)
   def show
     @deck = current_user.decks.find(params[:id])
-    @flashcards = @deck.flashcards
     @due_count = @deck.flashcards.due.count
-
-    return unless params[:query].present?
-
-    @flashcards = @flashcards.where("question ILIKE :q OR answer ILIKE :q", q: "%#{params[:query]}%")
+    @page = Page.of(@deck.flashcards.matching(params[:query]), params[:page])
+    @flashcards = @page.records
   end
 
   def destroy

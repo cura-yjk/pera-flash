@@ -22,11 +22,9 @@ class FlashcardsController < ApplicationController
   end
 
   def index
-    @flashcards = Flashcard.for_user(current_user).order(created_at: :desc)
-
-    return unless params[:query].present?
-
-    @flashcards = @flashcards.where("question ILIKE :q OR answer ILIKE :q", q: "%#{params[:query]}%")
+    @page = Page.of(Flashcard.for_user(current_user).matching(params[:query]).order(created_at: :desc),
+                    params[:page])
+    @flashcards = @page.records
   end
 
   def edit

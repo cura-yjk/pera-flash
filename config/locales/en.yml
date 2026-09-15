@@ -46,6 +46,12 @@ en:
     ko: "한국어"
     de: "Deutsch"
 
+  pagination:
+    label: "Pagination"
+    previous: "Previous"
+    next: "Next"
+    position: "Page %{current} of %{total}"
+
   flashcards:
     question: "Question"
     answer: "Answer"

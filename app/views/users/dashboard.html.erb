@@ -21,7 +21,7 @@
   <h2 class="my-5"><%= t(".recent_decks") %></h2>
   <% if @decks.any? %>
     <div class="row mb-5">
-      <% @decks.last(3).each do |deck| %>
+      <% @decks.each do |deck| %>
         <div class="col-md-4 mb-3">
           <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
             <div class="card p-3 rounded-5 dash-card js-dash-card deck-card-dash">
@@ -43,8 +43,10 @@
     <div class="card p-3 mb-5 rounded-5 dash-card js-dash-card col-8">
       <h4 class="pera-green mb-4"><%= t(".random_card") %></h4>
       <% if @random_flashcard %>
-        <p><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= @random_flashcard.question %></p>
-        <p><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= @random_flashcard.answer %></p>
+        <%# Was printing the stored text as-is, so this panel alone showed
+            猫[ねこ] rather than the reading above the kanji. %>
+        <p><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(@random_flashcard.question, show: show_furigana?) %></p>
+        <p><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(@random_flashcard.answer, show: show_furigana?) %></p>
       <% else %>
         <p class="pera-text"><%= t(".no_cards_yet") %></p>
       <% end %>
@@ -60,25 +62,7 @@
   <h2 class="mb-5"><%= t(".recent_flashcards") %></h2>
   <% if @recent_flashcards.any? %>
     <div class="row mb-5">
-      <% @recent_flashcards.each do |flashcard| %>
-        <div class="col-md-4 mb-3">
-          <div class="position-relative">
-            <%= button_to flashcard_path(flashcard),
-                  method: :delete,
-                  class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
-                  style: "z-index: 1;",
-                  form: { data: { turbo_confirm: t("flashcards.confirm_delete") } } do %>
-              <i class="fa-solid fa-trash pera-green"></i>
-            <% end %>
-            <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
-              <div class="card p-3 rounded-5 dash-card js-dash-card">
-                <p class="mb-1"><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(flashcard.question, show: show_furigana?) %></p>
-                <p class="mb-0"><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(flashcard.answer, show: show_furigana?) %></p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
+      <%= render @recent_flashcards %>
     </div>
   <% else %>
     <p class="text-muted mb-5"><%= t(".no_flashcards") %></p>

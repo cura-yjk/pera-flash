@@ -56,6 +56,15 @@ class Flashcard < ApplicationRecord
     interval_days >= MASTERED_INTERVAL_DAYS && lapse_count < STRUGGLING_LAPSES
   end
 
+  # Text search over both sides of a card. Written out in two controllers
+  # before this, which is two places to forget that a card has an answer as
+  # well as a question.
+  scope :matching, lambda { |query|
+    next all if query.blank?
+
+    where("question ILIKE :q OR answer ILIKE :q", q: "%#{query}%")
+  }
+
   scope :struggling, lambda {
     where(lapse_count: STRUGGLING_LAPSES..).order(lapse_count: :desc, ease: :asc)
   }

@@ -16,12 +16,17 @@ class UsersController < ApplicationController
     redirect_back fallback_location: dashboard_path
   end
 
+  # How many of each list the dashboard shows. Everything below is "recent",
+  # so the newest few, taken in the query rather than by loading the lot.
+  RECENT = 3
+  RECENT_CONVERSATIONS = 7
+
   def dashboard
     # Newest 7, limited in the query. This read `.last(7)` on a descending
     # relation, which returns the *oldest* seven -- so "Recent Conversations"
     # was showing the least recent ones.
-    @conversations = current_user.conversations.started.order(created_at: :desc).limit(7)
-    @decks = decks_with_card_counts
+    @conversations = current_user.conversations.started.order(created_at: :desc).limit(RECENT_CONVERSATIONS)
+    @decks = Deck.with_card_counts(current_user).limit(RECENT)
 
     flashcards = Flashcard.for_user(current_user)
 
@@ -29,16 +34,5 @@ class UsersController < ApplicationController
     @flashcard_count = flashcards.count
     @random_flashcard = flashcards.order(Arel.sql("RANDOM()")).first
     @recent_flashcards = flashcards.order(created_at: :desc).limit(3)
-  end
-
-  private
-
-  # Card counts come back on the deck rows themselves, so the deck list doesn't
-  # fire a COUNT per deck while rendering.
-  def decks_with_card_counts
-    current_user.decks.left_joins(:flashcards)
-                .select("decks.*, COUNT(flashcards.id) AS flashcards_count")
-                .group("decks.id")
-                .order(created_at: :desc)
   end
 end

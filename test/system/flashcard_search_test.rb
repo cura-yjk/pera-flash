@@ -61,6 +61,21 @@ class FlashcardSearchTest < ApplicationSystemTestCase
     assert_match(/query=cat/, page.current_url)
   end
 
+  # A learner accumulating cards is the whole point of the app, and the index
+  # used to render every one of them on every visit.
+  test "long lists are paged" do
+    25.times { |i| decks(:starter).flashcards.create!(question: "Filler #{i}", answer: "-") }
+
+    visit flashcards_path
+
+    assert_text(/Page 1 of/i)
+    assert_operator page.all(".flashcard-preview-card").size, :<=, Page::DEFAULT_SIZE
+
+    click_on "Next"
+
+    assert_text(/Page 2 of/i)
+  end
+
   private
 
   # Fires the input event the controller listens for, and waits out its pause.

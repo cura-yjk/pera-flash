@@ -34,6 +34,12 @@ ja:
     zh-TW: "繁體中文"
     ko: "한국어"
     de: "Deutsch"
+  pagination:
+    label: "ページ送り"
+    previous: "前へ"
+    next: "次へ"
+    position: "%{total}ページ中%{current}ページ目"
+
   flashcards:
     question: "問題"
     answer: "答え"

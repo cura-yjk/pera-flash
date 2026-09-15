@@ -22,26 +22,10 @@
   </div>
   <% if @flashcards.any? %>
     <div class="row mb-5">
-      <% @flashcards.each do |flashcard| %>
-        <div class="col-md-4 mb-3">
-          <div class="position-relative">
-            <%= button_to flashcard_path(flashcard),
-                  method: :delete,
-                  class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
-                  style: "z-index: 1;",
-                  form: { data: { turbo_confirm: t("flashcards.confirm_delete") } } do %>
-              <i class="fa-solid fa-trash pera-green"></i>
-            <% end %>
-            <%= link_to edit_flashcard_path(flashcard), data: { turbo_frame: "modal-#{flashcard.id}" }, class: "text-decoration-none text-dark" do %>
-              <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
-                <p class="mb-1"><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(flashcard.question, show: show_furigana?) %></p>
-                <p class="mb-0"><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(flashcard.answer, show: show_furigana?) %></p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
+      <%= render @flashcards %>
     </div>
+
+    <%= render "shared/pagination", page: @page, link_data: {} %>
   <% else %>
     <p class="text-muted">
       <%= params[:query].present? ? t("flashcards.no_match", query: params[:query]) : t(".empty") %>

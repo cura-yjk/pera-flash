@@ -33,6 +33,12 @@ ko:
     zh-TW: "繁體中文"
     ko: "한국어"
     de: "Deutsch"
+  pagination:
+    label: "페이지 이동"
+    previous: "이전"
+    next: "다음"
+    position: "%{total}페이지 중 %{current}페이지"
+
   flashcards:
     question: "질문"
     answer: "정답"

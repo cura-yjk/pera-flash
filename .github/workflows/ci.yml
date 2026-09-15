@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint & security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Style (RuboCop)
+        run: bin/rubocop --parallel
+
+      - name: Security (Brakeman)
+        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+
+      - name: Gem vulnerability audit
+        run: bin/bundler-audit --update
+
+      - name: Importmap vulnerability audit
+        run: bin/importmap audit
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/pera_flash_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client libraries
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Prepare the test database
+        run: bin/rails db:test:prepare
+
+      # The LLM calls are stubbed with webmock and test_helper.rb pins dummy
+      # keys before boot, so no real credentials are needed here.
+      - name: Run tests
+        run: bin/rails test
+
+      - name: Upload failure screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: ${{ github.workspace }}/tmp/screenshots
+          if-no-files-found: ignore
+
+  seeds:
+    name: Seeds smoke test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/pera_flash_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client libraries
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Prepare the test database
+        run: bin/rails db:test:prepare
+
+      # Unlike moodwalk's, db/seeds.rb here writes fixed content and calls no
+      # external API, so this runs on pull requests too -- no secret required.
+      - name: Replant seeds
+        run: bin/rails db:seed:replant

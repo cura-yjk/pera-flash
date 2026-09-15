@@ -18,10 +18,7 @@ class ReviewsController < ApplicationController
     @deck = current_user.decks.find(params[:deck_id]) if params[:deck_id]
 
     @card.review!(params[:grade])
-
-    @due = due_cards
-    @next_card = @due.first
-    @remaining = @due.size
+    load_next_card
 
     respond_to do |format|
       format.turbo_stream
@@ -32,6 +29,12 @@ class ReviewsController < ApplicationController
   end
 
   private
+
+  def load_next_card
+    @due = due_cards
+    @next_card = @due.first
+    @remaining = @due.size
+  end
 
   def due_cards
     scope = @deck ? @deck.flashcards : Flashcard.for_user(current_user)

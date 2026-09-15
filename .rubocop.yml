@@ -9,6 +9,9 @@ AllCops:
     - 'support/**/*'
     - 'tmp/**/*'
     - 'test/**/*'
+    # CI installs gems here (bundler-cache), and without this RuboCop lints
+    # every vendored gem -- invisible locally, minutes of red in CI.
+    - 'vendor/**/*'
 
 Style/ConditionalAssignment:
   Enabled: false
@@ -36,6 +39,11 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 Layout/LineLength:
   Max: 120
+  Exclude:
+    # The system prompt is prose sent to the LLM, not code. Wrapping it means
+    # editing a product-critical string for the sake of a column limit, and
+    # every rewrap risks changing what the model actually reads.
+    - 'app/models/message.rb'
 Style/EmptyMethod:
   Enabled: false
 Bundler/OrderedGems:

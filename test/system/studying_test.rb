@@ -64,8 +64,13 @@ class StudyingTest < ApplicationSystemTestCase
 
     click_on "Good"
 
-    # Asserts the card actually moved. The previous assertion matched text that
-    # was already on screen before the click, so it could not have failed.
+    # Wait for the screen to show the grading landed before looking at the
+    # database. Capybara returns as soon as the click is dispatched, so
+    # checking the card first races the request that updates it -- which is
+    # exactly how this failed in CI while passing locally.
+    assert_text "Nothing due right now"
+
+    # And the card really moved, rather than the queue just looking empty.
     assert_operator card.reload.interval_days, :>, 0
   end
 

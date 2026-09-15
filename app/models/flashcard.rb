@@ -42,6 +42,20 @@ class Flashcard < ApplicationRecord
   # looking like a bad day and starts looking like a gap.
   STRUGGLING_LAPSES = 2
 
+  # Once the schedule trusts a card this far out, the learner is reading it
+  # rather than decoding it, and the readings have become the answer rather
+  # than a hint. Expressed in interval rather than review_count because the
+  # interval is SM-2's own estimate of how well the card is known -- ten
+  # answers on a card that keeps lapsing is not the same as four on one that
+  # never does.
+  MASTERED_INTERVAL_DAYS = 7.0
+
+  # A lapse resets the interval, so a struggling card fails the first test
+  # anyway; the second clause says so out loud rather than relying on that.
+  def mastered?
+    interval_days >= MASTERED_INTERVAL_DAYS && lapse_count < STRUGGLING_LAPSES
+  end
+
   scope :struggling, lambda {
     where(lapse_count: STRUGGLING_LAPSES..).order(lapse_count: :desc, ease: :asc)
   }

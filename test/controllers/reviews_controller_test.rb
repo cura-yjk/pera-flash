@@ -21,6 +21,30 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :post, llm_url
   end
 
+  # Same rule the quiz follows: the prompt drops its readings once the schedule
+  # trusts the card, while the answer keeps them.
+  test "a mastered card is asked without its readings" do
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.from_now)
+    flashcards(:neko_card).update!(question: "猫[ねこ]は?", answer: "猫[ねこ] = cat",
+                                   due_at: 1.hour.ago, interval_days: 30, lapse_count: 0, review_count: 9)
+
+    get review_path
+
+    assert_match "猫は?", response.body
+    assert_match(/<ruby>猫<rt>ねこ<\/rt><\/ruby>/, response.body)  # the answer still carries it
+  end
+
+  test "a card still being learned keeps its readings in the question" do
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.from_now)
+    flashcards(:neko_card).update!(question: "猫[ねこ]は?", answer: "cat",
+                                   due_at: 1.hour.ago, interval_days: 1, lapse_count: 0, review_count: 1)
+
+    get review_path
+
+    assert_no_match(/猫は\?/, response.body)
+    assert_match(/<ruby>猫<rt>ねこ<\/rt><\/ruby>/, response.body)
+  end
+
   test "shows a due card" do
     get review_path
 

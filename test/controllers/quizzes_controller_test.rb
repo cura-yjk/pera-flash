@@ -87,6 +87,25 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/come back today/i, response.body)
   end
 
+  test "a mastered card is asked without its readings" do
+    only_due_card(review_count: 9, interval_days: 30, ease: 2.5)
+       .update!(question: "猫[ねこ]は?", answer: "cat")
+
+    get deck_quiz_path(@deck)
+
+    assert_match "猫は?", response.body
+    assert_no_match(/<ruby>猫/, response.body)
+  end
+
+  test "a card still being learned keeps its readings" do
+    only_due_card(review_count: 1, interval_days: 1, ease: 2.5)
+       .update!(question: "猫[ねこ]は?", answer: "cat")
+
+    get deck_quiz_path(@deck)
+
+    assert_match(/<ruby>猫<rt>ねこ<\/rt><\/ruby>/, response.body)
+  end
+
   # A multiple-choice question needs something to choose between.
   test "says so when there are too few cards to build a choice" do
     lonely = current_user_deck_with_one_card

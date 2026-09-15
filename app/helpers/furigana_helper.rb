@@ -31,4 +31,14 @@ module FuriganaHelper
   def show_furigana?
     current_user&.show_furigana != false
   end
+
+  # Same question for one particular card, when it is being used as a prompt to
+  # recall from. A card the schedule says is known drops its readings, so the
+  # kanji is what gets tested -- otherwise every reading is handed over with the
+  # question and the kanji is never actually learned.
+  #
+  # Only ever narrows: readings switched off for the account stay off.
+  def show_furigana_for?(card)
+    show_furigana? && !card.mastered?
+  end
 end

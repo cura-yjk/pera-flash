@@ -18,6 +18,19 @@ class DeckExportTest < ActionDispatch::IntegrationTest
     assert_match "What does 猫 mean?", response.body
   end
 
+  # The header is a column name an importer reads, not interface text. When it
+  # followed the interface language, a Japanese learner exported 問題,答え and a
+  # German one Frage,Antwort -- a different file format per language, which
+  # anything importing the file would have to guess at.
+  test "the header stays English whatever language the app is in" do
+    users(:learner).update!(locale: "ja")
+
+    get export_deck_path(@deck)
+
+    assert_match "Question,Answer", response.body
+    assert_no_match(/問題/, response.body)
+  end
+
   # Excel, Numbers and Sheets run a cell starting with = + - or @ as a formula.
   # Card text is partly written by the model, so this is not only about what a
   # learner types into their own cards.

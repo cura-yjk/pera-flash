@@ -37,8 +37,6 @@ zh-TW:
     ko: "한국어"
     de: "Deutsch"
   flashcards:
-    question: "問題"
-    answer: "答案"
     question_prefix: "問："
     answer_prefix: "答："
     generate: "產生卡片"

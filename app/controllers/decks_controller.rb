@@ -60,7 +60,13 @@ class DecksController < ApplicationController
     @deck = current_user.decks.find(params[:id])
 
     csv_data = CSV.generate do |csv|
-      csv << [t("flashcards.question"), t("flashcards.answer")]
+      # Not translated, deliberately. These are column names read by whatever
+      # the file is imported into -- Anki maps fields by them -- so they are
+      # part of a file format rather than something a person reads. Translating
+      # them meant a learner with a Japanese interface exported 問題,答え and a
+      # German one Frage,Antwort, quietly producing a different format per
+      # language.
+      csv << %w[Question Answer]
       @deck.flashcards.each do |flashcard|
         csv << [spreadsheet_safe(flashcard.question), spreadsheet_safe(flashcard.answer)]
       end

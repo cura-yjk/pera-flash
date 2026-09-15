@@ -34,8 +34,6 @@ zh-CN:
     ko: "한국어"
     de: "Deutsch"
   flashcards:
-    question: "问题"
-    answer: "答案"
     question_prefix: "问："
     answer_prefix: "答："
     generate: "生成卡片"

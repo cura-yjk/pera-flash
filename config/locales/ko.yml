@@ -34,8 +34,6 @@ ko:
     ko: "한국어"
     de: "Deutsch"
   flashcards:
-    question: "질문"
-    answer: "정답"
     question_prefix: "문:"
     answer_prefix: "답:"
     generate: "카드 만들기"

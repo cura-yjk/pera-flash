@@ -23,28 +23,37 @@ class PeraReply
   end
 
   # Yields each piece of text as it arrives and returns the whole reply.
+  #
+  # If a key runs out of quota mid-exchange, LlmChat retries on the next one and
+  # this starts over -- hence resetting the accumulated reply inside the block.
+  # The browser is sent the whole reply-so-far on every update, so a restart
+  # redraws rather than doubling the text.
   def call(&on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
-    reply = +""
-
-    prepared_chat.ask(@question.content) do |chunk|
-      text = chunk.content.to_s
-      next if text.empty?
-
-      reply << text
-      on_text.call(text)
-    end
-
-    reply
+    LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) }
   end
 
   private
 
-  def prepared_chat
-    LlmChat.new_chat
-           .with_instructions(Message.system_prompt(struggling: struggling_cards))
-           .tap { |chat| replay_history(chat) }
+  def prepare(chat)
+    chat.with_instructions(Message.system_prompt(struggling: struggling_cards))
+    replay_history(chat)
+    chat
+  end
+
+  def collect(chat)
+    reply = +""
+
+    chat.ask(@question.content) do |chunk|
+      text = chunk.content.to_s
+      next if text.empty?
+
+      reply << text
+      yield text
+    end
+
+    reply
   end
 
   # The newest MAX_HISTORY_MESSAGES, replayed oldest-first.

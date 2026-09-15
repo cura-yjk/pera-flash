@@ -70,7 +70,7 @@ class Conversation < ApplicationRecord
   end
 
   def titled_from(message)
-    LlmChat.new_chat.ask(<<~PROMPT).content.strip
+    LlmChat.with_chat { |chat| chat.ask(<<~PROMPT).content.strip }
       Reply with only a short 3-6 word title summarizing the topic of this message.
       No quotes, no trailing punctuation, no explanation — just the title.
 

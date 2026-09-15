@@ -12,11 +12,22 @@ class QuizzesController < ApplicationController
 
   def show
     @deck = current_user.decks.find(params[:deck_id]) if params[:deck_id]
+    return finish if exhausted?
+
     start_quiz unless resuming?
 
     render_current_question
   end
 
+  # Grades, then redirects back to #show rather than rendering the next
+  # question here.
+  #
+  # Rendering was the bug: Turbo submits these buttons as a form, and Turbo
+  # Drive ignores a 200 HTML response to a form submission -- it only follows a
+  # redirect (or applies a turbo_stream). So every tap reached the server,
+  # graded the card and advanced the quiz while the page sat unchanged on
+  # question one. The integration tests read the response body directly, which
+  # is why they passed throughout.
   def answer
     @deck = current_user.decks.find(params[:deck_id]) if params[:deck_id]
     return redirect_to quiz_path_for(@deck) unless quiz
@@ -24,7 +35,7 @@ class QuizzesController < ApplicationController
     grade(current_card, params[:choice])
     advance
 
-    render_current_question
+    redirect_to quiz_path_for(@deck), status: :see_other
   end
 
   private
@@ -38,7 +49,18 @@ class QuizzesController < ApplicationController
   end
 
   def resuming?
-    quiz.present? && quiz["deck_id"] == @deck&.id && quiz["index"].to_i < quiz["card_ids"].size
+    in_progress? && quiz["index"].to_i < quiz["card_ids"].size
+  end
+
+  # The last answer redirects here, so #show has to recognise a finished quiz
+  # and hand over the score -- otherwise it would start a fresh quiz and the
+  # results page would be unreachable.
+  def exhausted?
+    in_progress? && quiz["index"].to_i >= quiz["card_ids"].size
+  end
+
+  def in_progress?
+    quiz.present? && quiz["deck_id"] == @deck&.id
   end
 
   def start_quiz

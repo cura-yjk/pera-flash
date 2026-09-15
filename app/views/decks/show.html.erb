@@ -23,10 +23,8 @@
   <% if @flashcards.any? %>
     <div class="row mb-5">
       <%= render @flashcards %>
-          </div>
-        </div>
-      <% end %>
     </div>
+
     <%= render "shared/pagination", page: @page, link_data: {} %>
   <% else %>
     <p class="text-muted">

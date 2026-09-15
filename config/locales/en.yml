@@ -53,8 +53,6 @@ en:
     position: "Page %{current} of %{total}"
 
   flashcards:
-    question: "Question"
-    answer: "Answer"
     question_prefix: "Q:"
     answer_prefix: "A:"
     generate: "Generate flashcards"

@@ -40,8 +40,6 @@ de:
     position: "Seite %{current} von %{total}"
 
   flashcards:
-    question: "Frage"
-    answer: "Antwort"
     question_prefix: "F:"
     answer_prefix: "A:"
     generate: "Karten erstellen"

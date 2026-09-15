@@ -40,8 +40,6 @@ zh-CN:
     position: "第 %{current} 页 / 共 %{total} 页"
 
   flashcards:
-    question: "问题"
-    answer: "答案"
     question_prefix: "问："
     answer_prefix: "答："
     generate: "生成卡片"

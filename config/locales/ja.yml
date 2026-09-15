@@ -41,8 +41,6 @@ ja:
     position: "%{total}ページ中%{current}ページ目"
 
   flashcards:
-    question: "問題"
-    answer: "答え"
     question_prefix: "問："
     answer_prefix: "答："
     generate: "単語カードを作る"

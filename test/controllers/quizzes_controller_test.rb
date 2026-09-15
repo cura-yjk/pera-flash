@@ -57,14 +57,20 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, card.lapse_count
   end
 
-  # Regression: #answer has no template of its own, so without an explicit
-  # render Rails replies 204 and the quiz stops dead after one question.
-  test "answering returns the next question" do
+  # Regression, twice over. #answer has no template of its own, so it first
+  # replied 204 and the quiz stopped dead after one question. Rendering :show
+  # fixed that for this test but not for a browser: Turbo submits the option
+  # buttons as a form and ignores a 200 HTML response to one, so every tap
+  # graded a card while the page sat still. Only a redirect drives the page
+  # forward -- assert that, not just the body, or the browser bug hides here
+  # again.
+  test "answering redirects to the next question" do
     get deck_quiz_path(@deck)
 
     post deck_quiz_answer_path(@deck), params: { choice: "wrong" }
 
-    assert_response :success
+    assert_redirected_to deck_quiz_path(@deck)
+    follow_redirect!
     assert_match(/Question 2 of/, response.body)
   end
 
@@ -73,6 +79,7 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
 
     10.times do
       post deck_quiz_answer_path(@deck), params: { choice: "wrong" }
+      follow_redirect!
       break if response.body.include?("Quiz again")
     end
 

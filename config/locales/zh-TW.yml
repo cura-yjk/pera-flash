@@ -124,6 +124,7 @@ zh-TW:
     rate_limited: "你傳送訊息的速度太快了，請稍等一下。"
     form:
       placeholder: "問點什麼..."
+      characters_left: "還可輸入 %{count} 字"
     empty:
       greeting: "你好，我是 ペラ"
       blurb: "寫一個日文句子，我來幫你檢查，也可以問我這個應用程式怎麼用。"

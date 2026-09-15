@@ -13,9 +13,8 @@ export default class extends Controller {
       this.inputTarget.value = ""
     }, 0)
 
-    // 2. Disable submit button to prevent double clicks
+    // 2. Disable submit button to prevent double clicks. The turbo_stream
+    // response replaces this form with a fresh one, so nothing has to undo it.
     this.submitTarget.disabled = true
-
-    this.submitTarget.innerText = '<i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon" data-load-target="icon"></i>';
   }
 }

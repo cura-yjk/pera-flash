@@ -18,6 +18,11 @@ export default class extends Controller {
   static values = { url: String }
 
   connect() {
+    // Nothing stopped a second message being sent while the first was still
+    // being answered. It saved fine, but the reply endpoint only answers the
+    // last unanswered question, so the second one sat there looking ignored.
+    this.lockInput()
+
     this.source = new EventSource(this.urlValue)
 
     this.source.addEventListener("chunk", (event) => this.append(event))
@@ -30,6 +35,19 @@ export default class extends Controller {
 
   disconnect() {
     this.close()
+    this.unlockInput()
+  }
+
+  // The form is replaced wholesale by each turbo_stream response, so this
+  // looks it up rather than holding a reference to an element that may already
+  // have been thrown away.
+  lockInput(locked = true) {
+    document.querySelectorAll("#new_message textarea, #new_message input[type=submit]")
+            .forEach((field) => { field.disabled = locked })
+  }
+
+  unlockInput() {
+    this.lockInput(false)
   }
 
   append(event) {
@@ -43,6 +61,7 @@ export default class extends Controller {
     const { html, title } = JSON.parse(event.data)
 
     this.close()
+    this.unlockInput()
     this.element.outerHTML = html
     this.updateTitle(title)
     this.scrollToLatest()
@@ -50,6 +69,7 @@ export default class extends Controller {
 
   fail() {
     this.close()
+    this.unlockInput()
     this.cursorTarget.innerHTML =
       '<i class="fa-solid fa-triangle-exclamation text-warning"></i> ' +
       "Pera couldn't reply just now. Your message is saved — try sending it again."

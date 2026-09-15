@@ -122,6 +122,7 @@ de:
     rate_limited: "Du schickst Nachrichten schneller, als Pera antworten kann. Warte einen Moment."
     form:
       placeholder: "Frag etwas..."
+      characters_left: "Noch %{count} Zeichen"
     empty:
       greeting: "Hallo, ich bin ペラ"
       blurb: "Schreib einen japanischen Satz, ich korrigiere ihn — oder frag mich etwas, auch wie diese App funktioniert."

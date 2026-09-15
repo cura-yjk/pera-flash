@@ -121,6 +121,7 @@ zh-CN:
     rate_limited: "你发送消息的速度太快了，请稍等一下。"
     form:
       placeholder: "问点什么..."
+      characters_left: "还可输入 %{count} 字"
     empty:
       greeting: "你好，我是 ペラ"
       blurb: "写一个日语句子，我来帮你检查，也可以问我这个应用怎么用。"

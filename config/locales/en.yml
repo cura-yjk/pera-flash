@@ -141,6 +141,7 @@ en:
     rate_limited: "You are sending messages faster than Pera can answer them. Give it a moment."
     form:
       placeholder: "Ask something..."
+      characters_left: "%{count} characters left"
     empty:
       greeting: "Hello, I'm ペラ"
       blurb: "Write a Japanese sentence and I'll check it — or ask me anything, including how this app works."

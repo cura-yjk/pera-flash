@@ -24,11 +24,17 @@
 
 .menu-container {
   display: flex;
-  // Two 296px panels plus a 50px gap is 642px: it could only ever sit side by
-  // side on a desktop. They stack below that now.
+  // Two 296px panels plus a gap need about 620px: side by side where there is
+  // room, stacked where there is not.
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
+
+  // The parent centres its children with align-items: center, which sizes them
+  // to their content -- and a wrapping flex container's natural width is its
+  // widest item, so this collapsed to one panel wide and stacked them at every
+  // screen size, desktop included.
+  width: 100%;
 }
 
 .left-side, .right-side {
@@ -40,7 +46,12 @@
   border: solid 2px #2BAE8F;
 
   min-height: 372px;
-  width: 100%;
+  // flex-basis rather than width: 100%. A flex item asking for the full width
+  // of a wrapping container takes a row to itself at every size, so the two
+  // panels stacked on a desktop as well as a phone -- which is not what
+  // wrapping was added for. This way they sit side by side when there is room
+  // for both and stack when there is not.
+  flex: 1 1 260px;
   max-width: 296px;
 }
 

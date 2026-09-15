@@ -60,7 +60,41 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     assert_no_horizontal_scroll "a chat with a table"
   end
 
+  # The two panels on the signed-in home page wrap so they can stack on a
+  # phone -- but a flex item asking for the full width of a wrapping container
+  # takes a row to itself at every size, so they stacked on a desktop too.
+  test "the home page panels sit side by side when there is room" do
+    sign_in_as(users(:learner))
+
+    resize_to(*DESKTOP)
+    visit root_path
+
+    assert_equal "side by side", panel_arrangement
+  end
+
+  test "the home page panels stack on a phone" do
+    sign_in_as(users(:learner))
+
+    resize_to(*PHONE)
+    visit root_path
+
+    assert_equal "stacked", panel_arrangement
+  end
+
   private
+
+  def panel_arrangement
+    page.evaluate_script(<<~JS)
+      (function () {
+        const left = document.querySelector(".left-side");
+        const right = document.querySelector(".right-side");
+        if (!left || !right) return "missing";
+
+        const l = left.getBoundingClientRect(), r = right.getBoundingClientRect();
+        return Math.abs(l.top - r.top) < 5 ? "side by side" : "stacked";
+      })()
+    JS
+  end
 
   def assert_no_horizontal_scroll(page_name)
     assert_not scrolls_horizontally?,

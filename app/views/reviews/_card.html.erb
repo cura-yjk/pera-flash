@@ -1,6 +1,12 @@
 <%# One card mid-session. The answer is hidden until asked for -- the recall
     attempt is the part that makes spaced repetition work, so revealing early
     defeats the exercise. %>
+<%# revealed carries the reveal across a round trip. Toggling readings sends
+    the page back to the server, and the card used to come back hidden again --
+    with the grade buttons still showing, so you were asked to grade an answer
+    you could no longer see. Revealing is the learner's decision; a display
+    preference should not undo it. %>
+<% revealed = params[:revealed].present? %>
 <div id="review-card" class="text-center" data-controller="reveal">
   <p class="text-uppercase small fw-semibold pera-green mb-4">
     <%= t(".remaining", count: remaining) %>
@@ -13,21 +19,22 @@
           its readings -- that half is where the reading is taught. %>
       <p class="fs-4 mb-0"><%= with_furigana(card.question, show: show_furigana_for?(card)) %></p>
 
-      <div data-reveal-target="answer" hidden>
+      <div data-reveal-target="answer" <%= "hidden" unless revealed %>>
         <hr class="my-4 opacity-25">
         <p class="fs-4 mb-0 pera-green"><%= with_furigana(card.answer, show: show_furigana?) %></p>
       </div>
     </div>
   </div>
 
-  <div class="mt-4" data-reveal-target="prompt">
+  <div class="mt-4" data-reveal-target="prompt" <%= "hidden" if revealed %>>
     <button type="button" class="btn gen-flash-btn rounded-4 px-4"
             data-action="reveal#show"><%= t(".show_answer") %></button>
   </div>
 
   <%# Grades are only offered after the answer is visible: grading before
       seeing it would be meaningless. %>
-  <div class="mt-4 d-flex flex-wrap justify-content-center gap-2" data-reveal-target="grades" hidden>
+  <div class="mt-4 d-flex flex-wrap justify-content-center gap-2" data-reveal-target="grades"
+       <%= "hidden" unless revealed %>>
     <% Flashcard::GRADES.each do |grade| %>
       <% label = t("reviews.grades.#{grade}") %>
       <%= button_to label,

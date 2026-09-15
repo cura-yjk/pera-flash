@@ -15,7 +15,7 @@ class DecksController < ApplicationController
     @deck = current_user.decks.new(deck_params)
 
     if @deck.save
-      redirect_to decks_path, notice: "Deck created."
+      redirect_to decks_path, notice: t("decks.created")
     else
       # Re-fetch @decks (same query as #index) since validation failure
       # re-renders the index view, which expects @decks to be present
@@ -42,7 +42,7 @@ class DecksController < ApplicationController
   def destroy
     @deck = current_user.decks.find(params[:id])
     @deck.destroy!
-    redirect_to decks_path, notice: "Deck deleted."
+    redirect_to decks_path, notice: t("decks.deleted")
   end
 
   # TODO: not yet implemented
@@ -50,7 +50,7 @@ class DecksController < ApplicationController
     @deck = current_user.decks.find(params[:id])
 
     csv_data = CSV.generate do |csv|
-      csv << ["Question", "Answer"]
+      csv << [t("flashcards.question"), t("flashcards.answer")]
       @deck.flashcards.each do |flashcard|
         csv << [flashcard.question, flashcard.answer]
       end

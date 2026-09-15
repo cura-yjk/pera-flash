@@ -1,11 +1,11 @@
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-2">Your Decks</h1>
+    <h1 class="mb-2"><%= t(".title") %></h1>
   </div>
   <%= form_with model: @deck || Deck.new, url: decks_path do |f| %>
     <div class="input-group mb-5">
-      <%= f.text_field :name, class: "form-control", placeholder: "New deck name" %>
-      <%= f.submit "Create", class: "btn pera-btn" %>
+      <%= f.text_field :name, class: "form-control", placeholder: t(".name_placeholder") %>
+      <%= f.submit t(".create"), class: "btn pera-btn" %>
     </div>
     <% if @deck&.errors&.any? %>
       <div class="text-danger small"><%= @deck.errors.full_messages.to_sentence %></div>
@@ -20,7 +20,7 @@
                   method: :delete,
                   class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
                   style: "z-index: 1;",
-                  form: { data: { turbo_confirm: "Delete this deck?" } } do %>
+                  form: { data: { turbo_confirm: t(".confirm_delete") } } do %>
               <i class="fa-solid fa-trash pera-green"></i>
             <% end %>
             <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
@@ -34,6 +34,6 @@
       <% end %>
     </div>
   <% else %>
-    <p class="text-muted">No decks yet.</p>
+    <p class="text-muted"><%= t("decks.none") %></p>
   <% end %>
 </div>

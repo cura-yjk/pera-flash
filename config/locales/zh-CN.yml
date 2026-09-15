@@ -1,0 +1,162 @@
+# 简体中文 interface. A native speaker should review before launch.
+zh-CN:
+  furigana:
+    show: "显示假名"
+    hide: "隐藏假名"
+  search:
+    cards: "搜索卡片"
+    submit: "搜索"
+  sessions:
+    log_in: "登录"
+    log_out: "退出登录"
+  registrations:
+    sign_up: "注册"
+    edit: "账户设置"
+    update: "更新"
+    cancel_account: "注销账户"
+    confirm_cancel: "确定吗？"
+  passwords:
+    forgot: "忘记密码？"
+    change: "修改密码"
+    new_password: "新密码"
+    confirm_password: "确认新密码"
+    send_instructions: "发送重置密码邮件"
+  confirmations:
+    resend: "重新发送确认邮件"
+  unlocks:
+    resend: "重新发送解锁邮件"
+  languages:
+    label: "语言"
+    en: "English"
+    ja: "日本語"
+    zh-CN: "简体中文"
+    zh-TW: "繁體中文"
+    ko: "한국어"
+    de: "Deutsch"
+  flashcards:
+    question: "问题"
+    answer: "答案"
+    question_prefix: "问："
+    answer_prefix: "答："
+    generate: "生成卡片"
+    confirm_delete: "删除这张卡片？"
+    saved: "卡片已保存！"
+    updated: "卡片已更新！"
+    no_match: "没有匹配“%{query}”的卡片。"
+    added: "已添加 %{count} 张卡片！[查看卡片](%{path})"
+    index:
+      title: "卡片"
+      search_placeholder: "搜索卡片..."
+      empty: "还没有卡片。"
+    edit:
+      deck: "卡组"
+      no_deck: "无卡组"
+      save: "保存"
+  decks:
+    back: "返回卡组"
+    none: "还没有卡组。"
+    created: "卡组已创建。"
+    deleted: "卡组已删除。"
+    index:
+      title: "我的卡组"
+      name_placeholder: "新卡组名称"
+      create: "创建"
+      confirm_delete: "删除这个卡组？"
+    show:
+      search_placeholder: "在此卡组中搜索..."
+      empty: "这个卡组还没有卡片。"
+  reviews:
+    grades:
+      again: "重来"
+      good: "一般"
+      easy: "简单"
+    show:
+      title: "复习"
+      title_for_deck: "复习 · %{deck}"
+    card:
+      remaining:
+        other: "还剩 %{count} 张"
+      show_answer: "显示答案"
+    empty:
+      title: "暂时没有要复习的卡片"
+      up_to_date: "你已经复习完了。卡片会在你快要忘记时再出现。"
+      nothing_studied: "先和 Pera 聊聊并保存一些卡片，然后回来复习。"
+  quizzes:
+    show:
+      title: "测验"
+      title_for_deck: "测验 · %{deck}"
+      progress: "第 %{position} 题 / 共 %{total} 题"
+    results:
+      score: "%{total} 题中答对 %{score} 题"
+      all_correct: "全部正确。这些卡片的间隔会拉长。"
+      some_missed: "答错的卡片今天会再出现。"
+      none: "还没有可以测验的卡片。"
+      again: "再测一次"
+    too_few:
+      title: "卡片不够，无法测验"
+      explanation: "测验需要几张卡片来生成选项。从聊天中多保存一些卡片，或者先复习现有的。"
+      review_instead: "改为复习"
+  conversations:
+    new_chat: "新对话"
+    rate_limited: "请稍等片刻再生成卡片。"
+    index:
+      title: "对话记录"
+      start_one: "开始一个对话"
+      empty_html: "还没有对话。%{start}，Pera 会把聊到的内容变成卡片。"
+    generate_flashcards:
+      title: "确认你的卡片"
+      question: "问题"
+      answer: "答案"
+      save: "保存到卡片"
+    no_new_material:
+      title: "已经全部整理好了"
+      explanation: "这次对话的内容都已经做成卡片了。继续聊天，然后再生成新的卡片。"
+    generation_failed:
+      title: "暂时无法生成卡片"
+      explanation: "无法连接到 Pera。你的对话没有丢失，请稍后再试。"
+    generation_rate_limited:
+      title: "请稍候"
+  messages:
+    reply_failed: "Pera 暂时无法回复。你的消息已保存，请再发送一次。"
+    rate_limited: "你发送消息的速度太快了，请稍等一下。"
+    form:
+      placeholder: "问点什么..."
+    empty:
+      greeting: "你好，我是 ペラ"
+      blurb: "写一个日语句子，我来帮你检查，也可以问我这个应用怎么用。"
+      suggestions:
+        - "这个应用怎么用？"
+        - "我应该先学什么？"
+        - "ねこが すきです。Is this right?"
+  users:
+    dashboard:
+      welcome: "欢迎回来，%{name}！"
+      review: "复习"
+      quiz: "测验"
+      new_chat: "新对话"
+      recent_decks: "最近的卡组"
+      no_decks: "还没有卡组。"
+      random_card: "随机一张卡片"
+      no_cards_yet: "还没有卡片 —— 先聊聊天来生成吧！"
+      flashcards: "卡片"
+      recent_flashcards: "最近的卡片"
+      no_flashcards: "还没有卡片。"
+      recent_conversations: "最近的对话"
+      view_all: "查看全部"
+      no_conversations: "还没有对话。"
+  pages:
+    home:
+      welcome: "欢迎来到 ペラFlash！"
+      tagline: "和 Pera 一起学日语"
+      features:
+        - "聊语法"
+        - "即时纠错"
+        - "生成卡片"
+        - "导出到 Anki"
+      get_started: "开始使用"
+      illustration_alt: "教日语的机器人"
+      ready: "准备好学习了吗？"
+      dashboard: "仪表盘"
+      dashboard_blurb: "复习卡片等等"
+      go: "进入"
+      chat_blurb: "和 Pera 聊天学习"

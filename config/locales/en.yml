@@ -1,31 +1,184 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
+# Interface text. Pera itself answers in whatever language the student writes
+# in -- this is the app around the tutor, which was English only.
 #
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
+# Keys are nested by view path so a view can use the lazy form: t(".title") in
+# app/views/decks/index.html.erb resolves to en.decks.index.title. Anything
+# shared between views sits one level up (decks.back, flashcards.question).
 en:
-  hello: "Hello world"
+  furigana:
+    show: "Show readings"
+    hide: "Hide readings"
+
+  search:
+    cards: "Search cards"
+    submit: "Search"
+
+  sessions:
+    log_in: "Log in"
+    log_out: "Log out"
+
+  registrations:
+    sign_up: "Sign up"
+    edit: "Edit your account"
+    update: "Update"
+    cancel_account: "Cancel my account"
+    confirm_cancel: "Are you sure?"
+
+  passwords:
+    forgot: "Forgot your password?"
+    change: "Change my password"
+    new_password: "New password"
+    confirm_password: "Confirm your new password"
+    send_instructions: "Send me password reset instructions"
+
+  confirmations:
+    resend: "Resend confirmation instructions"
+
+  unlocks:
+    resend: "Resend unlock instructions"
+
+  languages:
+    label: "Language"
+    en: "English"
+    ja: "日本語"
+    zh-CN: "简体中文"
+    zh-TW: "繁體中文"
+    ko: "한국어"
+    de: "Deutsch"
+
+  flashcards:
+    question: "Question"
+    answer: "Answer"
+    question_prefix: "Q:"
+    answer_prefix: "A:"
+    generate: "Generate flashcards"
+    confirm_delete: "Delete this flashcard?"
+    saved: "Flashcards saved!"
+    updated: "Flashcard updated!"
+    no_match: 'No flashcards match "%{query}".'
+    # Shown in the chat after cards are saved; the markdown link is rendered.
+    added: "%{count} cards added! [View your flashcards](%{path})"
+    index:
+      title: "Flashcards"
+      search_placeholder: "Search flashcards..."
+      empty: "No flashcards yet."
+    edit:
+      deck: "Deck"
+      no_deck: "No deck"
+      save: "Save"
+
+  decks:
+    back: "Back to decks"
+    none: "No decks yet."
+    created: "Deck created."
+    deleted: "Deck deleted."
+    index:
+      title: "Your Decks"
+      name_placeholder: "New deck name"
+      create: "Create"
+      confirm_delete: "Delete this deck?"
+    show:
+      search_placeholder: "Search this deck..."
+      empty: "No flashcards in this deck yet."
+
+  reviews:
+    grades:
+      again: "Again"
+      good: "Good"
+      easy: "Easy"
+    show:
+      title: "Review"
+      title_for_deck: "Review · %{deck}"
+    card:
+      remaining:
+        one: "1 card to go"
+        other: "%{count} cards to go"
+      show_answer: "Show answer"
+    empty:
+      title: "Nothing due right now"
+      up_to_date: "You're up to date. Cards come back as you're about to forget them."
+      nothing_studied: "Chat with Pera and save some flashcards, then come back to study them."
+
+  quizzes:
+    show:
+      title: "Quiz"
+      title_for_deck: "Quiz · %{deck}"
+      progress: "Question %{position} of %{total}"
+    results:
+      score: "%{score} of %{total}"
+      all_correct: "Everything correct. Those cards move further out."
+      some_missed: "The ones you missed will come back today."
+      none: "No cards to quiz on yet."
+      again: "Quiz again"
+    too_few:
+      title: "Not enough cards to quiz yet"
+      explanation: "A quiz needs a few cards to choose between. Save some more from your chats, or study what you have."
+      review_instead: "Review instead"
+
+  conversations:
+    new_chat: "New Chat"
+    rate_limited: "Give Pera a moment before making more cards."
+    index:
+      title: "Chat History"
+      start_one: "Start one"
+      empty_html: "No conversations yet. %{start} and Pera will turn what you talk about into flashcards."
+    generate_flashcards:
+      title: "Review your flashcards"
+      question: "Question"
+      answer: "Answer"
+      save: "Save to Flashcards"
+    no_new_material:
+      title: "You're all caught up"
+      explanation: "Everything from this chat is already in your flashcards. Keep chatting, then generate again to turn the new material into cards."
+    generation_failed:
+      title: "Couldn't make flashcards just now"
+      explanation: "Pera couldn't be reached. Nothing was lost from your chat — try generating again in a moment."
+    generation_rate_limited:
+      title: "One moment"
+
+  messages:
+    reply_failed: "Pera couldn't reply just now. Your message is saved — try sending it again."
+    rate_limited: "You are sending messages faster than Pera can answer them. Give it a moment."
+    form:
+      placeholder: "Ask something..."
+    empty:
+      greeting: "Hello, I'm ペラ"
+      blurb: "Write a Japanese sentence and I'll check it — or ask me anything, including how this app works."
+      suggestions:
+        - "How does this app work?"
+        - "What should I learn first?"
+        - "ねこが すきです。Is this right?"
+
+  users:
+    dashboard:
+      welcome: "Welcome back, %{name}!"
+      review: "Review"
+      quiz: "Quiz"
+      new_chat: "New Chat"
+      recent_decks: "Recent Decks"
+      no_decks: "No decks yet."
+      random_card: "Flashcard of the moment"
+      no_cards_yet: "No flashcards yet — start a chat to generate some!"
+      flashcards: "Flashcards"
+      recent_flashcards: "Recent Flashcards"
+      no_flashcards: "No flashcards yet."
+      recent_conversations: "Recent Conversations"
+      view_all: "View all"
+      no_conversations: "No conversations yet."
+
+  pages:
+    home:
+      welcome: "Welcome to ペラFlash!"
+      tagline: "Master Japanese with Pera!"
+      features:
+        - "Chat about grammar"
+        - "Get instant corrections"
+        - "Generate flashcards"
+        - "Export to Anki"
+      get_started: "Get started"
+      illustration_alt: "Robot teaching Japanese"
+      ready: "Ready to study?"
+      dashboard: "Dashboard"
+      dashboard_blurb: "Review cards and more!"
+      go: "Go"
+      chat_blurb: "Chat with Pera and learn!"

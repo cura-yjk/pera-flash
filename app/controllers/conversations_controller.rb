@@ -59,7 +59,7 @@ class ConversationsController < ApplicationController
   private
 
   def generation_rate_limited
-    notice = "Give Pera a moment before making more cards."
+    notice = t("conversations.rate_limited")
 
     respond_to do |format|
       format.turbo_stream { render :generation_rate_limited, locals: { notice: notice }, status: :too_many_requests }
@@ -93,9 +93,9 @@ class ConversationsController < ApplicationController
     <<~PROMPT
       Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
 
-      #{Message::EXPLANATION_LANGUAGE_RULE}
+      #{PeraPrompt::EXPLANATION_LANGUAGE_RULE}
 
-      #{Message::FURIGANA_RULE}
+      #{PeraPrompt::FURIGANA_RULE}
       Guidelines:
       - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
       - Answer = concise, correct answer.

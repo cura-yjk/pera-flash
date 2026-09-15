@@ -37,7 +37,7 @@ class PeraReply
   private
 
   def prepare(chat)
-    chat.with_instructions(Message.system_prompt(struggling: struggling_cards))
+    chat.with_instructions(PeraPrompt.for(struggling: struggling_cards, locale: @conversation.user.locale))
     replay_history(chat)
     chat
   end

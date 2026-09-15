@@ -2,9 +2,11 @@
 class ConversationsController < ApplicationController
   # A generation is a second LLM call per press, and the button sits right in
   # the chat -- cheaper to press repeatedly than to type a message.
-  rate_limit to: 5, within: 1.minute,
+  # `only:` is not optional here: without it these throttle every action in the
+  # controller, so the sixth conversation you merely *open* is refused.
+  rate_limit to: 5, within: 1.minute, only: :generate_flashcards,
              by: -> { current_user.id }, with: -> { generation_rate_limited }, name: "generate_burst"
-  rate_limit to: 60, within: 1.hour,
+  rate_limit to: 60, within: 1.hour, only: :generate_flashcards,
              by: -> { current_user.id }, with: -> { generation_rate_limited }, name: "generate_hourly"
   # Creating a conversation costs no LLM call, only rows -- limited to keep a
   # script from filling the table.
@@ -61,7 +63,7 @@ class ConversationsController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream { render :generation_rate_limited, locals: { notice: notice }, status: :too_many_requests }
-      format.html { redirect_to conversation_path(params[:id]), alert: notice }
+      format.html { redirect_back fallback_location: dashboard_path, alert: notice }
     end
   end
 

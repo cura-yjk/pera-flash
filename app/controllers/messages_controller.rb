@@ -88,7 +88,7 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       format.turbo_stream { render :rate_limited, locals: { notice: notice }, status: :too_many_requests }
-      format.html { redirect_to conversation_path(params[:conversation_id]), alert: notice }
+      format.html { redirect_back fallback_location: dashboard_path, alert: notice }
     end
   end
 

@@ -19,6 +19,22 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <%# Animations run for up to 3.5 seconds here, and a browser driver clicks
+        at coordinates it measured a moment earlier -- so a click can land
+        where a moving element used to be and silently do nothing. Switching
+        them off in test only makes system tests deterministic; nothing about
+        the real app changes. %>
+    <% if Rails.env.test? %>
+      <style>
+        *, *::before, *::after {
+          animation-duration: 0s !important;
+          animation-delay: 0s !important;
+          transition-duration: 0s !important;
+          transition-delay: 0s !important;
+        }
+      </style>
+    <% end %>
   </head>
   <body>
     <% unless user_signed_in? %>

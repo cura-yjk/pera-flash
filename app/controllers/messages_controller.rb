@@ -1,14 +1,9 @@
 class MessagesController < ApplicationController
-  # Enough for Pera to find an opening, few enough that the instructions
-  # stay about teaching rather than becoming a list of failures.
-  STRUGGLING_LIMIT = 5
-
-  # How much of the conversation Pera is reminded of. Every reply replayed the
-  # entire history, so the cost of a chat grew with the square of its length --
-  # message fifty carried the preceding forty-nine with it. Recent turns are
-  # what a tutor needs; the durable memory of what a learner struggles with
-  # comes from their flashcards instead, which is bounded and cheaper.
-  MAX_HISTORY_MESSAGES = 30
+  # Pera's reply is streamed token by token rather than delivered whole, the
+  # way every chat interface does it. #create no longer waits for the model: it
+  # saves what the student wrote and hands back an empty bubble, which #stream
+  # then fills over an SSE connection.
+  include ActionController::Live
 
   # Every message here is an LLM call, so this is where a script runs up a
   # bill. Two layers by account -- a burst nobody types through, and an hourly
@@ -30,58 +25,98 @@ class MessagesController < ApplicationController
 
     return render_invalid unless @message.save
 
-    return render_reply_failed unless answered?(@message)
-
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to conversation_path(@conversation) }
     end
   end
 
+  # The reply itself, streamed as it is generated.
+  #
+  # A GET with no side effect the student can trigger twice: it only answers
+  # when the conversation is actually waiting for one, so reloading or replaying
+  # this URL cannot spend a second generation on the same message.
+  def stream
+    @conversation = current_user.conversations.find(params[:conversation_id])
+    question = unanswered_message(@conversation)
+
+    return head :no_content if question.nil?
+
+    prepare_event_stream
+
+    # The ensure belongs to the streaming, not to the whole action: wrapping the
+    # lookup above meant a 404 closed the stream on its way out, committing a
+    # 200 before the RecordNotFound could be turned into a response.
+    begin
+      stream_reply(question)
+    ensure
+      response.stream.close
+    end
+  end
+
   private
 
-  # True once Pera has answered and the reply is saved.
-  def answered?(message)
-    reply = generate_reply(message)
-    return false if reply.nil?
-
-    @assistant_message = @conversation.messages.create!(content: reply, role: "assistant")
-    @conversation.generate_title_from_first_message if first_exchange?
-    true
+  # Nothing between here and the browser may buffer, or the tokens arrive in one
+  # lump at the end and the streaming is pointless.
+  def prepare_event_stream
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
   end
 
-  # Returns the reply text, or nil if the provider could not give us one.
-  #
-  # The user's message is already saved by this point, so a failure here must
-  # not take the request down with it: they would watch their message land and
-  # then get an error page, with no reply and no way back.
-  def generate_reply(message)
-    chat = LlmChat.new_chat
-    replay_history(chat, message)
-    chat.with_instructions(Message.system_prompt(struggling: struggling_cards)).ask(message.content).content
-  rescue StandardError => e
-    Rails.logger.error("Pera could not reply in conversation #{@conversation.id}: #{e.class}: #{e.message}")
+  # The last message, if it is a question nobody has answered yet.
+  def unanswered_message(conversation)
+    last = conversation.messages.order(:created_at).last
+
+    last if last&.user?
+  end
+
+  # Sends each token as it arrives, then one final event carrying the saved
+  # message rendered properly -- markdown, tables and furigana, which cannot be
+  # rendered from a half-finished string mid-stream.
+  def stream_reply(question)
+    reply = +""
+
+    finish_reply(PeraReply.new(@conversation, question).call do |text|
+      reply << text
+      # Re-rendered each update rather than sent as plain text: watching raw
+      # markdown scroll past and then be rewritten is worse than a table that
+      # is briefly one row short. Costs a few milliseconds and keeps one
+      # rendering path, so what streams in is what gets kept.
+      send_event("chunk", html: helpers.chat_html(reply))
+    end)
+  rescue Stop
+    # The student navigated away mid-reply. Nothing to report and nothing to
+    # save -- the next thing they send starts a fresh exchange.
     nil
+  rescue StandardError => e
+    # The student's message is already saved, so a failure here must not lose
+    # it: they see a notice and can send it again.
+    Rails.logger.error("Pera could not reply in conversation #{@conversation.id}: #{e.class}: #{e.message}")
+    send_event("failed", {})
   end
 
-  # Across every deck, not just this conversation: what someone keeps
-  # forgetting is a fact about them, not about where the card came from.
-  def struggling_cards
-    Flashcard.for_user(current_user).struggling.limit(STRUGGLING_LIMIT)
+  def finish_reply(reply)
+    return send_event("failed", {}) if reply.blank?
+
+    message = @conversation.messages.create!(content: reply, role: "assistant")
+    @conversation.generate_title_from_first_message if first_exchange?
+
+    send_event("done", html: render_to_string(partial: "messages/message", formats: [:html],
+                                              locals: { message: message }),
+                       title: @conversation.reload.title)
   end
 
-  # The newest MAX_HISTORY_MESSAGES, replayed oldest-first.
-  #
-  # Excludes the message being answered: it is already saved by the time this
-  # runs, and #ask sends it too, so the model was being shown every new message
-  # twice.
-  def replay_history(chat, current_message)
-    @conversation.messages
-                 .where.not(id: current_message.id)
-                 .order(created_at: :desc)
-                 .limit(MAX_HISTORY_MESSAGES)
-                 .reverse_each { |message| chat.add_message(role: message.role, content: message.content) }
+  # A client that has navigated away closes the socket mid-write; that is an
+  # ordinary end to a stream, not an error worth reporting.
+  def send_event(name, payload)
+    response.stream.write("event: #{name}\ndata: #{payload.to_json}\n\n")
+  rescue ActionController::Live::ClientDisconnected, IOError
+    raise Stop
   end
+
+  # Raised to unwind out of the streaming block when the client has gone.
+  class Stop < StandardError; end
 
   def rate_limited
     notice = "You are sending messages faster than Pera can answer them. Give it a moment."

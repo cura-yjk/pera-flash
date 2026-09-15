@@ -1,0 +1,15 @@
+<%# Where the reply streams in. Starts as the loading state and is replaced by
+    the finished message -- rendered server-side, because markdown and furigana
+    cannot be rendered from a half-written string. %>
+<div data-controller="reply-stream"
+     data-reply-stream-url-value="<%= conversation_reply_path(conversation) %>">
+  <%= image_tag "pera.png", alt: "Pera", id: "pera-chat" %>
+  <div class="d-flex justify-content-start mb-5">
+    <div class="px-3 pb-0 pt-3 assistant-message my-4">
+      <div class="streaming-text" data-reply-stream-target="text"></div>
+      <p class="mb-0 pera-green" data-reply-stream-target="cursor">
+        <i class="fa-solid fa-pen-nib"></i> ペラ is writing…
+      </p>
+    </div>
+  </div>
+</div>

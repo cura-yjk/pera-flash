@@ -57,3 +57,22 @@
   padding: 2px 5px;
   font-variant-numeric: tabular-nums;
 }
+
+// The icon row is logo + theme + dashboard + chat + review + quiz, and it was
+// set with a 3rem gap -- wider than a phone once the review badge was added.
+// Bootstrap's gap-5 is overridden here rather than in the markup so the
+// desktop spacing survives.
+@media (max-width: 575.98px) {
+  .nav-bar .d-flex.gap-5 {
+    gap: 0.9rem !important;
+  }
+
+  .nav-bar {
+    height: auto;
+    padding-block: 0.4rem;
+  }
+
+  #pera-logo {
+    height: 40px;
+  }
+}

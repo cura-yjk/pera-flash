@@ -1,14 +1,18 @@
 #pera-landing {
-  height: 420px;
-  width: 640px;
+  // 640px wide with a -120px pull to the left: on a phone that hung the
+  // illustration off the edge of the screen and took the page with it.
+  height: auto;
+  width: 100%;
+  max-width: 640px;
 
-  margin-left: -120px;
+  margin-left: 0;
   animation: fadeRise 2s ease-out forwards;
 }
 
 #pera-logo {
   height: 52px;
-  width: 124px;
+  width: auto;
+  max-width: 124px;
 }
 
 #pera-chat {

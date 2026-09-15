@@ -1,7 +1,9 @@
 .flashcard-preview-card {
   border: solid 2px #2BAE8F;
 
-  height: 340px !important;
+  // A flat height clipped longer cards once the text wrapped on a narrow
+  // screen -- and a card whose answer is cut off is worse than a tall card.
+  min-height: 340px;
   display: flex;
   flex-direction: column;
   justify-content: center;

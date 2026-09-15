@@ -71,6 +71,31 @@ class StudyingTest < ApplicationSystemTestCase
     assert_operator card.reload.interval_days, :>, 0
   end
 
+  # Toggling repeatedly, because the report was that it is inconsistent rather
+  # than broken: each click has to land, and the page that comes back has to
+  # show the setting that was just chosen -- not the snapshot Turbo kept of the
+  # page as it was a moment ago.
+  test "the readings toggle lands every time" do
+    Flashcard.for_user(@user).update_all(due_at: 1.day.from_now)
+    @cards.first.update!(question: "猫[ねこ]が好[す]きです", due_at: 1.hour.ago)
+
+    visit review_path
+
+    4.times do |attempt|
+      showing = attempt.even?
+
+      click_and_confirm(showing ? "Hide readings" : "Show readings",
+                        expect: showing ? "Show readings" : "Hide readings")
+
+      assert_equal !showing, @user.reload.show_furigana, "click #{attempt + 1} did not land"
+      if showing
+        assert_no_selector "ruby rt"
+      else
+        assert_selector "ruby rt", text: "ねこ"
+      end
+    end
+  end
+
   test "readings can be switched off from the review page" do
     Flashcard.for_user(@user).update_all(due_at: 1.day.from_now)
     @cards.first.update!(question: "猫[ねこ]が好[す]きです", due_at: 1.hour.ago)

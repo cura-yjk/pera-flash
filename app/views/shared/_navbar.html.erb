@@ -62,7 +62,8 @@
               <li><hr class="dropdown-divider"></li>
               <li>
                 <%= button_to toggle_furigana_path, method: :patch,
-                              class: "dropdown-item text-dark pera-text border-0 bg-transparent" do %>
+                              class: "dropdown-item text-dark pera-text border-0 bg-transparent",
+                              data: { turbo_submits_with: t("furigana.updating") } do %>
                   <i class="fa-solid fa-language me-1"></i>
                   <%= show_furigana? ? t("furigana.hide") : t("furigana.show") %>
                 <% end %>

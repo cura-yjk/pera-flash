@@ -6,6 +6,7 @@ zh-TW:
   furigana:
     show: "顯示假名"
     hide: "隱藏假名"
+    updating: "更新中…"
   search:
     cards: "搜尋卡片"
     submit: "搜尋"

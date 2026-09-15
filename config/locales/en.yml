@@ -8,6 +8,7 @@ en:
   furigana:
     show: "Show readings"
     hide: "Hide readings"
+    updating: "Updating…"
 
   search:
     cards: "Search cards"

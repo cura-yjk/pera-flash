@@ -14,6 +14,15 @@
         chrome around the app so it does not sit in a white frame. %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
     <meta name="theme-color" content="#2BAE8F">
+
+    <%# Turbo keeps a snapshot of every page you visit and paints it while the
+        fresh one loads. That is right for a list you are scrolling back to and
+        wrong here: toggling readings sends you back to the page you were on,
+        so the first thing you see is the same page with the old setting --
+        which reads as "I clicked and nothing happened", and invites a second
+        click that sets it back. The cache still serves back and forward; it
+        just does not pre-paint a stale copy. %>
+    <meta name="turbo-cache-control" content="no-preview">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <%= favicon_link_tag 'favicon.png' %>
     <%# Includes all stylesheet files in app/assets/stylesheets %>

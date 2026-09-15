@@ -27,7 +27,7 @@
 
   <%# Grades are only offered after the answer is visible: grading before
       seeing it would be meaningless. %>
-  <div class="mt-4 d-flex justify-content-center gap-2" data-reveal-target="grades" hidden>
+  <div class="mt-4 d-flex flex-wrap justify-content-center gap-2" data-reveal-target="grades" hidden>
     <% { "again" => "Again", "good" => "Good", "easy" => "Easy" }.each do |grade, label| %>
       <%= button_to label,
             deck ? deck_review_card_path(deck, card) : review_card_path(card),

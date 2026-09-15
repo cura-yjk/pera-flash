@@ -21,7 +21,11 @@
 }
 
 #chat-input {
-  width: 700px;
+  // Was a flat 700px, nearly twice the width of a phone, so the app's main
+  // screen scrolled sideways. The form is already a flex row: let it take the
+  // room available and cap it where the line length stops being comfortable.
+  width: 100%;
+  max-width: 700px;
   align-items: center;
 
   animation: greenGlow 3.5s ease-in-out;
@@ -57,9 +61,15 @@ li > a:hover {
     display: flex;
     align-items: center;
     justify-content: space-evenly;
+    gap: 0.5rem;
 
-    height: 44px;
-    width: 360px;
+    // Fixed at 44x360, which overflowed a 390px screen once padding was added
+    // and clipped its own text the moment it wrapped.
+    min-height: 44px;
+    width: 100%;
+    max-width: 360px;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
 
   a {
     color: #2BAE8F;
@@ -78,4 +88,75 @@ li > a:hover {
 // replaces it, so newlines from the model still need to show as newlines.
 .streaming-text {
   white-space: pre-wrap;
+}
+
+// Pera's grammar tables are the widest thing in the app and the most useful.
+// They scroll within the message rather than taking the page sideways with
+// them, and the readings above kanji need the row height to breathe.
+.assistant-message,
+.user-message {
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  td,
+  th {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid rgba(43, 174, 143, 0.25);
+    white-space: nowrap;
+  }
+
+  ruby rt {
+    font-size: 0.55em;
+  }
+
+  pre {
+    overflow-x: auto;
+  }
+}
+
+// A message bubble should never be wider than the screen, and long unbroken
+// Japanese runs have no spaces to wrap at.
+.assistant-message,
+.user-message {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+// The chat input is fixed to the bottom of the window -- right for a chat, but
+// it floated over the conversation with messages visibly scrolling underneath,
+// and the last message sat behind it unreadable. (The template carried a note
+// asking for exactly this.)
+.chat-page {
+  // Enough room under the last message for the docked input.
+  padding-bottom: 9rem;
+}
+
+.chat-dock {
+  background-color: #F4F4F4;
+  padding-block: 0.6rem;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.07);
+}
+
+// Follows the theme toggle, which puts .dark-mode on the body rather than
+// using a CSS variable.
+.dark-mode .chat-dock {
+  background-color: #3E3E3E;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 575.98px) {
+  .chat-input-container {
+    padding-inline: 0.75rem;
+  }
+
+  // The bounce animation on Pera's avatar costs vertical space that a phone
+  // screen does not have to spare.
+  #pera-chat {
+    height: 52px;
+    margin-bottom: -24px;
+  }
 }

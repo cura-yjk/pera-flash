@@ -1,4 +1,4 @@
-<div class="container my-5">
+<div class="container my-5 chat-page">
   <div class="d-flex justify-content-between align-items-center">
     <nav aria-label="breadcrumb">
       <div id="conversation_title">
@@ -19,8 +19,8 @@
     <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages %>
   </div>
   <div id="flashcard-preview"></div>
-  <div id="new_message" class="fixed-bottom mb-5">
+  <div id="new_message" class="fixed-bottom chat-dock">
     <%= render "messages/form", conversation: @conversation, message: @message %>
   </div>
 </div>
-<%# ^^ fix the fixed position of the input box %>
+

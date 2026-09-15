@@ -1,3 +1,6 @@
+// Buttons were all fixed widths, so a row of three squeezed or overflowed on a
+// phone. min-width keeps the desktop proportions while letting a narrow screen
+// shrink them to fit their label.
 .pera-btn {
   cursor: pointer;
 
@@ -5,8 +8,9 @@
 
   transition: 0.5s ease-in-out;
 
-  height: 40px;
-  width: 120px;
+  min-height: 40px;
+  height: auto;
+  min-width: 120px;
 }
 
 .pera-btn:hover {
@@ -19,8 +23,9 @@
   border: solid 2px #2BAE8F;
   color: #2BAE8F;
 
-  height: 40px;
-  width: 120px;
+  min-height: 40px;
+  height: auto;
+  min-width: 120px;
 
   transition: 0.5s ease-in-out;
 }
@@ -47,7 +52,7 @@ input[type="checkbox"].pera-check:checked {
   transition: 0.5s ease-in-out;
 
   height: 62px;
-  width: 120px;
+  min-width: 90px;
 }
 
 .submit-btn:hover {
@@ -64,11 +69,27 @@ input[type="checkbox"].pera-check:checked {
 
   transition: 0.5s ease-in-out;
 
-  height: 40px;
-  width: 220px;
+  min-height: 40px;
+  height: auto;
+  width: auto;
+  max-width: 220px;
 }
 
 .gen-flash-btn:hover {
   background-color: #2BAE8F;
   color: #3E3E3E;
+}
+
+// Three grade buttons at 120px each plus gaps come to about 384px, which is
+// wider than the usable width of a small phone once the container's padding is
+// taken off. They keep their proportions on anything larger.
+@media (max-width: 575.98px) {
+  .pera-btn,
+  .pera-btn-outline {
+    min-width: 96px;
+  }
+
+  .gen-flash-btn {
+    max-width: 100%;
+  }
 }

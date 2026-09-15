@@ -1,0 +1,19 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Chat History</h1>
+    <%= link_to "New Chat", conversations_path,
+                data: { turbo_method: :post },
+                class: "btn pera-btn rounded-3" %>
+  </div>
+
+  <% if @conversations.any? %>
+    <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
+      <%= render @conversations %>
+    </ul>
+  <% else %>
+    <p class="text-muted mb-4">
+      No conversations yet. <%= link_to "Start one", conversations_path, data: { turbo_method: :post } %>
+      and Pera will turn what you talk about into flashcards.
+    </p>
+  <% end %>
+</div>

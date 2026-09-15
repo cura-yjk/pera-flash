@@ -19,4 +19,32 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  # The navbar renders on every signed-in page, so these guard the review queue
+  # being reachable from anywhere -- not just the dashboard that used to own it.
+  test "navbar links to the review queue when cards are due" do
+    sign_in users(:learner)
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.ago)
+
+    get dashboard_path
+
+    assert_select "a[href=?]", review_path
+  end
+
+  test "navbar hides the review queue when nothing is due" do
+    sign_in users(:learner)
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.week.from_now)
+
+    get dashboard_path
+
+    assert_select "a[href=?]", review_path, count: 0
+  end
+
+  test "navbar search goes to the flashcard index" do
+    sign_in users(:learner)
+
+    get dashboard_path
+
+    assert_select "form[action=?][method=?]", flashcards_path, "get"
+  end
 end

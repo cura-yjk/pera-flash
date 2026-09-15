@@ -54,6 +54,22 @@ class ConversationTest < ActiveSupport::TestCase
     assert_equal ordered.sort_by(&:created_at), ordered
   end
 
+  # The join to messages multiplies the flashcard rows: `lesson` has 4 messages
+  # and 1 card, so a COUNT without DISTINCT reports 4 cards.
+  test "with_counts counts messages and cards independently" do
+    counted = Conversation.with_counts.find(@conversation.id)
+
+    assert_equal @conversation.messages.count, counted.messages_count
+    assert_equal @conversation.flashcards.count, counted.flashcards_count
+  end
+
+  test "started excludes conversations nobody spoke in" do
+    started = Conversation.started.map(&:id)
+
+    assert_includes started, @conversation.id
+    assert_not_includes started, conversations(:abandoned).id
+  end
+
   private
 
   # Follows LlmChat, so switching provider cannot silently leave these stubs

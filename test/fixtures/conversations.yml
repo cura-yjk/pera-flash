@@ -5,3 +5,9 @@ lesson:
 other_users_lesson:
   user: other
   title: Somebody else's lesson
+
+# Started and never used. ConversationsController#create leaves these behind,
+# so the history list has to filter them out.
+abandoned:
+  user: learner
+  title: Untitled conversation

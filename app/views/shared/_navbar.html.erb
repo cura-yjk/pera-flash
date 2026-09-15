@@ -16,13 +16,40 @@
       <%= link_to conversations_path, data: { turbo_method: :post } do %>
         <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);"></i>
       <% end %>
+
+      <%# Both hidden when there is nothing to do: an empty queue means the
+          schedule is working, not that the user has a task outstanding. %>
+      <% if due_card_count.positive? %>
+        <%= link_to review_path, class: "position-relative", title: "Review cards due now" do %>
+          <i class="fa-solid fa-layer-group icon-link" style="color: rgb(0, 0, 0);"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-5 nav-due-badge">
+            <%= due_card_count %>
+          </span>
+        <% end %>
+      <% end %>
+
+      <% if quiz_available? %>
+        <%= link_to quiz_path, title: "Quiz yourself" do %>
+          <i class="fa-regular fa-circle-question icon-link" style="color: rgb(0, 0, 0);"></i>
+        <% end %>
+      <% end %>
     </div>
 
     <div>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="collapse navbar-collapse d-lg-flex align-items-lg-center gap-lg-3" id="navbarSupportedContent">
+        <%# Searches cards, which is what FlashcardsController#index already does
+            with params[:query] -- the same search decks#show runs. %>
+        <%= form_with url: flashcards_path, method: :get, class: "d-flex my-2 my-lg-0", data: { turbo: false } do |f| %>
+          <%= f.search_field :query, value: params[:query],
+                             placeholder: "Search cards",
+                             aria: { label: "Search cards" },
+                             class: "form-control me-2 rounded-3" %>
+          <%= f.submit "Search", class: "btn search-btn js-dark-btn dark-btn rounded-3" %>
+        <% end %>
+
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -30,8 +57,16 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><%= link_to "Decks", decks_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
-              <li><a class="dropdown-item" href="#">Chat History</a></li>
+              <li><%= link_to "Chat History", conversations_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
               <li><%= link_to "Flashcards", flashcards_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <%= button_to toggle_furigana_path, method: :patch,
+                              class: "dropdown-item text-dark pera-text border-0 bg-transparent" do %>
+                  <i class="fa-solid fa-language me-1"></i>
+                  <%= show_furigana? ? "Hide readings" : "Show readings" %>
+                <% end %>
+              </li>
               <li><hr class="dropdown-divider"></li>
               <li><%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item text-pera" %></li>
             </ul>

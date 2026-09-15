@@ -48,9 +48,23 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     get conversation_reply_path(conversations(:lesson))
 
     assert_response :success
-    assert_match "event: token", response.body
+    assert_match "event: chunk", response.body
     assert_match "event: done", response.body
     assert_equal "猫 (neko) means cat.", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
+  # The chunks used to be plain text, so a student watched raw markdown scroll
+  # past -- asterisks, pipes, bracketed readings -- and then saw it rewritten.
+  test "streamed chunks arrive already rendered" do
+    stub_llm_stream("| 語 | 意味 |\n|---|---|\n| 猫[ねこ] | cat |")
+    ask("show me a table")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    html = JSON.parse(response.body[/event: chunk\ndata: (.+)/, 1])["html"]
+
+    assert_match(/<table/, html)
+    assert_match(%r{<ruby>猫<rt>ねこ</rt></ruby>}, html)
   end
 
   # Replaying the URL must not spend a second generation on a question that has

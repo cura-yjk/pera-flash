@@ -45,6 +45,13 @@ module FuriganaHelper
     annotated.join.html_safe
   end
 
+  # Chat content rendered the way the chat renders it: markdown, sanitized,
+  # then annotated. Used for finished messages and for each update of one still
+  # streaming in, so a half-written reply looks like the one that gets saved.
+  def chat_html(text)
+    with_furigana_html(render_markdown(text), show: show_furigana?)
+  end
+
   # Whether this reader wants readings shown. Defaults to on: a beginner who
   # cannot read the kanji is stuck without them.
   def show_furigana?

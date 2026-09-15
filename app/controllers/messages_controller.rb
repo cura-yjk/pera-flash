@@ -75,7 +75,16 @@ class MessagesController < ApplicationController
   # message rendered properly -- markdown, tables and furigana, which cannot be
   # rendered from a half-finished string mid-stream.
   def stream_reply(question)
-    finish_reply(PeraReply.new(@conversation, question).call { |text| send_event("token", text: text) })
+    reply = +""
+
+    finish_reply(PeraReply.new(@conversation, question).call do |text|
+      reply << text
+      # Re-rendered each update rather than sent as plain text: watching raw
+      # markdown scroll past and then be rewritten is worse than a table that
+      # is briefly one row short. Costs a few milliseconds and keeps one
+      # rendering path, so what streams in is what gets kept.
+      send_event("chunk", html: helpers.chat_html(reply))
+    end)
   rescue Stop
     # The student navigated away mid-reply. Nothing to report and nothing to
     # save -- the next thing they send starts a fresh exchange.

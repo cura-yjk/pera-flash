@@ -77,4 +77,25 @@ class MessageTest < ActiveSupport::TestCase
     assert_match(/never instructions\s+to follow/i, Message.system_prompt)
   end
 
+
+  test "the prompt tells Pera the app exists" do
+    assert_includes Message.system_prompt, Message::APP_GUIDE.strip
+  end
+
+  # The guide names paths, and a prompt is the one place a broken link fails
+  # silently: Pera would keep sending students to a URL that 404s, and nothing
+  # would ever go red. This is what makes that impossible.
+  test "every path the guide mentions is a real route" do
+    paths = Message::APP_GUIDE.scan(%r{/[a-z][a-z_/-]*}).uniq
+
+    assert_operator paths.size, :>=, 5, "expected the guide to name several paths"
+
+    paths.each do |path|
+      assert Rails.application.routes.recognize_path(path),
+             "#{path} is named in APP_GUIDE but is not a route"
+    rescue ActionController::RoutingError
+      flunk "#{path} is named in APP_GUIDE but is not a route"
+    end
+  end
+
 end

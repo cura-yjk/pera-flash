@@ -53,6 +53,24 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # A new chat was a blank page: nothing told a beginner they could ask Pera
+  # how the app works, which is the only way that help is discoverable.
+  test "a new chat suggests what to say" do
+    empty = current_user_conversation_with_no_messages
+
+    get conversation_path(empty)
+
+    assert_response :success
+    assert_match(/How does this app work/, response.body)
+    assert_select "form[action=?]", conversation_messages_path(empty)
+  end
+
+  test "a conversation with history shows no suggestions" do
+    get conversation_path(conversations(:lesson))
+
+    assert_no_match(/How does this app work/, response.body)
+  end
+
   test "show refuses another user's conversation" do
     get conversation_path(conversations(:other_users_lesson))
 
@@ -122,6 +140,10 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def current_user_conversation_with_no_messages
+    users(:learner).conversations.create!(title: "Fresh chat")
+  end
 
   # Follows LlmChat, so switching provider cannot silently leave these stubs
   # pointing at an endpoint nothing calls.

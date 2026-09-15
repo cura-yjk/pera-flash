@@ -12,6 +12,7 @@
     </nav>
   </div>
   <div id="messages">
+    <%= render "messages/empty", conversation: @conversation if @messages.empty? %>
     <%= render @messages %>
   </div>
   <div class="d-flex justify-content-end my-3" id="flashcard-btn">

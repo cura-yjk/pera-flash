@@ -9,8 +9,12 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# Installable to a phone's home screen -- see config/routes.rb and
+        app/views/pwa/. The theme colour paints the browser and task-switcher
+        chrome around the app so it does not sit in a white frame. %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <meta name="theme-color" content="#2BAE8F">
+    <link rel="apple-touch-icon" href="/icon-192.png">
     <%= favicon_link_tag 'favicon.png' %>
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>

@@ -18,6 +18,9 @@ Rails.application.routes.draw do
         post :generate_flashcards
     end
     resources :messages, only: [ :create ]
+    # Pera's reply, streamed. GET because it is replay-safe: it answers only
+    # when the conversation is waiting for a reply.
+    get "reply", to: "messages#stream"
     resources :flashcards, only: [ :create ]   # step 6 — actually saving
   end
 

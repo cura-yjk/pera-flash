@@ -73,3 +73,9 @@ li > a:hover {
     margin: 0;
     // display: inline;
 }
+
+// The reply as it streams in: plain text until the finished, formatted version
+// replaces it, so newlines from the model still need to show as newlines.
+.streaming-text {
+  white-space: pre-wrap;
+}

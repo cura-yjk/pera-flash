@@ -31,40 +31,68 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "saves the message and Pera's reply" do
-    stub_llm_success("猫 (neko) means cat.")
-
-    post conversation_messages_path(conversations(:lesson)),
-         params: { message: { content: "What does 猫 mean?" } }, as: :turbo_stream
+  # #create saves the question and hands back an empty bubble; the reply
+  # arrives over the stream, so nothing waits on the model here.
+  test "posting a message saves it without calling the LLM" do
+    ask("What does 猫 mean?")
 
     assert_response :success
+    assert_not_requested :post, stream_url
+    assert_equal "What does 猫 mean?", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
+  test "streaming sends the reply and saves it" do
+    stub_llm_stream("猫 (neko) ", "means cat.")
+    ask("What does 猫 mean?")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    assert_response :success
+    assert_match "event: token", response.body
+    assert_match "event: done", response.body
     assert_equal "猫 (neko) means cat.", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
+  # Replaying the URL must not spend a second generation on a question that has
+  # already been answered.
+  test "streaming does nothing when no reply is owed" do
+    stub_llm_stream("hello")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    assert_response :no_content
+    assert_not_requested :post, stream_url
+  end
+
+  test "streaming refuses another user's conversation" do
+    get conversation_reply_path(conversations(:other_users_lesson))
+
+    assert_response :not_found
   end
 
   # The user's message is saved before the call. A failure used to raise, so
   # they watched their message land and then got an error page.
   test "a failed reply keeps the message and says so" do
-    stub_llm_failure
+    stub_llm_stream_failure
 
     assert_difference -> { conversations(:lesson).messages.where(role: "user").count }, 1 do
-      post conversation_messages_path(conversations(:lesson)),
-           params: { message: { content: "does this survive?" } }, as: :turbo_stream
+      ask("does this survive?")
     end
 
-    assert_response :success
-    assert_match(/couldn't reply/i, response.body)
-    assert_match "does this survive?", response.body
+    get conversation_reply_path(conversations(:lesson))
+
+    assert_match "event: failed", response.body
+    assert_equal "does this survive?", conversations(:lesson).messages.order(:created_at).last.content
   end
 
   # A notice persisted as a message would be replayed to the model next turn.
   test "the failure notice is not stored as a message" do
-    stub_llm_failure
+    stub_llm_stream_failure
+    ask("hi")
 
-    post conversation_messages_path(conversations(:lesson)),
-         params: { message: { content: "hi" } }, as: :turbo_stream
-
-    assert_equal 0, conversations(:lesson).messages.where(role: "assistant")
-                                          .where("content ILIKE ?", "%couldn't reply%").count
+    assert_no_difference -> { conversations(:lesson).messages.where(role: "assistant").count } do
+      get conversation_reply_path(conversations(:lesson))
+    end
   end
 
   test "an empty message is rejected without calling the LLM" do
@@ -116,28 +144,29 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
   # Every reply replayed the whole conversation, so a long chat re-sent (and
   # re-paid for) everything said in it.
   test "only the most recent messages are replayed to the model" do
-    stub_llm_success("ok")
+    stub_llm_stream("ok")
     conversation = conversations(:lesson)
-    (MessagesController::MAX_HISTORY_MESSAGES + 10).times do |i|
+    (PeraReply::MAX_HISTORY_MESSAGES + 10).times do |i|
       conversation.messages.create!(role: "user", content: "filler #{i}")
     end
 
-    post conversation_messages_path(conversation), params: { message: { content: "newest" } }, as: :turbo_stream
+    ask("newest", conversation)
+    get conversation_reply_path(conversation)
 
-    assert_requested :post, llm_url do |request|
-      request.body.scan(/filler /).size <= MessagesController::MAX_HISTORY_MESSAGES
+    assert_requested :post, stream_url do |request|
+      request.body.scan(/filler /).size <= PeraReply::MAX_HISTORY_MESSAGES
     end
   end
 
   # The history is replayed and then #ask sends the same message again, so the
   # model was shown every new message twice.
   test "the message being answered is sent once" do
-    stub_llm_success("ok")
+    stub_llm_stream("ok")
+    ask("uniquephrase")
 
-    post conversation_messages_path(conversations(:lesson)),
-         params: { message: { content: "uniquephrase" } }, as: :turbo_stream
+    get conversation_reply_path(conversations(:lesson))
 
-    assert_requested :post, llm_url do |request|
+    assert_requested :post, stream_url do |request|
       request.body.scan("uniquephrase").size == 1
     end
   end
@@ -148,6 +177,30 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
   # pointing at an endpoint nothing calls.
   def llm_url
     %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
+  end
+
+  # Replies stream, so they go to a different endpoint than the one the
+  # non-streaming features use, and come back as server-sent events.
+  def stream_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:streamGenerateContent}
+  end
+
+  def stub_llm_stream(*chunks)
+    body = chunks.map do |text|
+      "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => text }] } }] }.to_json}\n\n"
+    end.join
+
+    stub_request(:post, stream_url)
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: body)
+  end
+
+  def stub_llm_stream_failure
+    stub_request(:post, stream_url).to_timeout
+  end
+
+  # What #create leaves behind: a saved question waiting for #stream.
+  def ask(content, conversation = conversations(:lesson))
+    post conversation_messages_path(conversation), params: { message: { content: content } }, as: :turbo_stream
   end
 
   def stub_llm_success(text)

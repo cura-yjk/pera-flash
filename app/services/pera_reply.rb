@@ -1,0 +1,68 @@
+# Generates Pera's reply to one message, yielding it in pieces as the model
+# produces them.
+#
+# Lives outside the controller because it is the only part of the exchange that
+# is about teaching rather than about HTTP: which history to replay, what the
+# student keeps forgetting, how much of the conversation the model is reminded
+# of. The controller turns whatever comes back into server-sent events.
+class PeraReply
+  # How much of the conversation Pera is reminded of. Every reply replayed the
+  # entire history, so the cost of a chat grew with the square of its length --
+  # message fifty carried the preceding forty-nine with it. Recent turns are
+  # what a tutor needs; the durable memory of what a learner struggles with
+  # comes from their flashcards instead, which is bounded and cheaper.
+  MAX_HISTORY_MESSAGES = 30
+
+  # Enough for Pera to find an opening, few enough that the instructions stay
+  # about teaching rather than becoming a list of failures.
+  STRUGGLING_LIMIT = 5
+
+  def initialize(conversation, question)
+    @conversation = conversation
+    @question = question
+  end
+
+  # Yields each piece of text as it arrives and returns the whole reply.
+  def call(&on_text)
+    raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
+
+    reply = +""
+
+    prepared_chat.ask(@question.content) do |chunk|
+      text = chunk.content.to_s
+      next if text.empty?
+
+      reply << text
+      on_text.call(text)
+    end
+
+    reply
+  end
+
+  private
+
+  def prepared_chat
+    LlmChat.new_chat
+           .with_instructions(Message.system_prompt(struggling: struggling_cards))
+           .tap { |chat| replay_history(chat) }
+  end
+
+  # The newest MAX_HISTORY_MESSAGES, replayed oldest-first.
+  #
+  # Excludes the message being answered: it is already saved by the time this
+  # runs, and #ask sends it too, so the model was being shown every new message
+  # twice.
+  def replay_history(chat)
+    @conversation.messages
+                 .where.not(id: @question.id)
+                 .order(created_at: :desc)
+                 .limit(MAX_HISTORY_MESSAGES)
+                 .reverse_each { |message| chat.add_message(role: message.role, content: message.content) }
+  end
+
+  # Across every deck, not just this conversation: what someone keeps
+  # forgetting is a fact about them, not about where the card came from.
+  def struggling_cards
+    Flashcard.for_user(@conversation.user).struggling.limit(STRUGGLING_LIMIT)
+  end
+end

@@ -8,7 +8,10 @@
 
   <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">
     <div class="p-4">
-      <p class="fs-4 mb-0"><%= with_furigana(card.question, show: show_furigana?) %></p>
+      <%# Same rule as the quiz: a card the schedule says is known is asked in
+          bare kanji, so the kanji is what gets recalled. The answer below keeps
+          its readings -- that half is where the reading is taught. %>
+      <p class="fs-4 mb-0"><%= with_furigana(card.question, show: show_furigana_for?(card)) %></p>
 
       <div data-reveal-target="answer" hidden>
         <hr class="my-4 opacity-25">

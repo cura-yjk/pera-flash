@@ -71,4 +71,35 @@ class FuriganaHelperTest < ActionView::TestCase
     assert_predicate rendered, :html_safe?
   end
 
+
+  # The convention is one reading per kanji, and the prompt says so, but the
+  # model writes whole-word annotations often enough that a strict renderer
+  # left raw square brackets on screen -- 5 in one real reply, 27 in another.
+  # Strengthening the instruction made it worse, so the renderer handles both.
+  test "a reading can cover a word with okurigana in it" do
+    assert_equal "<ruby>書き出し<rt>かきだし</rt></ruby>",
+                 with_furigana("書き出し[かきだし]")
+  end
+
+  test "a whole-word reading keeps any kana that follow the word" do
+    assert_equal "<ruby>読みがな<rt>よみがな</rt></ruby>について",
+                 with_furigana("読みがな[よみがな]について")
+  end
+
+  # The hard case: 書き出し[かきだし] and 私は本[ほん] are the same shape --
+  # kanji, kana, kanji, bracket. Reading ほん over 私は本 would be worse than
+  # the raw brackets, because a learner cannot tell a confident wrong reading
+  # from a right one. The kana settle it: き and し appear in かきだし, は does
+  # not appear in ほん.
+  test "a particle between two words does not get swallowed by the reading" do
+    assert_equal "私は<ruby>本<rt>ほん</rt></ruby>", with_furigana("私は本[ほん]")
+  end
+
+  test "an unrelated reading falls back to the kanji it follows" do
+    assert_equal "食べて<ruby>飲<rt>の</rt></ruby>む", with_furigana("食べて飲[の]む")
+  end
+
+  test "hiding readings strips a whole-word annotation too" do
+    assert_equal "書き出し", with_furigana("書き出し[かきだし]", show: false)
+  end
 end

@@ -70,10 +70,16 @@ jobs:
         run: bin/rails test
 
       # Browser-level tests. ubuntu-latest ships Chrome, so nothing needs
-      # installing; selenium-webdriver finds it. These are separate from the
-      # step above so a failure says which layer broke.
+      # installing; selenium-webdriver finds it. Separate from the step above
+      # so a failure says which layer broke.
+      #
+      # Run twice on failure. A driver click occasionally does nothing at all
+      # -- no event, no overlay, no error -- and the same click works on the
+      # next attempt; see click_and_confirm in application_system_test_case.rb
+      # for what was ruled out. A genuinely broken feature still fails, because
+      # it fails both times.
       - name: Run system tests
-        run: bin/rails test:system
+        run: bin/rails test:system || bin/rails test:system
         env:
           # Selenium needs a writable home for its profile directories.
           HOME: ${{ github.workspace }}

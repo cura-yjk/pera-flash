@@ -26,7 +26,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     visit new_user_session_path
     fill_in "Email", with: user.email
     fill_in "Password", with: password
-    click_on "Log in"
+
+    # Through the same helper as every other click: signing in is where a lost
+    # click costs the most, because every later assertion then fails for a
+    # reason that has nothing to do with what is being tested.
+    click_and_confirm("Log in", expect: /Welcome back|Recent Decks|おかえり/i)
 
     assert_current_path dashboard_path, wait: 5
   end
@@ -38,6 +42,29 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # instead of the button next to it.
   def resize_to(width, height)
     page.driver.browser.manage.window.resize_to(width, height)
+  end
+
+  # Clicks, then waits for the page to show it landed. Falls back to a
+  # DOM-level click if the driver's click produced nothing.
+  #
+  # A driver click sometimes has no effect at all: no event reaches the button,
+  # no overlay sits at the click point, no scroll is in progress, no console
+  # error, Turbo loaded, and the identical click works moments later. I chased
+  # it through element geometry, elementFromPoint, ActionChains, native clicks,
+  # the service worker, animations and smooth scrolling without pinning it
+  # down; it happens here often and on CI occasionally.
+  #
+  # A DOM click still goes through the app -- Turbo submits, the server
+  # answers, the page re-renders -- it just does not depend on the driver
+  # landing a pointer on a coordinate. Capybara has already established the
+  # element is visible by finding it.
+  def click_and_confirm(label, expect:, wait: 10)
+    button = find_button(label, match: :first)
+    button.click
+    return if page.has_text?(expect, wait: 3)
+
+    button.evaluate_script("this.click()")
+    assert_text expect, wait: wait
   end
 
   # True when the page can be scrolled sideways -- which, on a phone, means

@@ -96,6 +96,26 @@ class StudyingTest < ApplicationSystemTestCase
     end
   end
 
+  # Revealing is the learner's decision. Switching readings sent the page back
+  # to the server, and the card came back hidden again -- with the grade
+  # buttons still showing, so you were asked to grade an answer you could no
+  # longer see.
+  test "showing the answer survives switching readings" do
+    card = @cards.first
+    Flashcard.for_user(@user).update_all(due_at: 1.day.from_now)
+    card.update!(question: "猫[ねこ]です", due_at: 1.hour.ago)
+
+    visit review_path
+    click_and_confirm("Show answer", expect: card.answer)
+
+    click_and_confirm("Hide readings", expect: "Show readings")
+
+    assert_text card.answer
+    assert_button "Good"
+    assert_no_button "Show answer"
+    assert_no_selector "ruby rt"
+  end
+
   test "readings can be switched off from the review page" do
     Flashcard.for_user(@user).update_all(due_at: 1.day.from_now)
     @cards.first.update!(question: "猫[ねこ]が好[す]きです", due_at: 1.hour.ago)

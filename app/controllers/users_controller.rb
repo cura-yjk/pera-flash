@@ -3,7 +3,8 @@ class UsersController < ApplicationController
   # someone can read the kanji they want them off everywhere, not just here.
   def toggle_furigana
     current_user.update!(show_furigana: !current_user.show_furigana)
-    redirect_back fallback_location: dashboard_path
+
+    redirect_to back_with_reveal_state
   end
 
   # Saved on the user, so the choice follows them to another device rather
@@ -34,5 +35,28 @@ class UsersController < ApplicationController
     @flashcard_count = flashcards.count
     @random_flashcard = flashcards.order(Arel.sql("RANDOM()")).first
     @recent_flashcards = flashcards.order(created_at: :desc).limit(3)
+  end
+
+  private
+
+  # Back where they came from, carrying whether the answer was on screen.
+  #
+  # redirect_back cannot add a query parameter, so the referer is rebuilt --
+  # and only its path and query are kept, never the host. The referer comes
+  # from the client, and redirecting to a host it names is how an open redirect
+  # starts.
+  def back_with_reveal_state
+    target = URI.parse(request.referer.presence || dashboard_path)
+    here = [target.path.presence || dashboard_path, target.query].compact.join("?")
+
+    params[:revealed].present? ? with_revealed(here) : here
+  rescue URI::InvalidURIError
+    dashboard_path
+  end
+
+  def with_revealed(path)
+    separator = path.include?("?") ? "&" : "?"
+
+    "#{path}#{separator}revealed=1"
   end
 end

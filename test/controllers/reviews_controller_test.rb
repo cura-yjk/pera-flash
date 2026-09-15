@@ -75,6 +75,28 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/It&#39;s tricky/, response.body)
   end
 
+  # The reveal travels as a query parameter, and the redirect that carries it
+  # is built from the referer -- which the client sends, so it must never be
+  # able to point the app at another host.
+  test "the card renders revealed when asked to" do
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.from_now)
+    flashcards(:neko_card).update!(due_at: 1.hour.ago)
+
+    get review_path(revealed: 1)
+
+    assert_select "[data-reveal-target='answer']:not([hidden])"
+    assert_select "[data-reveal-target='grades']:not([hidden])"
+  end
+
+  test "the card renders hidden by default" do
+    Flashcard.for_user(users(:learner)).update_all(due_at: 1.day.from_now)
+    flashcards(:neko_card).update!(due_at: 1.hour.ago)
+
+    get review_path
+
+    assert_select "[data-reveal-target='answer'][hidden]"
+  end
+
   test "shows a due card" do
     get review_path
 

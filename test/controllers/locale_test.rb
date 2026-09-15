@@ -69,6 +69,22 @@ class LocaleTest < ActionDispatch::IntegrationTest
     assert_match "Recent Decks", response.body
   end
 
+  # The furigana toggle redirects to wherever it was clicked from, rebuilt from
+  # the referer. Keeping the host would let a crafted referer bounce someone
+  # off the site.
+  test "the furigana toggle cannot be redirected to another host" do
+    patch toggle_furigana_path, headers: { "HTTP_REFERER" => "https://example.com/phish" }
+
+    assert_redirected_to "/phish"
+  end
+
+  test "the furigana toggle carries the revealed answer back" do
+    patch toggle_furigana_path, params: { revealed: "1" },
+          headers: { "HTTP_REFERER" => "http://www.example.com/review" }
+
+    assert_redirected_to "/review?revealed=1"
+  end
+
   test "choosing a language saves it" do
     patch language_path, params: { locale: "ja" }
 

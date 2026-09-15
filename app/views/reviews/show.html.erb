@@ -7,8 +7,12 @@
     <%# turbo_submits_with disables the button and says what is happening while
         the request is in flight. Without it a slow round trip looks like a
         click that did nothing, and the second click puts the setting back. %>
+    <%# The hidden field carries whether the answer is on screen; the reveal
+        controller sets it when you press "Show answer". %>
     <%= button_to toggle_furigana_path, method: :patch,
+          params: { revealed: "" },
           class: "btn btn-sm btn-outline-secondary rounded-4 ms-auto",
+          form: { data: { controller: "reveal-state", action: "click->reveal-state#capture" } },
           data: { turbo_submits_with: t("furigana.updating") } do %>
       <i class="fa-solid fa-language me-1"></i>
       <%= show_furigana? ? t("furigana.hide") : t("furigana.show") %>

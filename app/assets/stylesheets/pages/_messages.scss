@@ -131,8 +131,21 @@ li > a:hover {
 // and the last message sat behind it unreadable. (The template carried a note
 // asking for exactly this.)
 .chat-page {
-  // Enough room under the last message for the docked input.
-  padding-bottom: 9rem;
+  // How much of the bottom of the window the docked input covers. Used twice
+  // below, and they have to agree: one keeps the last message clear of the
+  // dock when the page is at rest, the other keeps it clear while the page is
+  // being scrolled to it.
+  --chat-dock-space: 9rem;
+
+  padding-bottom: var(--chat-dock-space);
+}
+
+// Anything scrolled to by scrollIntoView keeps clear of the docked input. The
+// streaming reply scrolls the page to its end instead (see
+// reply_stream_controller), but the user's own message uses scrollIntoView on
+// the way in.
+.chat-page #messages > * {
+  scroll-margin-bottom: var(--chat-dock-space);
 }
 
 .chat-dock {

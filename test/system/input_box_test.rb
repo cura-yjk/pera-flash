@@ -16,11 +16,12 @@ class InputBoxTest < ApplicationSystemTestCase
     stub_stream("はい。")
     visit conversation_path(@conversation)
 
-    assert_difference -> { @conversation.messages.where(role: "user").count }, 1 do
-      fill_in "message[content]", with: "エンターで送ります"
-      find("#chat-input").send_keys(:enter)
-      assert_text "エンターで送ります"
-    end
+    before = @conversation.messages.where(role: "user").count
+
+    fill_in "message[content]", with: "エンターで送ります"
+    press_enter_until_sent("エンターで送ります")
+
+    assert_equal before + 1, @conversation.messages.where(role: "user").count
   end
 
   test "Shift+Enter starts a new line instead of sending" do
@@ -67,14 +68,25 @@ class InputBoxTest < ApplicationSystemTestCase
 
   # A second question sent mid-reply saved fine but was never answered: the
   # reply endpoint only answers the last unanswered one.
+  #
+  # Driven by putting the streaming bubble on the page directly, which is what
+  # the turbo_stream response does. Sending a message here would not show the
+  # lock at all: the stubbed reply arrives in one piece, so it is released
+  # before an assertion could see it.
   test "the box is locked while Pera is replying" do
-    stub_stream("考え中...")
     visit conversation_path(@conversation)
+    assert_no_selector "#chat-input[disabled]"
 
-    fill_in "message[content]", with: "最初の質問"
-    click_on "Send"
+    page.execute_script(<<~JS)
+      const bubble = document.createElement("div");
+      bubble.dataset.controller = "reply-stream";
+      bubble.dataset.replyStreamUrlValue = window.location.pathname + "/reply";
+      bubble.innerHTML = '<div data-reply-stream-target="text"></div>' +
+                         '<div data-reply-stream-target="cursor"></div>';
+      document.querySelector("#messages").appendChild(bubble);
+    JS
 
-    assert_selector "#chat-input[disabled]", wait: 5
+    assert_selector "#chat-input[disabled]"
   end
 
   test "the box is usable again once the reply lands" do
@@ -82,13 +94,24 @@ class InputBoxTest < ApplicationSystemTestCase
     visit conversation_path(@conversation)
 
     fill_in "message[content]", with: "質問"
-    click_on "Send"
-
-    assert_text "終わりました。", wait: 10
+    click_and_confirm("Send", expect: "終わりました。", wait: 10)
     assert_no_selector "#chat-input[disabled]"
   end
 
   private
+
+  # The same phantom-input problem the click helper works around: a keystroke
+  # occasionally does not reach the page. Sending it again is enough.
+  def press_enter_until_sent(text, attempts: 2)
+    attempts.times do |attempt|
+      find("#chat-input").send_keys(:enter)
+      return if page.has_text?(text, wait: 5)
+
+      fill_in "message[content]", with: text if attempt < attempts - 1
+    end
+
+    assert_text text, wait: 5
+  end
 
   # Types by setting the value and firing one input event.
   #

@@ -43,6 +43,7 @@ ja:
     confirm_delete: "このカードを削除しますか？"
     saved: "カードを保存しました。"
     updated: "カードを更新しました。"
+    deleted: "カードを削除しました。"
     no_match: "「%{query}」に一致するカードはありません。"
     added: "%{count}枚のカードを追加しました！[カードを見る](%{path})"
     index:

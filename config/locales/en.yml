@@ -55,6 +55,7 @@ en:
     confirm_delete: "Delete this flashcard?"
     saved: "Flashcards saved!"
     updated: "Flashcard updated!"
+    deleted: "Flashcard deleted."
     no_match: 'No flashcards match "%{query}".'
     # Shown in the chat after cards are saved; the markdown link is rendered.
     added: "%{count} cards added! [View your flashcards](%{path})"

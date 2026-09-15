@@ -42,6 +42,7 @@ ko:
     confirm_delete: "이 카드를 삭제할까요?"
     saved: "카드를 저장했습니다."
     updated: "카드를 수정했습니다."
+    deleted: "카드를 삭제했습니다."
     no_match: "\"%{query}\"와 일치하는 카드가 없습니다."
     added: "카드 %{count}장을 추가했어요! [카드 보기](%{path})"
     index:

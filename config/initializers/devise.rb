@@ -197,7 +197,10 @@ Devise.setup do |config|
   # Defines which strategy will be used to lock an account.
   # :failed_attempts = Locks an account after a number of failed attempts to sign in.
   # :none            = No lock strategy. You should handle locking by yourself.
-  # config.lock_strategy = :failed_attempts
+  # Locking is on failed attempts, lifted by time. Email unlocking is the Devise
+  # default, and this app has no SMTP configured -- that unlock mail would never
+  # arrive, leaving a locked account locked for good.
+  config.lock_strategy = :failed_attempts
 
   # Defines which key will be used when locking and unlocking an account
   # config.unlock_keys = [:email]
@@ -207,17 +210,21 @@ Devise.setup do |config|
   # :time  = Re-enables login after a certain amount of time (see :unlock_in below)
   # :both  = Enables both strategies
   # :none  = No unlock strategy. You should handle unlocking by yourself.
-  # config.unlock_strategy = :both
+  config.unlock_strategy = :time
 
   # Number of authentication tries before locking an account if lock_strategy
   # is failed attempts.
-  # config.maximum_attempts = 20
+  # Ten is well past a mistyped password and well short of useful for guessing.
+  config.maximum_attempts = 10
 
   # Time interval to unlock the account if :time is enabled as unlock_strategy.
-  # config.unlock_in = 1.hour
+  # Long enough to make guessing pointless, short enough that a real person
+  # locked out by their own typing is not stuck for the evening.
+  config.unlock_in = 1.hour
 
   # Warn on the last attempt before the account is locked.
-  # config.last_attempt_warning = true
+  # Warn on the last try, so a locked account is never a surprise.
+  config.last_attempt_warning = true
 
   # ==> Configuration for :recoverable
   #

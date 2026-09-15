@@ -1,6 +1,16 @@
 require "csv"
 
 class DecksController < ApplicationController
+  # Cells a spreadsheet would run as a formula.
+  #
+  # Excel, Numbers and Sheets all treat a cell starting with one of these as a
+  # formula rather than text, so a card reading =HYPERLINK("http://...","Click")
+  # becomes a live link in whatever the learner opens their export with -- and
+  # card text is partly written by the model, not only by them. Prefixing with
+  # an apostrophe is the standard defence: spreadsheets read the rest as text
+  # and do not display the apostrophe itself.
+  FORMULA_TRIGGERS = ["=", "+", "-", "@", "\t", "\r"].freeze
+
   # List the current user's decks, annotated with each deck's flashcard
   # count via a LEFT JOIN + COUNT (so decks with zero flashcards still show)
   def index
@@ -52,7 +62,7 @@ class DecksController < ApplicationController
     csv_data = CSV.generate do |csv|
       csv << [t("flashcards.question"), t("flashcards.answer")]
       @deck.flashcards.each do |flashcard|
-        csv << [flashcard.question, flashcard.answer]
+        csv << [spreadsheet_safe(flashcard.question), spreadsheet_safe(flashcard.answer)]
       end
     end
 
@@ -62,6 +72,12 @@ class DecksController < ApplicationController
   end
 
   private
+
+  def spreadsheet_safe(text)
+    value = text.to_s
+
+    value.start_with?(*FORMULA_TRIGGERS) ? "'#{value}" : value
+  end
 
   # Whitelist deck attributes safe for mass assignment
   def deck_params

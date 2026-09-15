@@ -1,4 +1,8 @@
 class MessagesController < ApplicationController
+  # Enough for Pera to find an opening, few enough that the instructions
+  # stay about teaching rather than becoming a list of failures.
+  STRUGGLING_LIMIT = 5
+
   def create
     # Scoped to the signer-in: this was a bare Conversation.find, the only one
     # in the app, so any signed-in user could post into someone else's chat.
@@ -36,10 +40,16 @@ class MessagesController < ApplicationController
   def generate_reply(message)
     chat = LlmChat.new_chat
     replay_history(chat)
-    chat.with_instructions(Message.system_prompt).ask(message.content).content
+    chat.with_instructions(Message.system_prompt(struggling: struggling_cards)).ask(message.content).content
   rescue StandardError => e
     Rails.logger.error("Pera could not reply in conversation #{@conversation.id}: #{e.class}: #{e.message}")
     nil
+  end
+
+  # Across every deck, not just this conversation: what someone keeps
+  # forgetting is a fact about them, not about where the card came from.
+  def struggling_cards
+    Flashcard.for_user(current_user).struggling.limit(STRUGGLING_LIMIT)
   end
 
   def replay_history(chat)

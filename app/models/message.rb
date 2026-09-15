@@ -5,7 +5,13 @@ class Message < ApplicationRecord
   enum :role, { system: "system", user: "user", assistant: "assistant" }, validates: true
   validates :content, presence: true
 
-  def self.system_prompt
+  def self.system_prompt(struggling: [])
+    return base_prompt if struggling.empty?
+
+    "#{base_prompt}\n#{struggle_section(struggling)}"
+  end
+
+  def self.base_prompt
     # <<~PROMPT
     #   # System Prompt: ペラ (Pera) — Japanese Language Tutor
 
@@ -64,4 +70,35 @@ class Message < ApplicationRecord
       * **Visual Appeal:** Structure every response using Markdown headers, visual separators (`---`), bold text, and blockquotes so the feedback is highly readable and easy to scan.
     PROMPT
   end
+  private_class_method :base_prompt
+
+  # What the learner keeps forgetting, taken from their own review history.
+  #
+  # This is the only thing that connects the two halves of the app: without it
+  # the chat teaches in ignorance of what the flashcards already know is not
+  # sticking. It costs no extra request -- the cards are already in the
+  # database and this rides along in the system prompt that is sent anyway.
+  #
+  # Placed in the instructions rather than in a message, so it is operator
+  # context: a card's text is the learner's own writing and must never be able
+  # to act as an instruction.
+  def self.struggle_section(struggling)
+    items = struggling.map { |card| "- #{card.question} (answer: #{card.answer})" }.join("\n")
+
+    <<~SECTION
+
+      ---
+
+      This student has repeatedly forgotten the following, according to their own flashcard reviews:
+
+      #{items}
+
+      Work these in naturally when the conversation gives you an opening -- an
+      example sentence that uses one, or a gentle nudge to practise it. Do not
+      list them back, do not open every reply with them, and never make the
+      student feel behind. If nothing in the conversation relates, ignore them
+      entirely.
+    SECTION
+  end
+  private_class_method :struggle_section
 end

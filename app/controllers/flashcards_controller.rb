@@ -3,15 +3,8 @@ class FlashcardsController < ApplicationController
     conversation = current_user.conversations.find(params[:conversation_id])
     cards = params.require(:conversation).permit(flashcards: %i[question answer])
 
-    deck = current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
-
-    created = cards[:flashcards].each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
-
-    @message = Message.create!(
-      content: "✅ #{created.size} cards added! [View your flashcards](#{flashcards_path})",
-      role: 'assistant',
-      conversation: conversation
-    )
+    created = save_cards(conversation, cards[:flashcards])
+    @message = confirmation_message(conversation, created.size)
 
     respond_to do |format|
       format.turbo_stream
@@ -48,6 +41,22 @@ class FlashcardsController < ApplicationController
   end
 
   private
+
+  # A conversation's cards land in a deck named after it, created on first save.
+  def save_cards(conversation, cards)
+    deck = current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
+
+    cards.each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
+  end
+
+  # Shown in the chat as a system notification -- see messages/_message.
+  def confirmation_message(conversation, count)
+    Message.create!(
+      content: "✅ #{count} cards added! [View your flashcards](#{flashcards_path})",
+      role: "assistant",
+      conversation: conversation
+    )
+  end
 
   def flashcard_params
     params.require(:flashcard).permit(:question, :answer, :deck_id)

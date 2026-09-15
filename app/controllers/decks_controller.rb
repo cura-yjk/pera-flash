@@ -56,7 +56,7 @@ class DecksController < ApplicationController
       end
     end
 
-    send_data "\uFEFF" + csv_data,
+    send_data "﻿#{csv_data}",
               filename: "#{@deck.name.parameterize}-flashcards.csv",
               type: "text/csv; charset=utf-8"
   end

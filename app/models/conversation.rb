@@ -8,6 +8,22 @@ class Conversation < ApplicationRecord
   before_validation :set_title
   scope :empty, -> { left_joins(:messages).where(messages: { id: nil }) }
 
+  # Message and card counts come back on the conversation rows themselves, so a
+  # list of conversations doesn't fire two COUNTs per row. DISTINCT matters:
+  # joining messages and flashcards together multiplies the rows for each, and
+  # a plain COUNT would report a 3-message chat as having 18 cards.
+  scope :with_counts, lambda {
+    left_joins(:messages, :flashcards)
+      .select("conversations.*",
+              "COUNT(DISTINCT messages.id) AS messages_count",
+              "COUNT(DISTINCT flashcards.id) AS flashcards_count")
+      .group("conversations.id")
+  }
+
+  # Conversations someone actually said something in. An abandoned empty chat
+  # is noise in a history list -- and #create leaves them behind by design.
+  scope :started, -> { with_counts.having("COUNT(messages.id) > 0") }
+
   # Messages worth generating flashcards from: everything said since the last
   # time cards were made, rather than the whole conversation every time.
   #

@@ -4,13 +4,13 @@
     <div class="d-flex gap-2">
       <%# Only shown when there is something to study -- an empty queue means
           the system is working, not that the user has a task outstanding. %>
-      <% if @due_count.to_i.positive? %>
+      <% if due_card_count.positive? %>
         <%= link_to review_path, class: "btn pera-btn rounded-3 d-flex align-items-center gap-2" do %>
           <i class="fa-solid fa-layer-group"></i>
-          Review <span class="badge rounded-5 bg-light text-dark"><%= @due_count %></span>
+          Review <span class="badge rounded-5 bg-light text-dark"><%= due_card_count %></span>
         <% end %>
       <% end %>
-      <% if @flashcard_count.to_i >= QuizQuestion::OPTION_COUNT %>
+      <% if quiz_available? %>
         <%= link_to "Quiz", quiz_path, class: "btn pera-btn rounded-3 d-flex align-items-center gap-2" %>
       <% end %>
       <%= link_to "New Chat", conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
@@ -85,16 +85,13 @@
   <% end %>
 
   <!-- Conversation history -->
-  <h2 class="mb-3">Recent Conversations</h2>
+  <div class="d-flex justify-content-between align-items-baseline mb-3">
+    <h2 class="mb-0">Recent Conversations</h2>
+    <%= link_to "View all", conversations_path, class: "text-decoration-none pera-text small" %>
+  </div>
   <% if @conversations.any? %>
     <ul class="list-group mb-5 rounded-5 dash-card js-dash-card">
-      <% @conversations.last(7).each do |conversation| %>
-        <li class="list-group-item js-dash-card conv-link">
-          <%= link_to (conversation.title.presence || "Untitled conversation"),
-          conversation_path(conversation),
-          class: "text-decoration-none text-secondary" %>
-        </li>
-      <% end %>
+      <%= render @conversations %>
     </ul>
   <% else %>
     <p class="text-muted mb-4 js-dash-card">No conversations yet.</p>

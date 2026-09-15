@@ -12,6 +12,35 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
+  test "index lists the user's own conversations" do
+    get conversations_path
+
+    assert_response :success
+    assert_select "a", text: conversations(:lesson).title
+  end
+
+  test "index does not leak another user's conversations" do
+    get conversations_path
+
+    assert_response :success
+    assert_select "a", text: conversations(:other_users_lesson).title, count: 0
+  end
+
+  # #create leaves empty conversations behind by design, and they carry no
+  # information -- a history list full of "Untitled conversation" is noise.
+  test "index hides conversations with no messages" do
+    get conversations_path
+
+    assert_select "a", text: conversations(:abandoned).title, count: 0
+  end
+
+  test "index requires authentication" do
+    sign_out users(:learner)
+    get conversations_path
+
+    assert_redirected_to new_user_session_path
+  end
+
   test "show refuses another user's conversation" do
     get conversation_path(conversations(:other_users_lesson))
 

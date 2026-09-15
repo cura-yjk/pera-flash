@@ -1,0 +1,20 @@
+<%# Shared by the dashboard's "Recent Conversations" list and the full Chat
+    History page. Both pass conversations loaded through Conversation.with_counts,
+    so the counts below are already on the row -- see the scope before using
+    this partial anywhere else. %>
+<li class="list-group-item js-dash-card conv-link d-flex justify-content-between align-items-center gap-3">
+  <div class="min-width-0">
+    <%= link_to (conversation.title.presence || "Untitled conversation"),
+                conversation_path(conversation),
+                class: "text-decoration-none text-secondary" %>
+    <small class="d-block text-muted">
+      <%= conversation.created_at.strftime("%b %-d") %>
+      <% if conversation.flashcards_count.to_i.positive? %>
+        · <%= pluralize(conversation.flashcards_count, "card") %> made
+      <% end %>
+    </small>
+  </div>
+  <span class="text-muted small text-nowrap">
+    <%= pluralize(conversation.messages_count, "message") %>
+  </span>
+</li>

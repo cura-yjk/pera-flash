@@ -45,3 +45,15 @@
 .dropdown-menu .dropdown-item:hover {
   color: #2BAE8F !important;
 }
+
+// Count of cards due, riding on the review icon. Sized here rather than with
+// .pera-btn, which is 120x40px for real buttons and would swallow the icon.
+.nav-due-badge {
+  background-color: #2BAE8F;
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  padding: 2px 5px;
+  font-variant-numeric: tabular-nums;
+}

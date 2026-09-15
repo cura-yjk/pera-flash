@@ -1,5 +1,11 @@
 # Handles the "chat with AI to learn Japanese, then turn it into flashcards" flow
 class ConversationsController < ApplicationController
+  # Every chat the user has actually used, newest first. The navbar's "Chat
+  # History" link pointed at href="#" until this existed.
+  def index
+    @conversations = current_user.conversations.started.order(created_at: :desc)
+  end
+
   # Show a single conversation and its message history, plus a blank
   # Message for the reply form on the page
   def show

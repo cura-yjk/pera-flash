@@ -7,8 +7,10 @@ class UsersController < ApplicationController
   end
 
   def dashboard
-    @due_count = Flashcard.for_user(current_user).due.count
-    @conversations = current_user.conversations.where.associated(:messages).distinct.order(created_at: :desc)
+    # Newest 7, limited in the query. This read `.last(7)` on a descending
+    # relation, which returns the *oldest* seven -- so "Recent Conversations"
+    # was showing the least recent ones.
+    @conversations = current_user.conversations.started.order(created_at: :desc).limit(7)
     @decks = decks_with_card_counts
 
     flashcards = Flashcard.for_user(current_user)

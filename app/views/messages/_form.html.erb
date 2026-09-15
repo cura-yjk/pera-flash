@@ -13,7 +13,8 @@
           placeholder: "Ask something...",
           required: true,
           label: false,
-          input_html: { data: { reset_form_target: "input" }, id: "chat-input", class: "rounded-4 me-3" },
+          input_html: { data: { reset_form_target: "input" }, id: "chat-input", class: "rounded-4 me-3",
+                        maxlength: Message::MAX_USER_CONTENT_LENGTH },
           wrapper_html: { class: 'rounded-5 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
     </div>
 

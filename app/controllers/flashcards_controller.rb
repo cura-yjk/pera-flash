@@ -1,7 +1,16 @@
 class FlashcardsController < ApplicationController
+  # A generation returns a handful of cards; this is the ceiling on what one
+  # request may write, since the list comes from the client rather than from
+  # the generation that produced it.
+  MAX_CARDS_PER_SAVE = 50
+
+  rate_limit to: 30, within: 1.minute, by: -> { current_user.id }, only: :create
+
   def create
     conversation = current_user.conversations.find(params[:conversation_id])
     cards = params.require(:conversation).permit(flashcards: %i[question answer])
+
+    return head :unprocessable_entity if cards[:flashcards].to_h.size > MAX_CARDS_PER_SAVE
 
     created = save_cards(conversation, cards[:flashcards])
     @message = confirmation_message(conversation, created.size)

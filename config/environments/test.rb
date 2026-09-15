@@ -20,7 +20,9 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
+  # Not :null_store -- controller rate limits are backed by Rails.cache, and a
+  # null store makes them silently do nothing, including in their own tests.
+  config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable

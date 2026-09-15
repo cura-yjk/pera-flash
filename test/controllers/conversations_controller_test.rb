@@ -3,7 +3,10 @@ require "test_helper"
 class ConversationsControllerTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
-  setup { sign_in users(:learner) }
+  setup do
+    Rails.cache.clear
+    sign_in users(:learner)
+  end
 
   test "requires authentication" do
     sign_out users(:learner)
@@ -39,6 +42,15 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     get conversations_path
 
     assert_redirected_to new_user_session_path
+  end
+
+  # The generation limit is 5/minute. Declared without `only:` it applied to
+  # every action in the controller, so the sixth conversation you merely opened
+  # came back refused -- reading a chat costs nothing and must not be throttled.
+  test "reading conversations is not throttled by the generation limit" do
+    10.times { get conversation_path(conversations(:lesson)) }
+
+    assert_response :success
   end
 
   test "show refuses another user's conversation" do

@@ -129,4 +129,25 @@ class FlashcardTest < ActiveSupport::TestCase
 
     assert_equal %w[new overdue slightly], order
   end
+
+  # Readings come off once the schedule trusts the card: past that point they
+  # are the answer rather than a hint.
+  test "a card scheduled well out counts as mastered" do
+    card = Flashcard.new(interval_days: Flashcard::MASTERED_INTERVAL_DAYS, lapse_count: 0)
+
+    assert card.mastered?
+  end
+
+  test "a card still being learned is not mastered" do
+    card = Flashcard.new(interval_days: 3.0, lapse_count: 0)
+
+    assert_not card.mastered?
+  end
+
+  test "a card with a long interval but repeated lapses is not mastered" do
+    card = Flashcard.new(interval_days: 30.0, lapse_count: Flashcard::STRUGGLING_LAPSES)
+
+    assert_not card.mastered?
+  end
+
 end

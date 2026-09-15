@@ -10,7 +10,10 @@
 
   <div class="flashcard-preview-card shadow-sm rounded-5 overflow-hidden mx-auto" style="max-width: 34rem;">
     <div class="p-4 text-center">
-      <p class="fs-4 mb-0"><%= with_furigana(@question.card.question, show: show_furigana?) %></p>
+      <%# The prompt is the thing being tested, so a mastered card asks it in
+          bare kanji. The options below keep their readings: they are answers,
+          and one of them is about to be revealed as correct anyway. %>
+      <p class="fs-4 mb-0"><%= with_furigana(@question.card.question, show: show_furigana_for?(@question.card)) %></p>
     </div>
   </div>
 

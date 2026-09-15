@@ -40,6 +40,11 @@ STATES = {
   later: { review_count: 6, due_at: 6.days.from_now, last_reviewed_at: 2.days.ago,
            interval_days: 8.0, ease: 2.7, lapse_count: 0 },
 
+  # Known well enough that the schedule pushed it out past a week, and due
+  # again today. Quizzes ask this one in bare kanji -- see Flashcard#mastered?.
+  mastered: { review_count: 8, due_at: 3.hours.ago, last_reviewed_at: 12.days.ago,
+              interval_days: 12.0, ease: 2.8, lapse_count: 0 },
+
   # Forgotten repeatedly: two or more lapses is what Flashcard.struggling looks
   # for, and what the chat quietly works into its lessons.
   struggling: { review_count: 9, due_at: 1.hour.ago, last_reviewed_at: 3.days.ago,
@@ -106,7 +111,7 @@ basics = matt.decks.create!(name: "Japanese Basics")
 add_card.call(basics, "How do you say 'I am a student' politely?", "わたしは 学生[がくせい]です。", :due)
 add_card.call(basics, "What does the particle は do?", "It marks the topic of the sentence.", :later)
 add_card.call(basics, "What does です add to a sentence?", "It makes the sentence polite — like 'am/is/are'.", :later)
-add_card.call(basics, "How do you say 'This is a book'?", "これは 本[ほん]です。", :due)
+add_card.call(basics, "How do you say 'This is a book'?", "これは 本[ほん]です。", :mastered)
 add_card.call(basics, "What does the particle を mark?", "The direct object of a verb.", :due)
 add_card.call(basics, "How do you say 'I like cats'?", "猫[ねこ]が すきです。", :new)
 # The one Matt keeps losing — and the reason the chat above keeps circling back.
@@ -117,7 +122,7 @@ add_card.call(basics, "When do you use が instead of は?",
 
 counters = matt.decks.create!(name: "Counting things")
 add_card.call(counters, "Which counter do flat things take?", "枚[まい] — きっぷ 2枚[にまい] (two tickets).", :struggling, counting)
-add_card.call(counters, "Which counter do long thin things take?", "本[ほん] — えんぴつ 3本[さんぼん] (three pencils).", :due)
+add_card.call(counters, "Which counter do long thin things take?", "本[ほん] — えんぴつ 3本[さんぼん] (three pencils).", :mastered)
 add_card.call(counters, "How do you say 'one pencil'?", "えんぴつ 1本[いっぽん]。Note いっ, not いち.", :new)
 add_card.call(counters, "How do you count small animals?", "匹[ひき] — 猫[ねこ] 2匹[にひき] (two cats).", :new)
 add_card.call(counters, "How do you say 'three tickets'?", "きっぷ 3枚[さんまい]。", :new)
@@ -141,4 +146,6 @@ due = Flashcard.for_user(matt).due.count
 puts "Created #{User.count} accounts (matt@mail.com / qwerty is the one to sign in as)"
 matt.decks.each { |deck| puts "  deck: #{deck.name} — #{deck.flashcards.count} cards" }
 puts "  #{matt.conversations.count} conversations, #{Message.where(conversation: matt.conversations).count} messages"
+mastered = Flashcard.for_user(matt).select(&:mastered?).count
 puts "  #{due} cards due now, #{Flashcard.for_user(matt).struggling.count} being forgotten repeatedly"
+puts "  #{mastered} known well enough to be quizzed without readings"

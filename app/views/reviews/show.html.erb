@@ -4,8 +4,12 @@
     <h2 class="mb-0 pera-green"><%= @deck ? t(".title_for_deck", deck: @deck.name) : t(".title") %></h2>
 
     <%# Hiding readings is how you check whether the kanji has actually stuck. %>
+    <%# turbo_submits_with disables the button and says what is happening while
+        the request is in flight. Without it a slow round trip looks like a
+        click that did nothing, and the second click puts the setting back. %>
     <%= button_to toggle_furigana_path, method: :patch,
-          class: "btn btn-sm btn-outline-secondary rounded-4 ms-auto" do %>
+          class: "btn btn-sm btn-outline-secondary rounded-4 ms-auto",
+          data: { turbo_submits_with: t("furigana.updating") } do %>
       <i class="fa-solid fa-language me-1"></i>
       <%= show_furigana? ? t("furigana.hide") : t("furigana.show") %>
     <% end %>

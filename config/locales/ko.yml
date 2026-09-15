@@ -3,6 +3,7 @@ ko:
   furigana:
     show: "후리가나 보기"
     hide: "후리가나 숨기기"
+    updating: "변경 중…"
   search:
     cards: "카드 검색"
     submit: "검색"

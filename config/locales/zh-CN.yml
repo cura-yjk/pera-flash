@@ -3,6 +3,7 @@ zh-CN:
   furigana:
     show: "显示假名"
     hide: "隐藏假名"
+    updating: "更新中…"
   search:
     cards: "搜索卡片"
     submit: "搜索"

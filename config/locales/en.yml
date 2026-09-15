@@ -41,7 +41,8 @@ en:
     label: "Language"
     en: "English"
     ja: "日本語"
-    zh-CN: "中文"
+    zh-CN: "简体中文"
+    zh-TW: "繁體中文"
     ko: "한국어"
     de: "Deutsch"
 

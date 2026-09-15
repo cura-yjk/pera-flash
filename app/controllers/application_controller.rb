@@ -30,9 +30,11 @@ class ApplicationController < ActionController::Base
               .then { |lang| available_languages[lang] }
   end
 
-  # Language code to the locale this app has for it.
+  # Language code to the locale this app has for it. First declared wins, so a
+  # browser asking for plain "zh" gets Simplified rather than whichever variant
+  # happens to sort last.
   def available_languages
-    I18n.available_locales.to_h { |locale| [locale.to_s.split("-").first.downcase, locale.to_s] }
+    I18n.available_locales.reverse.to_h { |locale| [locale.to_s.split("-").first.downcase, locale.to_s] }
   end
 
   def configure_permitted_parameters

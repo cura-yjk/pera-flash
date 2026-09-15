@@ -34,13 +34,31 @@ class LocaleTest < ActionDispatch::IntegrationTest
     assert_match I18n.t("users.dashboard.recent_decks", locale: :ko), response.body
   end
 
-  # zh-TW is not one of ours, but Chinese is closer to right than English.
-  test "a regional variant falls back to the language the app has" do
+  test "a Taiwanese browser gets Traditional, not Simplified" do
     users(:learner).update!(locale: nil)
 
     get dashboard_path, headers: { "HTTP_ACCEPT_LANGUAGE" => "zh-TW,zh;q=0.9" }
 
+    assert_match I18n.t("users.dashboard.recent_decks", locale: :"zh-TW"), response.body
+  end
+
+  # A browser asking for plain "zh" has not said which script. Simplified has
+  # more readers, and is the first Chinese locale the app declares.
+  test "plain Chinese resolves to Simplified" do
+    users(:learner).update!(locale: nil)
+
+    get dashboard_path, headers: { "HTTP_ACCEPT_LANGUAGE" => "zh" }
+
     assert_match I18n.t("users.dashboard.recent_decks", locale: :"zh-CN"), response.body
+  end
+
+  # A regional variant the app does not have still matches its language.
+  test "an unlisted regional variant falls back to the language" do
+    users(:learner).update!(locale: nil)
+
+    get dashboard_path, headers: { "HTTP_ACCEPT_LANGUAGE" => "de-AT,de;q=0.9" }
+
+    assert_match I18n.t("users.dashboard.recent_decks", locale: :de), response.body
   end
 
   test "an unknown language falls back to English" do

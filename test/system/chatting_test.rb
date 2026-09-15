@@ -24,6 +24,23 @@ class ChattingTest < ApplicationSystemTestCase
     assert_text "Nicely done!"
   end
 
+  # The input box is fixed to the bottom of the window, and the newest message
+  # scrolls itself into view. Lining its bottom up with the bottom of the
+  # window put it behind the input box: measured, the last 100px of text sat
+  # underneath the thing you type into.
+  #
+  # Driven without sending a message, because the geometry is the point and a
+  # click adds nothing to it.
+  test "the newest message stays clear of the input box" do
+    @conversation.messages.create!(role: "assistant", content: (1..30).map { |i| "これは #{i} 行目です。" }.join("\n\n"))
+
+    visit conversation_path(@conversation)
+    assert_text "30 行目"
+
+    assert_operator clearance_below_last_message, :>=, 0,
+                    "the newest text sits #{clearance_below_last_message.abs}px underneath the input box"
+  end
+
   test "a new chat suggests what to say" do
     empty = @user.conversations.create!(title: "Fresh chat")
 
@@ -33,6 +50,27 @@ class ChattingTest < ApplicationSystemTestCase
   end
 
   private
+
+  # Pixels between the bottom of the last message and the top of the docked
+  # input, after scrolling to it the way the app does.
+  #
+  # behavior: "instant" on purpose. Bootstrap sets scroll-behavior: smooth on
+  # html, so a scroll started here is still animating a moment later --
+  # measuring then reads the old position, and the test passes whatever the
+  # layout does. That is how my first version of this passed against the bug.
+  def clearance_below_last_message
+    page.evaluate_script(<<~JS)
+      (function () {
+        const last = document.querySelector("#messages > *:last-child");
+        const dock = document.querySelector(".chat-dock");
+        if (!last || !dock) return null;
+
+        last.scrollIntoView({ block: "end", behavior: "instant" });
+
+        return Math.round(dock.getBoundingClientRect().top - last.getBoundingClientRect().bottom);
+      })()
+    JS
+  end
 
   # Gemini's streaming wire format: one SSE frame per chunk.
   def stub_stream(*chunks)

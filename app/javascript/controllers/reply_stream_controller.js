@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+// How far from the bottom of the page still counts as "reading along". Roughly
+// a message's height: far enough that the reply arriving does not feel jumpy,
+// close enough that scrolling up to re-read something stops the page chasing
+// the text back down.
+const FOLLOW_THRESHOLD = 400
+
 // Streams Pera's reply into the page as it is generated.
 //
 // Each update arrives already rendered -- markdown, tables and furigana -- so
@@ -30,7 +36,7 @@ export default class extends Controller {
     const { html } = JSON.parse(event.data)
 
     this.textTarget.innerHTML = html
-    this.scrollIntoView()
+    this.scrollToLatest()
   }
 
   finish(event) {
@@ -39,7 +45,7 @@ export default class extends Controller {
     this.close()
     this.element.outerHTML = html
     this.updateTitle(title)
-    this.scrollIntoView()
+    this.scrollToLatest()
   }
 
   fail() {
@@ -63,7 +69,23 @@ export default class extends Controller {
     this.source = null
   }
 
-  scrollIntoView() {
+  // Follows the reply as it arrives, but only while the reader is already at
+  // the bottom. Scrolling unconditionally on every chunk drags the page back
+  // down each time someone scrolls up to re-read an earlier answer.
+  //
+  // block: "end" lines the reply's bottom up with the bottom of the window,
+  // which the input box covers. Measured, that left the newest text 100px
+  // underneath it; .chat-page sets scroll-margin-bottom so the browser leaves
+  // the dock room, which turns that into 44px of clearance.
+  scrollToLatest() {
+    if (!this.followingAlong()) return
+
     this.element.scrollIntoView({ behavior: "smooth", block: "end" })
+  }
+
+  followingAlong() {
+    const fromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight
+
+    return fromBottom < FOLLOW_THRESHOLD
   }
 }

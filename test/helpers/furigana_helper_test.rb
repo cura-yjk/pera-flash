@@ -51,4 +51,24 @@ class FuriganaHelperTest < ActionView::TestCase
   test "handles nil" do
     assert_equal "", with_furigana(nil)
   end
+
+  # Both branches have to come back marked safe. gsub on a SafeBuffer returns a
+  # plain String, so the hidden branch was escaped a second time by the view --
+  # a card reading "It's polite" reached the screen as "It&#39;s polite", and
+  # only once readings were switched off, which is when a learner is reading
+  # the card most carefully.
+  test "an apostrophe is escaped once, with readings shown" do
+    rendered = with_furigana("It's polite")
+
+    assert_equal "It&#39;s polite", rendered
+    assert_predicate rendered, :html_safe?
+  end
+
+  test "an apostrophe is escaped once, with readings hidden" do
+    rendered = with_furigana("It's polite", show: false)
+
+    assert_equal "It&#39;s polite", rendered
+    assert_predicate rendered, :html_safe?
+  end
+
 end

@@ -81,6 +81,31 @@ class FlashcardTest < ActiveSupport::TestCase
     assert_raises(ArgumentError) { @card.review!("brilliant") }
   end
 
+  # --- struggling -----------------------------------------------------------
+
+  test "struggling finds cards forgotten more than once" do
+    @card.review!("easy")
+    Flashcard::STRUGGLING_LAPSES.times { @card.review!("again") }
+
+    assert_includes Flashcard.for_user(users(:learner)).struggling, @card
+  end
+
+  # One lapse is a bad day, not a gap.
+  test "a single lapse is not yet struggling" do
+    @card.review!("again")
+
+    assert_not_includes Flashcard.for_user(users(:learner)).struggling, @card
+  end
+
+  test "struggling puts the most-forgotten card first" do
+    worst = conversations(:lesson).flashcards.create!(question: "worst", answer: "A", lapse_count: 9)
+    mild = conversations(:lesson).flashcards.create!(question: "mild", answer: "A", lapse_count: 2)
+
+    order = Flashcard.where(id: [mild.id, worst.id]).struggling.map(&:question)
+
+    assert_equal %w[worst mild], order
+  end
+
   # --- queues ---------------------------------------------------------------
 
   test "due includes never-studied cards and excludes ones scheduled ahead" do

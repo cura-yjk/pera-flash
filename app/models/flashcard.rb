@@ -34,6 +34,18 @@ class Flashcard < ApplicationRecord
   FIRST_EASY_INTERVAL = 4.0
   EASY_BONUS = 1.3
 
+  # Cards the learner keeps getting wrong, hardest first.
+  #
+  # Lapses rather than ease: a lapse is a thing that actually happened -- they
+  # forgot it -- while ease is a derived number that also moves for cards
+  # simply answered "easy" a lot. Two lapses is the point where it stops
+  # looking like a bad day and starts looking like a gap.
+  STRUGGLING_LAPSES = 2
+
+  scope :struggling, lambda {
+    where(lapse_count: STRUGGLING_LAPSES..).order(lapse_count: :desc, ease: :asc)
+  }
+
   scope :due, lambda { |at = Time.current|
     where(due_at: ..at).or(where(due_at: nil))
   }

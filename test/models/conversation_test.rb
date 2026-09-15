@@ -32,7 +32,7 @@ class ConversationTest < ActiveSupport::TestCase
   # Titling is cosmetic -- a conversation keeping its default title is a far
   # better outcome than failing the message that triggered the attempt.
   test "a failed title attempt does not raise" do
-    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+    stub_request(:post, llm_url).to_timeout
     conversation = conversations(:lesson)
     conversation.update!(title: "Let's chat!")
 
@@ -52,5 +52,13 @@ class ConversationTest < ActiveSupport::TestCase
     ordered = @conversation.messages_for_flashcards.order(:created_at).to_a
 
     assert_equal ordered.sort_by(&:created_at), ordered
+  end
+
+  private
+
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
   end
 end

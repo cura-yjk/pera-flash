@@ -48,7 +48,7 @@ class ConversationsController < ApplicationController
   # reached -- the conversation is untouched either way, so the learner can
   # simply try again.
   def build_flashcards(transcript)
-    response = RubyLLM.chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript))
+    response = LlmChat.new_chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript))
 
     Array(response.content["flashcards"]).map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])

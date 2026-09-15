@@ -18,7 +18,7 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     get review_path
 
     assert_response :success
-    assert_not_requested :post, /api\.openai\.com/
+    assert_not_requested :post, llm_url
   end
 
   test "shows a due card" do
@@ -45,7 +45,7 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
     card.reload
     assert_equal 1, card.review_count
     assert card.due_at.present?
-    assert_not_requested :post, /api\.openai\.com/
+    assert_not_requested :post, llm_url
   end
 
   test "a forgotten card stays in the queue" do
@@ -118,5 +118,13 @@ class ReviewsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match(/nothing due/i, response.body)
+  end
+
+  private
+
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
   end
 end

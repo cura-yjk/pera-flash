@@ -5,8 +5,7 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
   setup { sign_in users(:learner) }
 
-  LLM_URL = "https://api.openai.com/v1/chat/completions".freeze
-
+  
   test "requires authentication" do
     sign_out users(:learner)
     post conversation_messages_path(conversations(:lesson)), params: { message: { content: "hi" } }
@@ -67,18 +66,24 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     post conversation_messages_path(conversations(:lesson)),
          params: { message: { content: "  " } }, as: :turbo_stream
 
-    assert_not_requested :post, LLM_URL
+    assert_not_requested :post, llm_url
   end
 
   private
 
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
+  end
+
   def stub_llm_success(text)
-    stub_request(:post, LLM_URL)
+    stub_request(:post, llm_url)
       .to_return(status: 200, headers: { "Content-Type" => "application/json" },
-                 body: { "choices" => [{ "message" => { "content" => text } }] }.to_json)
+                 body: { "candidates" => [{ "content" => { "parts" => [{ "text" => text }] } }] }.to_json)
   end
 
   def stub_llm_failure
-    stub_request(:post, LLM_URL).to_timeout
+    stub_request(:post, llm_url).to_timeout
   end
 end

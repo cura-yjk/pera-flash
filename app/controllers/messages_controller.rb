@@ -34,7 +34,7 @@ class MessagesController < ApplicationController
   # not take the request down with it: they would watch their message land and
   # then get an error page, with no reply and no way back.
   def generate_reply(message)
-    chat = RubyLLM.chat
+    chat = LlmChat.new_chat
     replay_history(chat)
     chat.with_instructions(Message.system_prompt).ask(message.content).content
   rescue StandardError => e

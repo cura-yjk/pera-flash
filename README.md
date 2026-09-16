@@ -1,12 +1,39 @@
 # 🃏 Pera Flash
 
-Pera Flash is a Japanese-learning chatbot. Chat with ペラ (Pera), an AI tutor who corrects your
-Japanese sentences and explains the grammar, then turn any conversation into a set of flashcards
-you can organize into decks, search, and export.
+Pera Flash is a Japanese tutor you chat with. Write a sentence at whatever level you're at and
+ペラ (Pera) corrects it and explains the grammar — then any correction can become a flashcard,
+reviewed on a spaced-repetition schedule until it sticks.
 
 _DROP SCREENSHOT HERE_
 <br>
 App home: https://pera-flash-3683e7b80a56.herokuapp.com/
+
+## What it does
+
+**Chatting**
+- Write Japanese at whatever level you're at; Pera corrects it and explains why, in your language
+- Replies stream in as they're generated rather than landing all at once
+- Pera is reminded of the recent conversation *and* of the cards you keep getting wrong, so the
+  tutoring stays pointed at your actual weak spots
+- Every kanji is annotated with its reading as furigana — switch them off when you want to test
+  yourself
+- Conversations are titled automatically and kept, so you can go back to one
+
+**Flashcards**
+- Turn any conversation into cards; a correction becomes a question and an answer
+- Organise them into decks, search across them as you type, edit or delete any of them
+- Export a deck as CSV, with the headers Anki expects
+
+**Studying**
+- Review on a spaced-repetition schedule — grade a card *again*, *good* or *easy* and it comes back
+  when you're about to forget it, not before
+- Quiz yourself multiple-choice, with the wrong answers drawn from your own other cards so they're
+  plausibly confusable
+- Study everything at once, or one deck at a time
+
+**Elsewhere**
+- Interface in six languages: English, 日本語, 한국어, 简体中文, 繁體中文 and Deutsch
+- Installs to a phone's home screen as a PWA
 
 ## Getting Started
 ### Setup
@@ -47,7 +74,7 @@ rails s
 - [Heroku](https://heroku.com/) - Deployment
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Bootstrap](https://getbootstrap.com/) — Styling
-- [RubyLLM](https://rubyllm.com/) + [Gemini](https://ai.google.dev/) — Chat tutor and structured flashcard generation
+- [RubyLLM](https://rubyllm.com/) + [Gemini](https://ai.google.dev/) — Chat tutor, conversation titling and structured flashcard generation
 
 ## Acknowledgements
 

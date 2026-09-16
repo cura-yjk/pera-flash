@@ -23,8 +23,10 @@ touch .env
 ```
 Inside `.env`, set these variables. For any API keys, see group Slack channel.
 ```
-OPENAI_API_KEY=your_openai_api_key
+GEMINI_API_KEYS=your_gemini_api_key
 ```
+`GEMINI_API_KEYS` takes a comma-separated list — Pera falls through to the next key when one
+runs out of quota. A single key is fine. `GEMINI_API_KEY` (singular) is still read as a fallback.
 
 ### DB Setup
 ```
@@ -45,7 +47,7 @@ rails s
 - [Heroku](https://heroku.com/) - Deployment
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Bootstrap](https://getbootstrap.com/) — Styling
-- [RubyLLM](https://rubyllm.com/) + [OpenAI](https://platform.openai.com/) — Chat tutor and structured flashcard generation
+- [RubyLLM](https://rubyllm.com/) + [Gemini](https://ai.google.dev/) — Chat tutor and structured flashcard generation
 
 ## Acknowledgements
 

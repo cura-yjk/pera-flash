@@ -39,3 +39,6 @@
 # Ignore Mac and Linux file system files
 *.swp
 .DS_Store
+
+# Coverage reports, written by SimpleCov on every test run
+/coverage/

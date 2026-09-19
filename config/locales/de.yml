@@ -4,6 +4,11 @@ de:
     show: "Lesungen anzeigen"
     hide: "Lesungen ausblenden"
     updating: "Wird geändert…"
+  nav:
+    dashboard: "Übersicht"
+    theme: "Design wechseln"
+    account: "Konto"
+
   search:
     cards: "Karten durchsuchen"
     submit: "Suchen"

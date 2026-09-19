@@ -10,6 +10,11 @@ en:
     hide: "Hide readings"
     updating: "Updating…"
 
+  nav:
+    dashboard: "Dashboard"
+    theme: "Switch theme"
+    account: "Account"
+
   search:
     cards: "Search cards"
     submit: "Search"

@@ -65,6 +65,28 @@ class PeraPromptTest < ActiveSupport::TestCase
   # The two prompts drifted apart once already: cards were told to annotate
   # kanji and the chat was told nothing, so the same word was taught with
   # romaji in chat and furigana on the card made from it.
+  # Gemini generalised "annotate every kanji" into "annotate Japanese", and
+  # produced が[が] and ペラ[ぺら] -- kana annotated with itself, which renders
+  # as a reading above a character that is already its own reading.
+  test "the furigana rule says kana are not annotated" do
+    assert_match(/Only kanji take readings/, PeraPrompt::FURIGANA_RULE)
+    assert_match(/never が\[が\]/, PeraPrompt::FURIGANA_RULE)
+  end
+
+  # The shape is for corrections. A sentence that was already right fell
+  # between that and "just answer a question", so the model improvised: a
+  # greeting, the same praise three times over, and an invented heading.
+  test "the prompt says what to do with a sentence that is already correct" do
+    assert_match(/already correct/, PeraPrompt.for)
+    assert_match(/Do not reach for the shape above/, PeraPrompt.for)
+  end
+
+  # Every reply ended by recommending the Generate flashcards button, unasked.
+  test "the app guide says to answer about the app, not to advertise it" do
+    assert_match(/only then/, PeraPrompt::APP_GUIDE)
+    assert_match(/not a place to advertise/, PeraPrompt::APP_GUIDE)
+  end
+
   test "the chat prompt carries the same furigana rule the cards use" do
     assert_includes PeraPrompt.for, PeraPrompt::FURIGANA_RULE.strip
   end

@@ -85,10 +85,8 @@ module PeraPrompt
   # conversation with no introduction in it. The app knows the answer; the
   # model should not have to infer it.
   def base_prompt(greet: true)
-    introduction = greet ? " Introduce yourself by that name the first time you greet them." : ""
-
     <<~PROMPT
-      You are ペラ (Pera), a Japanese teacher working with a beginner.#{introduction}
+      You are ペラ (Pera), a Japanese teacher working with a beginner.#{introduction(greet)}
 
       #{FURIGANA_RULE}
       #{EXPLANATION_LANGUAGE_RULE}
@@ -122,6 +120,10 @@ module PeraPrompt
 
       #{APP_GUIDE}
     PROMPT
+  end
+
+  def introduction(greet)
+    greet ? " Introduce yourself by that name the first time you greet them." : ""
   end
 
   # What the learner keeps forgetting, taken from their own review history.
@@ -178,5 +180,5 @@ module PeraPrompt
   end
 
   # PeraPrompt.for is the whole surface; the sections are how it is built.
-  private_class_method :base_prompt, :interface_language_section, :language_name, :struggle_section
+  private_class_method :base_prompt, :introduction, :interface_language_section, :language_name, :struggle_section
 end

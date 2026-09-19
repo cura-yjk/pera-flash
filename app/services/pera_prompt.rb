@@ -146,7 +146,9 @@ module PeraPrompt
     return nil if locale.blank?
 
     "This student reads the app in #{language_name(locale)} (locale #{locale}). " \
-      "Write the explaining side of each card in that language, whatever language the transcript is in."
+      "Write both sides of every card in that language, whatever language the transcript is in -- " \
+      "the question as well as the answer. Only the Japanese being taught stays Japanese: " \
+      "a card asking what 猫[ねこ] means is asked in their language and answered in their language."
   end
 
   # What the learner keeps forgetting, taken from their own review history.

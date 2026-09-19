@@ -141,6 +141,16 @@ class PeraPromptTest < ActiveSupport::TestCase
     assert_includes PeraPrompt.language_note("en"), "English"
   end
 
+  # Cards came back asked in Japanese and answered in English: "the explaining
+  # side" left it to the model to decide which side that was, and it split the
+  # difference, so half of every card was unreadable to the learner.
+  test "the language note covers both sides of a card" do
+    note = PeraPrompt.language_note("ko")
+
+    assert_includes note, "Write both sides of every card"
+    assert_includes note, "the question as well as the answer"
+  end
+
   test "there is no language note for nobody" do
     assert_nil PeraPrompt.language_note(nil)
     assert_nil PeraPrompt.language_note("")

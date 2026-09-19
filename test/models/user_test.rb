@@ -51,6 +51,20 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  # The card above has a deck but no conversation. Every card the app actually
+  # makes has both -- flashcards#create builds them through the conversation --
+  # and conversations are destroyed before decks, while their cards still exist.
+  test "closing an account takes a card made the way the app makes them" do
+    user = User.create!(email: "closing-real-card@example.com", password: "password123")
+    conversation = user.conversations.create!(title: "A chat")
+    deck = user.decks.create!(name: "A deck")
+    conversation.flashcards.create!(question: "What does 猫 mean?", answer: "Cat", deck: deck)
+
+    assert_difference -> { Flashcard.count }, -1 do
+      user.destroy!
+    end
+  end
+
   test "one learner's account is not another's" do
     assert_not_equal users(:other).id, @user.id
     assert_empty User.where(email: @user.email).where.not(id: @user.id)

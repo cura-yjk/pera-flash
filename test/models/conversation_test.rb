@@ -77,4 +77,18 @@ class ConversationTest < ActiveSupport::TestCase
   def llm_url
     %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
   end
+
+  # A card is filed in a deck and reviewed from there; it outlives the chat it
+  # was made in. Nothing deletes a conversation on its own today -- there is no
+  # destroy route -- but closing an account does, and the cards must not take
+  # the database's foreign key with them on the way out.
+  test "a card outlives the chat it came from" do
+    card = @conversation.flashcards.create!(question: "What does 猫 mean?", answer: "Cat",
+                                            deck: decks(:starter))
+
+    @conversation.destroy!
+
+    assert Flashcard.exists?(card.id), "the card should survive its conversation"
+    assert_nil card.reload.conversation_id
+  end
 end

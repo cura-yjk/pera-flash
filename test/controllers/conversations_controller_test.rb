@@ -120,6 +120,32 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "What does 犬 mean?"
   end
 
+  # Cards were generated from the transcript alone. That usually works, because
+  # Pera's own replies are in the learner's language and end up in it -- but a
+  # short conversation, or one that is mostly Japanese practice, leaves the
+  # generator guessing.
+  test "generation is told the language the cards should explain in" do
+    users(:learner).update!(locale: "ko")
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url do |request|
+      request.body.to_s.include?("locale ko")
+    end
+  end
+
+  test "an English learner is told nothing extra" do
+    users(:learner).update!(locale: "en")
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url do |request|
+      !request.body.to_s.include?("has set the app")
+    end
+  end
+
   test "says nothing is new without calling the LLM at all" do
     conversations(:lesson).flashcards.update_all(created_at: Time.current)
 

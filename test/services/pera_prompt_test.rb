@@ -102,6 +102,22 @@ class PeraPromptTest < ActiveSupport::TestCase
 
   # The student already told the app which language they read; making Pera
   # guess again from the first message is both wasteful and worse.
+  # The card generator needs the same fact the chat prompt carries: it only
+  # ever sees a transcript, and a transcript of Japanese practice may contain
+  # almost none of the student's own language to infer from.
+  test "the language note names the language" do
+    note = PeraPrompt.language_note("ko")
+
+    assert_includes note, I18n.t("languages.ko", locale: :ko)
+    assert_includes note, "locale ko"
+  end
+
+  test "there is no language note for English or for nobody" do
+    assert_nil PeraPrompt.language_note("en")
+    assert_nil PeraPrompt.language_note(nil)
+    assert_nil PeraPrompt.language_note("")
+  end
+
   test "names the interface language when it is not English" do
     prompt = PeraPrompt.for(locale: "ko")
 

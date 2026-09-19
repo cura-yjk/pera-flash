@@ -126,6 +126,18 @@ module PeraPrompt
     greet ? " Introduce yourself by that name the first time you greet them." : ""
   end
 
+  # The same fact the chat prompt carries, in a form the card generator can
+  # use. Worded differently on purpose: chat is talking to the student and can
+  # follow what they write to it, while a generation only ever sees a
+  # transcript -- and a transcript of Japanese practice may contain almost
+  # nothing of the student's own language to infer from.
+  def language_note(locale)
+    return nil if locale.blank? || locale.to_s == "en"
+
+    "The student has set the app's interface to #{language_name(locale)} (locale #{locale}). " \
+      "Write the explaining side of each card in that language."
+  end
+
   # What the learner keeps forgetting, taken from their own review history.
   #
   # This is the only thing that connects the two halves of the app: without it

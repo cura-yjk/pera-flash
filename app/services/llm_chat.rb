@@ -20,7 +20,10 @@ module LlmChat
   # for, and the replies come back just as good.
   #
   # Nested under thinkingConfig deliberately -- generationConfig.thinkingBudget
-  # at the top level is rejected as an unknown field.
+  # at the top level is rejected as an unknown field. Passed through
+  # with_provider_options, which merges it into the payload as-is: ruby_llm 2.0
+  # has a with_thinking(false), but it refuses this model, whose registry entry
+  # does not exist because we pass assume_model_exists.
   THINKING_OFF = { thinkingConfig: { thinkingBudget: 0 } }.freeze
 
   module_function
@@ -66,6 +69,6 @@ module LlmChat
   def chat_on(key)
     RubyLLM.context { |config| config.gemini_api_key = key }
            .chat(model: MODEL, provider: PROVIDER, assume_model_exists: true)
-           .with_params(generationConfig: THINKING_OFF)
+           .with_provider_options(generationConfig: THINKING_OFF)
   end
 end

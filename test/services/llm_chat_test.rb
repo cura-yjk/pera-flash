@@ -53,6 +53,22 @@ class LlmChatTest < ActiveSupport::TestCase
     assert_not_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "second-key" }
   end
 
+  # The one thing here that is invisible when it breaks: with thinking back on,
+  # a reply costs about fifteen seconds of silence and nothing fails. ruby_llm
+  # 2.0 removed with_params, and its replacement merges the payload as-is, so
+  # the nesting is worth asserting on the wire rather than trusting.
+  test "asks the model not to think before it answers" do
+    payload = nil
+    stub_request(:post, generate_url).to_return do |request|
+      payload = JSON.parse(request.body)
+      { status: 200, headers: { "Content-Type" => "application/json" }, body: reply_body("ok") }
+    end
+
+    LlmChat.with_chat { |chat| chat.ask("hello") }
+
+    assert_equal({ "thinkingConfig" => { "thinkingBudget" => 0 } }, payload["generationConfig"])
+  end
+
   private
 
   def generate_url

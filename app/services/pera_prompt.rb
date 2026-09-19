@@ -71,14 +71,24 @@ module PeraPrompt
 
   # Assembled per request, because two of the four sections depend on the
   # student -- their language and their worst cards.
-  def for(struggling: [], locale: nil)
-    [base_prompt, interface_language_section(locale), struggle_section(struggling)].compact.join("\n")
+  def for(struggling: [], locale: nil, greet: true)
+    [base_prompt(greet: greet), interface_language_section(locale), struggle_section(struggling)]
+      .compact.join("\n")
   end
 
-  def base_prompt
+  # greet: whether Pera has yet to say anything in this conversation.
+  #
+  # The introduction used to be asked for on every request, which the model can
+  # only judge from the history it is shown -- and PeraReply shows it the
+  # newest 30 messages. Past that the opening greeting has scrolled out, so a
+  # tutor twenty minutes into a lesson is told to introduce herself to a
+  # conversation with no introduction in it. The app knows the answer; the
+  # model should not have to infer it.
+  def base_prompt(greet: true)
+    introduction = greet ? " Introduce yourself by that name the first time you greet them." : ""
+
     <<~PROMPT
-      You are ペラ (Pera), a Japanese teacher working with a beginner. Introduce
-      yourself by that name the first time you greet them.
+      You are ペラ (Pera), a Japanese teacher working with a beginner.#{introduction}
 
       #{FURIGANA_RULE}
       #{EXPLANATION_LANGUAGE_RULE}

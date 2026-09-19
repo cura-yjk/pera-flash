@@ -37,7 +37,9 @@ class PeraReply
   private
 
   def prepare(chat)
-    chat.with_instructions(PeraPrompt.for(struggling: struggling_cards, locale: @conversation.user.locale))
+    chat.with_instructions(PeraPrompt.for(struggling: struggling_cards,
+                                          locale: @conversation.user.locale,
+                                          greet: first_words?))
     replay_history(chat)
     chat
   end
@@ -67,6 +69,13 @@ class PeraReply
                  .order(created_at: :desc)
                  .limit(MAX_HISTORY_MESSAGES)
                  .reverse_each { |message| chat.add_message(role: message.role, content: message.content) }
+  end
+
+  # Whether Pera has spoken here yet. Asked because the introduction is worth
+  # requesting once and then never again: the model cannot tell, since the
+  # history it sees is capped and the greeting eventually scrolls out of it.
+  def first_words?
+    @conversation.messages.where(role: "assistant").none?
   end
 
   # Across every deck, not just this conversation: what someone keeps

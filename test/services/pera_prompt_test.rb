@@ -29,6 +29,31 @@ class PeraPromptTest < ActiveSupport::TestCase
     assert_match(/never make the student feel behind/i, prompt)
   end
 
+  # Asked for once, at the start. It used to be asked for on every request,
+  # which the model could only judge from a history PeraReply caps at 30 -- so
+  # deep into a lesson the greeting had scrolled out, and Pera was being told
+  # to introduce herself to a conversation with no introduction in it.
+  test "asks for an introduction when Pera has not spoken yet" do
+    assert_match(/Introduce\s+yourself by that name/, PeraPrompt.for(greet: true))
+  end
+
+  test "stops asking once Pera has spoken" do
+    assert_no_match(/Introduce\s+yourself/, PeraPrompt.for(greet: false))
+  end
+
+  test "is still Pera either way" do
+    assert_includes PeraPrompt.for(greet: false), "You are ペラ (Pera)"
+  end
+
+  # Everything else the prompt says is the same; only the sentence goes.
+  test "drops nothing but the introduction" do
+    with_it = PeraPrompt.for(greet: true).squish
+    without = PeraPrompt.for(greet: false).squish
+
+    assert_equal with_it.sub(" Introduce yourself by that name the first time you greet them.", ""),
+                 without
+  end
+
   test "the base prompt is unchanged by the addition" do
     assert PeraPrompt.for(struggling: @cards).start_with?(PeraPrompt.for)
   end

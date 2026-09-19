@@ -18,7 +18,31 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   cached = Dir[File.expand_path("~/.cache/selenium/chrome/*/*/chrome")].max
   Selenium::WebDriver::Chrome.path = cached if cached && !system("which google-chrome chromium >/dev/null 2>&1")
 
-  driven_by :selenium, using: :headless_chrome, screen_size: DESKTOP
+  # HEADED=1 opens a real window instead, so you can watch a test drive the
+  # app. Useful for the thing an assertion cannot check: whether the page
+  # looked right while it happened.
+  #
+  #   HEADED=1 bin/rails test:system test/system/studying_test.rb
+  #
+  # SLOWMO=0.4 pauses after each Capybara action, since a headless-speed run is
+  # hard to follow with the naked eye.
+  driven_by :selenium, using: ENV["HEADED"].present? ? :chrome : :headless_chrome, screen_size: DESKTOP
+
+  # Pauses after each action when SLOWMO is set. Capybara has no such setting,
+  # so this wraps the session's own click and fill methods.
+  if ENV["SLOWMO"].present?
+    setup do
+      delay = ENV["SLOWMO"].to_f
+      session = Capybara.current_session
+      %i[click_button click_link fill_in visit].each do |action|
+        session.singleton_class.prepend(Module.new do
+          define_method(action) do |*args, **kwargs, &block|
+            super(*args, **kwargs, &block).tap { sleep delay }
+          end
+        end)
+      end
+    end
+  end
 
   # Signs in through the form rather than through Warden's test helpers: the
   # session a real browser holds is the thing being exercised here.

@@ -135,7 +135,7 @@ de:
       suggestions:
         - "Wie funktioniert diese App?"
         - "Was sollte ich zuerst lernen?"
-        - "ねこが すきです。Is this right?"
+        - "ねこが すきです。Ist das richtig?"
   users:
     dashboard:
       welcome: "Willkommen zurück, %{name}!"

@@ -134,7 +134,7 @@ ko:
       suggestions:
         - "이 앱은 어떻게 쓰나요?"
         - "무엇부터 공부하면 좋을까요?"
-        - "ねこが すきです。Is this right?"
+        - "ねこが すきです。이게 맞나요?"
   users:
     dashboard:
       welcome: "%{name}님, 다시 오셨군요!"

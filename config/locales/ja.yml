@@ -135,7 +135,7 @@ ja:
       suggestions:
         - "このアプリの使い方は？"
         - "何から勉強すればいい？"
-        - "ねこが すきです。Is this right?"
+        - "ねこが すきです。これで合っていますか？"
   users:
     dashboard:
       welcome: "おかえりなさい、%{name}さん！"

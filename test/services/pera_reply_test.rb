@@ -135,20 +135,23 @@ class PeraReplyTest < ActiveSupport::TestCase
     end
   end
 
-  # This version of ruby_llm sends #with_instructions as the first turn of
-  # `contents` rather than in a systemInstruction field, so the prompt is turn
-  # zero and the replayed conversation starts after it.
-  def turns
-    @payload.fetch("contents")
-  end
-
+  # Gemini carries the prompt in systemInstruction, separately from the turns.
+  # ruby_llm 1.16 did not: it sent #with_instructions as turn zero of
+  # `contents`, which is why these read the payload rather than the chat
+  # object -- where the prompt lands is the gem's business and has changed
+  # once already.
   def instructions
-    turns.first.fetch("parts").map { |part| part["text"] }.join(" ").to_s
+    parts = @payload.dig("systemInstruction", "parts")
+    return "" if parts.nil?
+
+    parts.map { |part| part["text"] }.join(" ").to_s
   end
 
-  # Every piece of text the model was sent after the instructions, in order.
+  # Every piece of text the model was sent as conversation, in order.
   def sent_texts
-    turns.drop(1).flat_map { |turn| turn.fetch("parts").map { |part| part["text"] } }.compact
+    @payload.fetch("contents")
+            .flat_map { |turn| turn.fetch("parts").map { |part| part["text"] } }
+            .compact
   end
 
   def struggling_card(question, deck: @deck, lapses: Flashcard::STRUGGLING_LAPSES + 1)

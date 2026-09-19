@@ -91,6 +91,32 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_text expect, wait: wait
   end
 
+  # Puts text in a field, and makes sure it arrived.
+  #
+  # Capybara types by sending native key events, which the browser only
+  # delivers to a focused window. Headless has no window manager so focus is
+  # implicit; a real window often does not have it, and then the keystrokes go
+  # nowhere -- silently, leaving the field empty. What follows looks nothing
+  # like a typing failure: the form submits empty, the server rejects it, the
+  # box clears itself, and the message never appears.
+  #
+  # This is the phantom input that press_enter_until_sent and click_and_confirm
+  # both work around. Assigning the value needs no focus, so it is the fallback
+  # rather than the default: where a keystroke is what is being tested, it
+  # should be a real one.
+  def type_into(text, field: "#chat-input")
+    input = find(field)
+    input.set(text)
+    return if input.value == text
+
+    page.execute_script(<<~JS, input)
+      arguments[0].value = #{'#{text.to_json}'};
+      arguments[0].dispatchEvent(new Event("input", { bubbles: true }));
+    JS
+
+    assert_equal text, find(field).value, "could not get #{'#{text.inspect}'} into #{'#{field}'}"
+  end
+
   # True when the page can be scrolled sideways -- which, on a phone, means
   # something is wider than the screen.
   def scrolls_horizontally?

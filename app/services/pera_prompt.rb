@@ -143,10 +143,12 @@ module PeraPrompt
   # transcript -- and a transcript of Japanese practice may contain almost
   # nothing of the student's own language to infer from.
   def language_note(locale)
-    return nil if locale.blank? || locale.to_s == "en"
+    return nil if locale.blank?
 
-    "The student has set the app's interface to #{language_name(locale)} (locale #{locale}). " \
-      "Write the explaining side of each card in that language."
+    "This student reads the app in #{language_name(locale)} (locale #{locale}). " \
+      "Write both sides of every card in that language, whatever language the transcript is in -- " \
+      "the question as well as the answer. Only the Japanese being taught stays Japanese: " \
+      "a card asking what 猫[ねこ] means is asked in their language and answered in their language."
   end
 
   # What the learner keeps forgetting, taken from their own review history.
@@ -165,16 +167,23 @@ module PeraPrompt
   #
   # Still only a default: someone studying in a German interface may well write
   # to Pera in English, and should be answered in English.
+  # Sent for English too, which it did not used to be. A student practising
+  # writes Japanese, and "explain in the language the student writes in" eats
+  # itself when their writing is the language being taught -- so the model was
+  # left to guess, and a beginner who asked "Is this right?" in English got the
+  # whole answer back in Japanese.
   def interface_language_section(locale)
-    return nil if locale.blank? || locale.to_s == "en"
+    return nil if locale.blank?
 
     <<~SECTION
 
       ---
 
-      This student has set the app's interface to #{language_name(locale)} (locale
-      #{locale}). Explain in that language unless they write to you in a different
-      one, in which case follow what they write.
+      This student reads the app in #{language_name(locale)} (locale #{locale}).
+      Explain in that language. Japanese they send you is practice to be
+      checked, not a request to be answered in Japanese -- a beginner cannot
+      read their own feedback. Follow them only if they write to you in some
+      other language of their own.
     SECTION
   end
 

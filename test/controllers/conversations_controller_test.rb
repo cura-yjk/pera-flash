@@ -135,14 +135,16 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "an English learner is told nothing extra" do
+  # English is named too. A transcript of Japanese practice says nothing about
+  # what the learner reads, and cards they cannot read are worth nothing.
+  test "an English learner is named as well" do
     users(:learner).update!(locale: "en")
     stub_llm_success([])
 
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
     assert_requested :post, llm_url do |request|
-      !request.body.to_s.include?("has set the app")
+      request.body.to_s.include?("locale en")
     end
   end
 

@@ -80,4 +80,7 @@ group :test do
 
   # Stubs outbound HTTP so the suite never reaches a real LLM provider
   gem "webmock"
+
+  # Line coverage, so a gap is a number rather than a guess
+  gem "simplecov", require: false
 end

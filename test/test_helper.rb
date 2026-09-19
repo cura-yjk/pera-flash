@@ -14,6 +14,14 @@ ENV["GEMINI_API_KEYS"] = "test-gemini-key-not-a-real-credential"
 ENV["GEMINI_API_KEY"] = "test-gemini-key-not-a-real-credential"
 ENV["OPENAI_API_KEY"] = "test-openai-key-not-a-real-credential"
 
+# Before the app boots: a file already loaded when SimpleCov starts is invisible
+# to it, and config/environment pulls in most of the app.
+require "simplecov"
+SimpleCov.start "rails" do
+  enable_coverage :branch
+  add_filter "/test/"
+end
+
 require_relative "../config/environment"
 require "rails/test_help"
 require "webmock/minitest"
@@ -24,6 +32,17 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
+
+    # Each worker is its own process with its own coverage. Naming the result
+    # per worker and writing it out on the way down lets SimpleCov merge them;
+    # without this the report is whichever worker finished last.
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
+    end
+
+    parallelize_teardown do |_worker|
+      SimpleCov.result
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

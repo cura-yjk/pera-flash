@@ -141,6 +141,68 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # --- create ---------------------------------------------------------------
+  #
+  # Starting a chat was the one part of the flow with no test: every other test
+  # here begins from a conversation already in the fixtures.
+
+  test "create requires authentication" do
+    sign_out users(:learner)
+
+    post conversations_path
+
+    assert_redirected_to new_user_session_path
+  end
+
+  test "starts a conversation and goes straight to it" do
+    post conversations_path
+
+    conversation = users(:learner).conversations.order(:id).last
+
+    assert_redirected_to conversation_path(conversation)
+    assert_equal "Let's chat!", conversation.title, "the real title is written once there is a message to name it after"
+  end
+
+  # #create clears these out first, so pressing "new chat" repeatedly leaves
+  # one empty conversation rather than a pile of them.
+  test "clears out the empty conversations left behind before it" do
+    abandoned = conversations(:abandoned)
+
+    post conversations_path
+
+    assert_not Conversation.exists?(abandoned.id)
+  end
+
+  test "pressing it twice does not pile up empty conversations" do
+    post conversations_path
+    post conversations_path
+
+    assert_equal 1, users(:learner).conversations.empty.count
+  end
+
+  test "leaves a conversation that has been used alone" do
+    post conversations_path
+
+    assert Conversation.exists?(conversations(:lesson).id)
+  end
+
+  test "does not clear out another learner's empty conversations" do
+    stranger_conversation = conversations(:other_users_lesson)
+
+    post conversations_path
+
+    assert Conversation.exists?(stranger_conversation.id),
+           "destroy_all is scoped to current_user, and must stay that way"
+  end
+
+  # `resources :conversations` routes GET /conversations/new, but there is no
+  # new action and no template: a chat is started by posting, from the button.
+  test "there is no new-conversation page" do
+    get new_conversation_path
+
+    assert_response :not_found
+  end
+
   private
 
   def current_user_conversation_with_no_messages

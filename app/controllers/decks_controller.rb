@@ -49,7 +49,6 @@ class DecksController < ApplicationController
     redirect_to decks_path, notice: t("decks.deleted")
   end
 
-  # TODO: not yet implemented
   def export
     @deck = current_user.decks.find(params[:id])
 

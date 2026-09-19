@@ -70,12 +70,47 @@ class ConversationTest < ActiveSupport::TestCase
     assert_not_includes started, conversations(:abandoned).id
   end
 
-  private
 
-  # Follows LlmChat, so switching provider cannot silently leave these stubs
-  # pointing at an endpoint nothing calls.
-  def llm_url
-    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
+  # What turns a history list of "Let's chat!" into something navigable. It is
+  # one more model call, made after the first reply is saved.
+  test "names the chat after the first thing the learner said" do
+    stub_title("Talking about cats")
+    conversation = default_titled_conversation
+    conversation.messages.create!(role: "user", content: "ねこがすきです")
+
+    conversation.generate_title_from_first_message
+
+    assert_equal "Talking about cats", conversation.reload.title
+  end
+
+  test "takes the title as the model gives it, without the surrounding space" do
+    stub_title("  Cats and how to like them\n")
+    conversation = default_titled_conversation
+    conversation.messages.create!(role: "user", content: "ねこがすきです")
+
+    conversation.generate_title_from_first_message
+
+    assert_equal "Cats and how to like them", conversation.reload.title
+  end
+
+  # Only the default title is replaced, so a conversation is named once and a
+  # later message cannot rename it -- nor pay for a call to do so.
+  test "does not rename a chat that already has one" do
+    conversation = conversations(:lesson)
+
+    conversation.generate_title_from_first_message
+
+    assert_not_requested :post, llm_url
+    assert_equal "Talking about cats", conversation.reload.title
+  end
+
+  test "waits until there is something to name it after" do
+    conversation = default_titled_conversation
+
+    conversation.generate_title_from_first_message
+
+    assert_not_requested :post, llm_url
+    assert_equal "Let's chat!", conversation.reload.title
   end
 
   # A card is filed in a deck and reviewed from there; it outlives the chat it
@@ -90,5 +125,26 @@ class ConversationTest < ActiveSupport::TestCase
 
     assert Flashcard.exists?(card.id), "the card should survive its conversation"
     assert_nil card.reload.conversation_id
+  end
+
+  private
+
+  # Follows LlmChat, so switching provider cannot silently leave these stubs
+  # pointing at an endpoint nothing calls.
+  # A conversation as #create leaves it: the default title, which is the only
+  # one generate_title_from_first_message will replace.
+  def default_titled_conversation
+    users(:learner).conversations.create!
+  end
+
+  def stub_title(text)
+    stub_request(:post, llm_url).to_return(
+      status: 200, headers: { "Content-Type" => "application/json" },
+      body: { "candidates" => [{ "content" => { "parts" => [{ "text" => text }] } }] }.to_json
+    )
+  end
+
+  def llm_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
   end
 end

@@ -93,6 +93,33 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Previously this cost a full generation to discover there was nothing new.
+  # The old assertions only checked what was sent, never what came back -- so
+  # they passed while every generated card arrived blank. ruby_llm 2.0 returns
+  # a schema response as a String, and String#[] with a key is a substring
+  # match: content["flashcards"] gave back the word "flashcards", Array() made
+  # one element of it, and "flashcards"["question"] is nil.
+  test "the cards that come back carry the question and answer" do
+    stub_llm_success([{ question: "What does 猫 mean?", answer: "Cat (neko)" }])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_response :success
+    assert_includes response.body, "What does 猫 mean?"
+    assert_includes response.body, "Cat (neko)"
+  end
+
+  test "every card the model returns is offered" do
+    stub_llm_success([
+      { question: "What does 猫 mean?", answer: "Cat" },
+      { question: "What does 犬 mean?", answer: "Dog" }
+    ])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_includes response.body, "What does 猫 mean?"
+    assert_includes response.body, "What does 犬 mean?"
+  end
+
   test "says nothing is new without calling the LLM at all" do
     conversations(:lesson).flashcards.update_all(created_at: Time.current)
 

@@ -78,7 +78,11 @@ class ConversationsController < ApplicationController
   def build_flashcards(transcript)
     response = LlmChat.with_chat { |chat| chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript)) }
 
-    Array(response.content["flashcards"]).map do |card|
+    # #parsed, not #content: ruby_llm 2.0 returns a schema response as the raw
+    # JSON string, and String#[] with a key is a substring match -- so
+    # content["flashcards"] gave back the word "flashcards" and every card
+    # arrived blank.
+    Array(response.parsed&.dig("flashcards")).map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])
     end
   rescue StandardError => e

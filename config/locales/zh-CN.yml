@@ -134,7 +134,7 @@ zh-CN:
       suggestions:
         - "这个应用怎么用？"
         - "我应该先学什么？"
-        - "ねこが すきです。Is this right?"
+        - "ねこが すきです。这样对吗？"
   users:
     dashboard:
       welcome: "欢迎回来，%{name}！"

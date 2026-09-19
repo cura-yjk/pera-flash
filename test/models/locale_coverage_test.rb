@@ -27,6 +27,26 @@ class LocaleCoverageTest < ActiveSupport::TestCase
       assert_empty extra, "#{locale} has keys English does not: #{extra.join(', ')}"
     end
 
+    # A list is one leaf to the key comparison above, so a locale could drop an
+    # item from it -- or leave the whole list in English -- and pass.
+    test "#{locale} keeps every item of every list" do
+      short = list_length_mismatches(ENGLISH, translations(locale), [])
+
+      assert_empty short, "#{locale}: #{short.join('; ')}"
+    end
+
+    # The chat suggestions are prose the learner reads and then sends. One left
+    # in English does more than look wrong: it makes their first message part
+    # English, and Pera follows the language they write in.
+    test "#{locale} translates the chat suggestions" do
+      english = ENGLISH.dig("messages", "empty", "suggestions")
+      theirs = translations(locale).dig("messages", "empty", "suggestions")
+
+      untranslated = theirs.select.with_index { |line, i| line == english[i] }
+
+      assert_empty untranslated, "#{locale} still shows in English: #{untranslated.join(', ')}"
+    end
+
     # A translation that drops %{name} silently loses the learner's name; one
     # that invents %{nmae} raises at render time.
     test "#{locale} uses the same interpolations as English" do
@@ -62,6 +82,21 @@ class LocaleCoverageTest < ActiveSupport::TestCase
 
   def plural_gap(subject, path)
     subject.is_a?(Hash) && subject.key?("other") ? [] : ["#{path.join('.')}.other"]
+  end
+
+  def list_length_mismatches(reference, subject, path)
+    reference.flat_map do |key, value|
+      here = path + [key]
+      next [] unless subject.is_a?(Hash) && subject.key?(key)
+      next list_length_mismatches(value, subject[key], here) if value.is_a?(Hash) && !plural?(value)
+      next [] unless value.is_a?(Array)
+
+      other = subject[key]
+      next ["#{here.join('.')} is not a list"] unless other.is_a?(Array)
+      next [] if other.size == value.size
+
+      ["#{here.join('.')} has #{other.size} of #{value.size}"]
+    end
   end
 
   def interpolation_mismatches(reference, subject, path)

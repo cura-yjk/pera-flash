@@ -137,7 +137,7 @@ zh-TW:
       suggestions:
         - "這個應用程式怎麼用？"
         - "我應該先學什麼？"
-        - "ねこが すきです。Is this right?"
+        - "ねこが すきです。這樣對嗎？"
   users:
     dashboard:
       welcome: "歡迎回來，%{name}！"

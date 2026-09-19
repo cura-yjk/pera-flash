@@ -14,7 +14,7 @@ class ChattingTest < ApplicationSystemTestCase
     stub_stream("**猫[ねこ]**が好きです。", " Nicely done!")
 
     visit conversation_path(@conversation)
-    fill_in "message[content]", with: "ねこがすきです"
+    type_into("ねこがすきです")
     click_and_confirm("Send", expect: "ねこがすきです")
 
     # Rendered as it arrives: bold is bold, and the reading is a ruby tag --

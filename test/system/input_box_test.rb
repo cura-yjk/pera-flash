@@ -18,7 +18,7 @@ class InputBoxTest < ApplicationSystemTestCase
 
     before = @conversation.messages.where(role: "user").count
 
-    fill_in "message[content]", with: "エンターで送ります"
+    type_into("エンターで送ります")
     press_enter_until_sent("エンターで送ります")
 
     assert_equal before + 1, @conversation.messages.where(role: "user").count
@@ -32,7 +32,7 @@ class InputBoxTest < ApplicationSystemTestCase
     visit conversation_path(@conversation)
 
     assert_no_difference -> { @conversation.messages.count } do
-      fill_in "message[content]", with: "一行目"
+      type_into("一行目")
       find("#chat-input").send_keys([:shift, :enter])
       sleep 1
     end
@@ -120,7 +120,7 @@ class InputBoxTest < ApplicationSystemTestCase
       find("#chat-input").send_keys(:enter)
       return if page.has_text?(text, wait: 5)
 
-      fill_in "message[content]", with: text if attempt < attempts - 1
+      type_into(text) if attempt < attempts - 1
     end
 
     assert_text text, wait: 5

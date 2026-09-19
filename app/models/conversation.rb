@@ -2,7 +2,11 @@
 class Conversation < ApplicationRecord
   belongs_to :user
   has_many :messages, dependent: :destroy
-  has_many :flashcards
+  # :nullify, not :destroy -- a card is filed in a deck and reviewed from
+  # there, so it outlives the chat it was made in. Without this the database's
+  # foreign key refuses the delete, and closing an account raised
+  # ActiveRecord::InvalidForeignKey for anyone who had ever saved a card.
+  has_many :flashcards, dependent: :nullify
 
   validates :title, presence: true
   before_validation :set_title

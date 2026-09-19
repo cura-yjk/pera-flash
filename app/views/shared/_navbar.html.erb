@@ -6,22 +6,27 @@
       <% end %>
       <i class="fa-solid fa-circle-half-stroke js-toggle-btn toggle-btn"
         style="color: rgb(0, 0, 0);"
+        title="<%= t("nav.theme") %>"
+        aria-label="<%= t("nav.theme") %>"
+        role="button"
         data-dark-mode-target="darkToggle"
         data-controller="dark-mode"
         data-action="click->dark-mode#toggle">
         </i>
-      <%= link_to dashboard_path do %>
-        <i class="fa-regular fa-rectangle-list icon-link" style="color: rgb(0, 0, 0);"></i>
+      <%= link_to dashboard_path, title: t("nav.dashboard"), aria: { label: t("nav.dashboard") } do %>
+        <i class="fa-regular fa-rectangle-list icon-link" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
       <% end %>
-      <%= link_to conversations_path, data: { turbo_method: :post } do %>
-        <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);"></i>
+      <%= link_to conversations_path, data: { turbo_method: :post },
+                  title: t("conversations.new_chat"), aria: { label: t("conversations.new_chat") } do %>
+        <i class="fa-regular fa-message icon-link mt-1" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
       <% end %>
 
       <%# Both hidden when there is nothing to do: an empty queue means the
           schedule is working, not that the user has a task outstanding. %>
       <% if due_card_count.positive? %>
-        <%= link_to review_path, class: "position-relative", title: t("reviews.show.title") do %>
-          <i class="fa-solid fa-layer-group icon-link" style="color: rgb(0, 0, 0);"></i>
+        <%= link_to review_path, class: "position-relative", title: t("reviews.show.title"),
+                    aria: { label: t("reviews.show.title") } do %>
+          <i class="fa-solid fa-layer-group icon-link" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
           <span class="position-absolute top-0 start-100 translate-middle badge rounded-5 nav-due-badge">
             <%= due_card_count %>
           </span>
@@ -29,8 +34,8 @@
       <% end %>
 
       <% if quiz_available? %>
-        <%= link_to quiz_path, title: t("quizzes.show.title") do %>
-          <i class="fa-regular fa-circle-question icon-link" style="color: rgb(0, 0, 0);"></i>
+        <%= link_to quiz_path, title: t("quizzes.show.title"), aria: { label: t("quizzes.show.title") } do %>
+          <i class="fa-regular fa-circle-question icon-link" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
         <% end %>
       <% end %>
     </div>
@@ -52,8 +57,9 @@
 
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fa-solid fa-circle-user" style="color: rgb(0, 0, 0);"></i>
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+               title="<%= t("nav.account") %>" aria-label="<%= t("nav.account") %>">
+              <i class="fa-solid fa-circle-user" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><%= link_to t("decks.index.title"), decks_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>

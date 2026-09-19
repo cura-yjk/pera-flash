@@ -7,6 +7,11 @@ zh-TW:
     show: "顯示假名"
     hide: "隱藏假名"
     updating: "更新中…"
+  nav:
+    dashboard: "儀表板"
+    theme: "切換主題"
+    account: "帳戶"
+
   search:
     cards: "搜尋卡片"
     submit: "搜尋"

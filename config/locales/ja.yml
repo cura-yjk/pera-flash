@@ -5,6 +5,11 @@ ja:
     show: "ふりがなを表示"
     hide: "ふりがなを隠す"
     updating: "変更中…"
+  nav:
+    dashboard: "ダッシュボード"
+    theme: "テーマを切り替える"
+    account: "アカウント"
+
   search:
     cards: "カードを検索"
     submit: "検索"

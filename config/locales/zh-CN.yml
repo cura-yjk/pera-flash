@@ -4,6 +4,11 @@ zh-CN:
     show: "显示假名"
     hide: "隐藏假名"
     updating: "更新中…"
+  nav:
+    dashboard: "仪表板"
+    theme: "切换主题"
+    account: "账户"
+
   search:
     cards: "搜索卡片"
     submit: "搜索"

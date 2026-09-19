@@ -1,5 +1,8 @@
 <!-- app/views/flashcards/edit.html.erb -->
-<%= turbo_frame_tag "modal-#{@flashcard.id}", target: "_top" do %>
+<%# Answers in the frame the layout provides, which is the one the card links
+    to. Only one modal is ever open, so a frame per card bought nothing except
+    three ids that had to agree and did not. %>
+<%= turbo_frame_tag "modal", target: "_top" do %>
   <div class="modal-backdrop show"></div>
   <div class="modal d-block" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">

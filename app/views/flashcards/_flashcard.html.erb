@@ -13,7 +13,7 @@
     <% end %>
 
     <%= link_to edit_flashcard_path(flashcard),
-          data: { turbo_frame: "modal-#{flashcard.id}" },
+          data: { turbo_frame: "modal" },
           class: "text-decoration-none text-dark rounded-5" do %>
       <div class="card p-3 flashcard-preview-card dash-card js-dash-card rounded-5">
         <p class="mb-1">

@@ -134,8 +134,14 @@ class PeraPromptTest < ActiveSupport::TestCase
     assert_includes note, "locale ko"
   end
 
-  test "there is no language note for English or for nobody" do
-    assert_nil PeraPrompt.language_note("en")
+  # English included, which it was not before. A learner practising sends
+  # Japanese, so "explain in the language the student writes in" has nothing to
+  # work from -- and the model answered an English speaker in Japanese.
+  test "the language note names English too" do
+    assert_includes PeraPrompt.language_note("en"), "English"
+  end
+
+  test "there is no language note for nobody" do
     assert_nil PeraPrompt.language_note(nil)
     assert_nil PeraPrompt.language_note("")
   end
@@ -147,8 +153,15 @@ class PeraPromptTest < ActiveSupport::TestCase
     assert_match(/locale\s+ko/, prompt)
   end
 
-  test "says nothing about language for an English interface" do
-    assert_equal PeraPrompt.for(locale: nil), PeraPrompt.for(locale: "en")
+  test "the chat prompt names English too" do
+    assert_includes PeraPrompt.for(locale: "en"), "reads the app in English"
+  end
+
+  # The case that sent a beginner their feedback in a language they came to
+  # learn: practice is not a request.
+  test "practice Japanese is not read as a choice of language" do
+    assert_match(/practice to be\s+checked, not a request to be answered in Japanese/,
+                 PeraPrompt.for(locale: "en"))
   end
 
   test "carries what the student keeps forgetting" do

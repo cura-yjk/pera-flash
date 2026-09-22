@@ -20,6 +20,26 @@
   color: #2BAE8F;
 }
 
+// .chat-input-container is a centred flex row, so the form is a flex item --
+// and with no grow it shrank to its contents: a 242px box adrift in the middle
+// of a desktop window, nowhere near the 700px the input was written to allow.
+// The width cap still comes from #chat-input; this only stops the row
+// collapsing to fit.
+#chat-form {
+  flex: 1 1 auto;
+
+  // Room for the input at its cap plus the Send button beside it. Past this
+  // the box stops tracking the window, which is the point of the cap.
+  max-width: 820px;
+}
+
+// The same mistake one level in: flex-grow-1 was set on the simple_form
+// wrapper *inside* this div, where it does nothing -- .chat-input is a plain
+// block, not a flex container. The growing has to happen on the flex item.
+.chat-input {
+  flex: 1 1 auto;
+}
+
 #chat-input {
   // Was a flat 700px, nearly twice the width of a phone, so the app's main
   // screen scrolled sideways. The form is already a flex row: let it take the
@@ -27,6 +47,11 @@
   width: 100%;
   max-width: 700px;
   align-items: center;
+
+  // autogrow owns this height, recalculating it on every keystroke. A drag
+  // handle offers a size the next character typed then throws away, and
+  // dragging it shorter than the text hides what is being written.
+  resize: none;
 
   animation: greenGlow 3.5s ease-in-out;
 }

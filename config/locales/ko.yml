@@ -10,7 +10,6 @@ ko:
     account: "계정"
 
   search:
-    cards: "카드 검색"
     submit: "검색"
   sessions:
     log_in: "로그인"

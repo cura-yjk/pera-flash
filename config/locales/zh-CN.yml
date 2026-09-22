@@ -10,7 +10,6 @@ zh-CN:
     account: "账户"
 
   search:
-    cards: "搜索卡片"
     submit: "搜索"
   sessions:
     log_in: "登录"

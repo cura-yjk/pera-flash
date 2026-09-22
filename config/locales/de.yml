@@ -10,7 +10,6 @@ de:
     account: "Konto"
 
   search:
-    cards: "Karten durchsuchen"
     submit: "Suchen"
   sessions:
     log_in: "Anmelden"

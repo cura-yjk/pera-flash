@@ -13,7 +13,6 @@ zh-TW:
     account: "帳戶"
 
   search:
-    cards: "搜尋卡片"
     submit: "搜尋"
   sessions:
     log_in: "登入"

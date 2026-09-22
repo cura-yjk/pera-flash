@@ -16,7 +16,6 @@ en:
     account: "Account"
 
   search:
-    cards: "Search cards"
     submit: "Search"
 
   sessions:

@@ -99,7 +99,6 @@ class ConversationsController < ApplicationController
       Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
 
       #{PeraPrompt::EXPLANATION_LANGUAGE_RULE}
-      #{PeraPrompt.language_note(current_user.locale)}
 
       #{PeraPrompt::FURIGANA_RULE}
       Guidelines:

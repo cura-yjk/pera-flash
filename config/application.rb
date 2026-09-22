@@ -12,9 +12,7 @@ module PeraFlash
     # was English only. Fallbacks mean a half-translated locale shows English
     # for the missing keys rather than a raw key name like
     # "translation missing: ko.decks.index.title".
-    config.i18n.available_locales = %i[en ja zh-CN zh-TW ko de]
     config.i18n.default_locale = :en
-    config.i18n.fallbacks = [:en]
 
     config.generators do |generate|
       generate.assets false

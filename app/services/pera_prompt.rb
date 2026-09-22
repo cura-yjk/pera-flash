@@ -19,16 +19,17 @@ module PeraPrompt
     and the student can switch them off when they want to test themselves.
   RULE
 
-  # Also shared: the two prompts disagreeing about which language to explain in
-  # would mean a chat held in Spanish producing cards in English.
+  # Shared so that chat and card generation cannot disagree: a lesson held in
+  # one language producing cards in another is the bug this prevents.
   #
-  # Only the part that is true of both. Chat can ask the student which language
-  # they want and can put headers on a table; a one-shot card generation can do
-  # neither, so those clauses stay in the chat prompt below.
+  # English, flatly. The app used to follow the student's own language, but a
+  # student practising writes Japanese -- so "the language the student writes
+  # in" pointed at the language being taught, and a beginner who asked "is this
+  # right?" got the whole answer back in Japanese, unable to read their own
+  # feedback. Naming one language leaves nothing to infer.
   EXPLANATION_LANGUAGE_RULE = <<~RULE
-    Explain in the language the student writes in -- not the language being
-    taught, and not English by default. The Japanese being taught stays
-    Japanese; only the words around it follow the student's language.
+    Explain in English. The Japanese being taught stays Japanese; only the
+    words around it are English.
   RULE
 
   # What the app can actually do, so a student can ask Pera how to use it
@@ -75,11 +76,10 @@ module PeraPrompt
     not do that yet, and point them at the nearest thing that exists.
   GUIDE
 
-  # Assembled per request, because two of the four sections depend on the
-  # student -- their language and their worst cards.
-  def for(struggling: [], locale: nil, greet: true)
-    [base_prompt(greet: greet), interface_language_section(locale), struggle_section(struggling)]
-      .compact.join("\n")
+  # Assembled per request, because one section depends on the student -- the
+  # cards they keep getting wrong.
+  def for(struggling: [], greet: true)
+    [base_prompt(greet: greet), struggle_section(struggling)].compact.join("\n")
   end
 
   # greet: whether Pera has yet to say anything in this conversation.
@@ -96,9 +96,9 @@ module PeraPrompt
 
       #{FURIGANA_RULE}
       #{EXPLANATION_LANGUAGE_RULE}
-      That includes the headers of any table you produce: a student writing
-      Spanish gets "Palabra en japonés", not "Japanese Word". If their language
-      is unclear or mixed, ask once which they would prefer, then keep to it.
+      That includes the headers of any table you produce: "Japanese Word", not
+      "日本語の単語". Japanese arriving from a student is practice to be checked,
+      not a request to be answered in Japanese.
 
       When the student submits Japanese to be checked, answer in this shape:
 
@@ -137,20 +137,6 @@ module PeraPrompt
     greet ? " Introduce yourself by that name the first time you greet them." : ""
   end
 
-  # The same fact the chat prompt carries, in a form the card generator can
-  # use. Worded differently on purpose: chat is talking to the student and can
-  # follow what they write to it, while a generation only ever sees a
-  # transcript -- and a transcript of Japanese practice may contain almost
-  # nothing of the student's own language to infer from.
-  def language_note(locale)
-    return nil if locale.blank?
-
-    "This student reads the app in #{language_name(locale)} (locale #{locale}). " \
-      "Write both sides of every card in that language, whatever language the transcript is in -- " \
-      "the question as well as the answer. Only the Japanese being taught stays Japanese: " \
-      "a card asking what 猫[ねこ] means is asked in their language and answered in their language."
-  end
-
   # What the learner keeps forgetting, taken from their own review history.
   #
   # This is the only thing that connects the two halves of the app: without it
@@ -161,37 +147,6 @@ module PeraPrompt
   # Placed in the instructions rather than in a message, so it is operator
   # context: a card's text is the learner's own writing and must never be able
   # to act as an instruction.
-  # The student has chosen a language for the app itself, which is a better
-  # signal than guessing from their first message -- and it stops Pera opening
-  # with "which language would you like?" for someone who already said.
-  #
-  # Still only a default: someone studying in a German interface may well write
-  # to Pera in English, and should be answered in English.
-  # Sent for English too, which it did not used to be. A student practising
-  # writes Japanese, and "explain in the language the student writes in" eats
-  # itself when their writing is the language being taught -- so the model was
-  # left to guess, and a beginner who asked "Is this right?" in English got the
-  # whole answer back in Japanese.
-  def interface_language_section(locale)
-    return nil if locale.blank?
-
-    <<~SECTION
-
-      ---
-
-      This student reads the app in #{language_name(locale)} (locale #{locale}).
-      Explain in that language. Japanese they send you is practice to be
-      checked, not a request to be answered in Japanese -- a beginner cannot
-      read their own feedback. Follow them only if they write to you in some
-      other language of their own.
-    SECTION
-  end
-
-  def language_name(locale)
-    I18n.t("languages.#{locale}", locale: locale, default: locale.to_s)
-  end
-  private_class_method :interface_language_section
-
   def struggle_section(struggling)
     return nil if struggling.empty?
 
@@ -212,5 +167,5 @@ module PeraPrompt
   end
 
   # PeraPrompt.for is the whole surface; the sections are how it is built.
-  private_class_method :base_prompt, :introduction, :interface_language_section, :language_name, :struggle_section
+  private_class_method :base_prompt, :introduction, :struggle_section
 end

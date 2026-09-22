@@ -120,31 +120,16 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "What does 犬 mean?"
   end
 
-  # Cards were generated from the transcript alone. That usually works, because
-  # Pera's own replies are in the learner's language and end up in it -- but a
-  # short conversation, or one that is mostly Japanese practice, leaves the
-  # generator guessing.
+  # Generation only ever sees a transcript, and a transcript of Japanese
+  # practice contains almost nothing to infer an explanation language from --
+  # so it is told outright rather than left to guess.
   test "generation is told the language the cards should explain in" do
-    users(:learner).update!(locale: "ko")
     stub_llm_success([])
 
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
     assert_requested :post, llm_url do |request|
-      request.body.to_s.include?("locale ko")
-    end
-  end
-
-  # English is named too. A transcript of Japanese practice says nothing about
-  # what the learner reads, and cards they cannot read are worth nothing.
-  test "an English learner is named as well" do
-    users(:learner).update!(locale: "en")
-    stub_llm_success([])
-
-    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
-
-    assert_requested :post, llm_url do |request|
-      request.body.to_s.include?("locale en")
+      request.body.to_s.include?("Explain in English")
     end
   end
 

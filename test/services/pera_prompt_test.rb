@@ -122,56 +122,17 @@ class PeraPromptTest < ActiveSupport::TestCase
     end
   end
 
-  # The student already told the app which language they read; making Pera
-  # guess again from the first message is both wasteful and worse.
-  # The card generator needs the same fact the chat prompt carries: it only
-  # ever sees a transcript, and a transcript of Japanese practice may contain
-  # almost none of the student's own language to infer from.
-  test "the language note names the language" do
-    note = PeraPrompt.language_note("ko")
-
-    assert_includes note, I18n.t("languages.ko", locale: :ko)
-    assert_includes note, "locale ko"
-  end
-
-  # English included, which it was not before. A learner practising sends
-  # Japanese, so "explain in the language the student writes in" has nothing to
-  # work from -- and the model answered an English speaker in Japanese.
-  test "the language note names English too" do
-    assert_includes PeraPrompt.language_note("en"), "English"
-  end
-
-  # Cards came back asked in Japanese and answered in English: "the explaining
-  # side" left it to the model to decide which side that was, and it split the
-  # difference, so half of every card was unreadable to the learner.
-  test "the language note covers both sides of a card" do
-    note = PeraPrompt.language_note("ko")
-
-    assert_includes note, "Write both sides of every card"
-    assert_includes note, "the question as well as the answer"
-  end
-
-  test "there is no language note for nobody" do
-    assert_nil PeraPrompt.language_note(nil)
-    assert_nil PeraPrompt.language_note("")
-  end
-
-  test "names the interface language when it is not English" do
-    prompt = PeraPrompt.for(locale: "ko")
-
-    assert_match(/한국어/, prompt)
-    assert_match(/locale\s+ko/, prompt)
-  end
-
-  test "the chat prompt names English too" do
-    assert_includes PeraPrompt.for(locale: "en"), "reads the app in English"
-  end
-
   # The case that sent a beginner their feedback in a language they came to
-  # learn: practice is not a request.
-  test "practice Japanese is not read as a choice of language" do
-    assert_match(/practice to be\s+checked, not a request to be answered in Japanese/,
-                 PeraPrompt.for(locale: "en"))
+  # learn. Practice is not a request: what a student writes is the language
+  # being taught, so following it pointed Pera at Japanese.
+  test "the prompt names the language to explain in" do
+    assert_includes PeraPrompt.for, "Explain in English"
+  end
+
+  # Table headers used to follow the student's language. They are part of the
+  # explanation, so they follow the same rule.
+  test "table headers are named as English too" do
+    assert_includes PeraPrompt.for, '"Japanese Word"'
   end
 
   test "carries what the student keeps forgetting" do

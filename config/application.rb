@@ -8,10 +8,9 @@ Bundler.require(*Rails.groups)
 
 module PeraFlash
   class Application < Rails::Application
-    # The tutor already adapts to whatever a student writes; the app around it
-    # was English only. Fallbacks mean a half-translated locale shows English
-    # for the missing keys rather than a raw key name like
-    # "translation missing: ko.decks.index.title".
+    # The only locale the app ships. Copy still goes through t() and en.yml
+    # rather than being written into the views, so adding a language back is a
+    # translation job rather than a rewrite.
     config.i18n.default_locale = :en
 
     config.generators do |generate|

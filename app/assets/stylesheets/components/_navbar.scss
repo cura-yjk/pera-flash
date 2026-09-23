@@ -43,13 +43,15 @@
 }
 
 .dropdown-menu .dropdown-item:hover {
-  color: #2BAE8F !important;
+  color: var(--text-brand) !important;
 }
 
 // Count of cards due, riding on the review icon. Sized here rather than with
 // .pera-btn, which is 120x40px for real buttons and would swallow the icon.
 .nav-due-badge {
-  background-color: #2BAE8F;
+  // Small and bold, so it needs the same 4.5:1 as body text. White on the
+  // brand green is 2.78:1; on the darker variant it is 5.7:1.
+  background-color: $pera-green-text;
   color: #FFFFFF;
   font-size: 0.65rem;
   font-weight: 700;

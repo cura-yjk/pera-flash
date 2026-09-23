@@ -15,13 +15,13 @@
 
 .pera-btn:hover {
   background-color: #3E3E3E;
-  color: #2BAE8F;
-  border: solid 2px #2BAE8F;
+  color: $pera-green-text-dark;
+  border: solid 2px $pera-green;
 }
 
 .pera-btn-outline {
-  border: solid 2px #2BAE8F;
-  color: #2BAE8F;
+  border: solid 2px $pera-green;
+  color: var(--text-brand);
 
   min-height: 40px;
   height: auto;
@@ -41,7 +41,7 @@ input[type="checkbox"].pera-check:checked {
 }
 
 .pera-text {
-  color: #2BAE8F;
+  color: var(--text-brand);
 }
 
 .submit-btn {
@@ -64,8 +64,8 @@ input[type="checkbox"].pera-check:checked {
 }
 
 .gen-flash-btn {
-  border: solid 2px #2BAE8F;
-  color: #2BAE8F;
+  border: solid 2px $pera-green;
+  color: var(--text-brand);
 
   transition: 0.5s ease-in-out;
 

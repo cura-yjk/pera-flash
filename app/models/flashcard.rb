@@ -76,10 +76,6 @@ class Flashcard < ApplicationRecord
   # Never studied first, then whatever is most overdue.
   scope :in_review_order, -> { order(Arel.sql("due_at IS NOT NULL, due_at ASC, created_at ASC")) }
 
-  def studied?
-    review_count.positive?
-  end
-
   # Records an answer and schedules the next sighting. Returns self so callers
   # can read the new due_at without reloading.
   def review!(grade)
@@ -96,12 +92,30 @@ class Flashcard < ApplicationRecord
 
   private
 
+  # Whether there is an interval to grow, not whether the card has been seen
+  # before. Those are different questions, and the difference is a bug: this
+  # asked review_count.positive?, while `forgot` sets interval_days to 0. So a
+  # card that had been answered once and then forgotten took the multiply
+  # branch on an interval of 0 and stayed there -- 0 * ease is 0, whatever the
+  # ease. due_at became last_reviewed_at + 0 days, so the card was due again
+  # immediately and could never leave the queue, no matter how many times it
+  # was answered correctly. "easy" did not rescue it either, multiplying the
+  # same zero.
+  #
+  # A lapsed card restarts from the first-answer interval, which is what the
+  # algorithm does everywhere else after a lapse.
   def apply(grade)
     case grade
     when "again" then forgot
-    when "good"  then self.interval_days = studied? ? interval_days * ease : FIRST_GOOD_INTERVAL
+    when "good"  then self.interval_days = growing? ? interval_days * ease : FIRST_GOOD_INTERVAL
     when "easy"  then recalled_easily
     end
+  end
+
+  # A card with an interval to multiply: never-studied and just-lapsed cards
+  # both start again from a constant rather than from zero.
+  def growing?
+    interval_days.positive?
   end
 
   # Straight back into today's queue, and the card gets harder to graduate:
@@ -113,7 +127,7 @@ class Flashcard < ApplicationRecord
   end
 
   def recalled_easily
-    self.interval_days = studied? ? interval_days * ease * EASY_BONUS : FIRST_EASY_INTERVAL
+    self.interval_days = growing? ? interval_days * ease * EASY_BONUS : FIRST_EASY_INTERVAL
     self.ease += 0.15
   end
 end

@@ -69,6 +69,55 @@ class FlashcardTest < ActiveSupport::TestCase
     assert_operator @card.ease, :<, Flashcard::STARTING_EASE + 0.15
   end
 
+  # The path that was broken: forget a card, then get it right again.
+  #
+  # `forgot` sets the interval to 0, and the grade used to ask "has this been
+  # studied before?" before multiplying. A lapsed card answered that yes, so it
+  # multiplied 0 by its ease and stayed at 0 -- due immediately, for ever. The
+  # cards in a real deck that had been answered a dozen times were sitting at
+  # interval 0 because of it, and the review queue never emptied.
+  test "a forgotten card starts growing again when it is answered" do
+    @card.review!("easy")
+    @card.review!("again")
+    assert_in_delta 0.0, @card.interval_days, 0.001, "a lapse should reset the interval"
+
+    @card.review!("good")
+
+    assert_in_delta Flashcard::FIRST_GOOD_INTERVAL, @card.interval_days, 0.001
+    assert_operator @card.due_at, :>, Time.current, "it should be scheduled forward, not left due"
+  end
+
+  test "a forgotten card answered easy restarts at the easy interval" do
+    @card.review!("good")
+    @card.review!("again")
+
+    @card.review!("easy")
+
+    assert_in_delta Flashcard::FIRST_EASY_INTERVAL, @card.interval_days, 0.001
+  end
+
+  # The symptom as a learner meets it: the card stays in front of them.
+  test "a forgotten card leaves the due queue once it is answered" do
+    @card.review!("again")
+    assert_includes Flashcard.due, @card
+
+    @card.review!("good")
+
+    assert_not_includes Flashcard.due, @card
+  end
+
+  # Answering correctly repeatedly after a lapse has to compound, not sit at
+  # the restart value.
+  test "intervals compound again after a lapse" do
+    @card.review!("again")
+    @card.review!("good")
+    first = @card.interval_days
+
+    @card.review!("good")
+
+    assert_operator @card.interval_days, :>, first
+  end
+
   # Without a floor, a card missed repeatedly would come back so often it
   # stops being a review and becomes a wall.
   test "ease never falls below the minimum" do

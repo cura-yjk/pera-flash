@@ -1,9 +1,16 @@
+// Enough to read as a card rather than a list row, with a name and a count to
+// hold. The height used to come from a blanket .card rule at 280px, which is
+// nearly three times what the content needs.
+$deck-card-height: 140px;
+
 .deck-card {
   border: solid 2px #2BAE8F;
 
   display: flex;
   flex-direction: column;
   justify-content: space-around !important;
+
+  min-height: $deck-card-height;
 }
 
 .deck-card-dash {
@@ -12,6 +19,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-around !important;
+
+  min-height: $deck-card-height;
 
   animation-name: fadeFall;
   animation-duration: 2s;

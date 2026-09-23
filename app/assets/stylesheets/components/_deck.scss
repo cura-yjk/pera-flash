@@ -1,3 +1,22 @@
+// The card count on a deck. It was wearing .pera-btn for the green fill, which
+// also handed it a button's 120px min-width and left it taking a radius class
+// in the markup -- rounded-5 on the dashboard, rounded-4 on the deck index, so
+// the same badge was a pill in one place and a rectangle in the other.
+//
+// It is not a button, so it says what it is. The size is inherited as it was;
+// whether a single digit needs 120px is a separate question.
+.deck-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 120px;
+  min-height: 40px;
+
+  background-color: $pera-green;
+  border-radius: 50rem;
+}
+
 // Enough to read as a card rather than a list row, with a name and a count to
 // hold. The height used to come from a blanket .card rule at 280px, which is
 // nearly three times what the content needs.

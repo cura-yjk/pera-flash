@@ -12,7 +12,7 @@
                           turbo_frame: "flashcard_results", turbo_action: "advance" } do |f| %>
       <%= f.text_field :query, value: params[:query], placeholder: t(".search_placeholder"),
                        class: "form-control me-2 rounded-4 user-details-input" %>
-      <%= f.submit t("search.submit"), class: "btn pera-btn rounded-4" %>
+      <%= f.submit t("search.submit"), class: "btn pera-btn" %>
     <% end %>
   </div>
 

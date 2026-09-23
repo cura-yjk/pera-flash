@@ -17,7 +17,7 @@
       <%= button_to suggestion,
             conversation_messages_path(conversation),
             params: { message: { content: suggestion } },
-            class: "btn pera-btn-outline rounded-4 px-3 w-auto",
+            class: "btn pera-btn-outline px-3 w-auto",
             form: { data: { turbo_stream: true } } %>
     <% end %>
   </div>

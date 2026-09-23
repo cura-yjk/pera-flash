@@ -27,7 +27,7 @@
   </div>
 
   <div class="mt-4" data-reveal-target="prompt" <%= "hidden" if revealed %>>
-    <button type="button" class="btn gen-flash-btn rounded-4 px-4"
+    <button type="button" class="btn pera-btn-outline px-4"
             data-action="reveal#show"><%= t(".show_answer") %></button>
   </div>
 
@@ -41,7 +41,7 @@
             deck ? deck_review_card_path(deck, card) : review_card_path(card),
             method: :patch,
             params: { grade: grade },
-            class: "btn rounded-4 px-4 #{grade == 'again' ? 'btn-outline-secondary' : 'gen-flash-btn'}",
+            class: "btn px-4 #{grade == 'again' ? 'btn-outline-secondary' : 'pera-btn-outline'}",
             form: { data: { turbo_stream: true } } %>
     <% end %>
   </div>

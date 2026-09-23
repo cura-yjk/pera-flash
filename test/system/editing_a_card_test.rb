@@ -66,13 +66,29 @@ class EditingACardTest < ApplicationSystemTestCase
 
     visit flashcards_path
     open_card("What does 鳥 mean?")
-    find(".modal .btn-close").click
+    close_modal
 
     assert_no_selector ".modal", wait: 5
     assert_no_text "Content missing"
   end
 
   private
+
+  # The close control has no label to find it by, so it cannot go through
+  # click_and_confirm -- but it needs the same fallback. A driver click here
+  # does nothing often enough to fail this test roughly one run in three, which
+  # looked like the modal refusing to close.
+  def close_modal
+    control = find(".modal .btn-close")
+    control.click
+    return if has_no_selector?(".modal", wait: 3)
+
+    begin
+      control.evaluate_script("this.click()")
+    rescue Selenium::WebDriver::Error::StaleElementReferenceError
+      nil
+    end
+  end
 
   # The whole card is the link. Clicking its text is what a learner does, but
   # a driver click there is the flakiest kind, so this goes to the anchor.

@@ -124,11 +124,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     return if input.value == text
 
     page.execute_script(<<~JS, input)
-      arguments[0].value = #{'#{text.to_json}'};
+      arguments[0].value = #{text.to_json};
       arguments[0].dispatchEvent(new Event("input", { bubbles: true }));
     JS
 
-    assert_equal text, find(field).value, "could not get #{'#{text.inspect}'} into #{'#{field}'}"
+    assert_equal text, find(field).value, "could not get #{text.inspect} into #{field}"
   end
 
   # True when the page can be scrolled sideways -- which, on a phone, means

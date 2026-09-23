@@ -14,7 +14,8 @@
         action: 'turbo:submit-start->reset-form#submit submit->load#start ' \
                 'keydown->enter-submit#submit input->autogrow#resize input->char-count#update'
       },
-      class: 'd-flex justify-content-between px-3 pb-2'
+      class: 'd-flex justify-content-between align-items-center px-3 pb-2',
+      id: 'chat-form'
     } do |f| %>
 
   <div class="chat-input">

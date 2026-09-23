@@ -5,13 +5,13 @@
       <%# Only shown when there is something to study -- an empty queue means
           the system is working, not that the user has a task outstanding. %>
       <% if due_card_count.positive? %>
-        <%= link_to review_path, class: "btn pera-btn rounded-3 d-flex align-items-center gap-2" do %>
+        <%= link_to review_path, class: "btn pera-btn rounded-3 d-flex align-items-center justify-content-center gap-2" do %>
           <i class="fa-solid fa-layer-group"></i>
           <%= t(".review") %> <span class="badge rounded-5 bg-light text-dark"><%= due_card_count %></span>
         <% end %>
       <% end %>
       <% if quiz_available? %>
-        <%= link_to t(".quiz"), quiz_path, class: "btn pera-btn rounded-3 d-flex align-items-center gap-2" %>
+        <%= link_to t(".quiz"), quiz_path, class: "btn pera-btn rounded-3 d-flex align-items-center justify-content-center gap-2" %>
       <% end %>
       <%= link_to t(".new_chat"), conversations_path, data: { turbo_method: :post }, class: "btn pera-btn rounded-3" %>
     </div>

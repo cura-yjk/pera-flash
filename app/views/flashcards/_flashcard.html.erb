@@ -6,10 +6,12 @@
   <div class="position-relative">
     <%= button_to flashcard_path(flashcard),
           method: :delete,
-          class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
+          class: "btn icon-btn border-0 position-absolute top-0 end-0",
           style: "z-index: 1;",
+          title: t("flashcards.delete"),
+          aria: { label: t("flashcards.delete") },
           form: { data: { turbo_confirm: t("flashcards.confirm_delete") } } do %>
-      <i class="fa-solid fa-trash pera-green"></i>
+      <i class="fa-solid fa-trash pera-green" aria-hidden="true"></i>
     <% end %>
 
     <%= link_to edit_flashcard_path(flashcard),

@@ -53,6 +53,7 @@ en:
     answer_prefix: "A:"
     generate: "Generate flashcards"
     confirm_delete: "Delete this flashcard?"
+    delete: "Delete flashcard"
     saved: "Flashcards saved!"
     updated: "Flashcard updated!"
     deleted: "Flashcard deleted."
@@ -78,6 +79,7 @@ en:
       name_placeholder: "New deck name"
       create: "Create"
       confirm_delete: "Delete this deck?"
+      delete: "Delete deck"
     show:
       search_placeholder: "Search this deck..."
       empty: "No flashcards in this deck yet."

@@ -18,10 +18,12 @@
           <div class="position-relative">
             <%= button_to deck_path(deck),
                   method: :delete,
-                  class: "btn btn-sm border-0 position-absolute top-0 end-0 m-2",
+                  class: "btn icon-btn border-0 position-absolute top-0 end-0",
                   style: "z-index: 1;",
+                  title: t(".delete"),
+                  aria: { label: t(".delete") },
                   form: { data: { turbo_confirm: t(".confirm_delete") } } do %>
-              <i class="fa-solid fa-trash pera-green"></i>
+              <i class="fa-solid fa-trash pera-green" aria-hidden="true"></i>
             <% end %>
             <%= link_to deck_path(deck), class: "text-decoration-none text-dark" do %>
               <div class="card deck-card p-3 dash-card js-dash-card rounded-5">

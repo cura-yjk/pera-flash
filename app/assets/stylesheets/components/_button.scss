@@ -51,6 +51,22 @@ $btn-radius: 0.5rem;
   color: $gray;
 }
 
+// An icon on its own, with a box big enough to hit. Same 44px the navbar
+// controls take: the glyph stays its own size and the padding does the work.
+//
+// These were .btn-sm, which made the clickable area 28x29 -- over the 24px
+// minimum but well under the guidance, and smaller than every other control in
+// the app once the navbar was raised.
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
 input[type="checkbox"].pera-check:checked {
   background-color: $pera-green !important;
   border-color: $pera-green !important;

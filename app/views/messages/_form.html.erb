@@ -14,37 +14,40 @@
         action: 'turbo:submit-start->reset-form#submit submit->load#start ' \
                 'keydown->enter-submit#submit input->autogrow#resize input->char-count#update'
       },
-      class: 'd-flex justify-content-between align-items-center px-3 pb-2',
+      class: 'chat-composer',
       id: 'chat-form'
     } do |f| %>
 
-  <div class="chat-input">
     <%= f.input :content,
           placeholder: t(".placeholder"),
           required: true,
           label: false,
           input_html: { data: { reset_form_target: "input", enter_submit_target: "input",
                                 autogrow_target: "input", char_count_target: "input" },
-                        id: "chat-input", class: "rounded-4 me-3", rows: 1,
+                        id: "chat-input", class: "chat-composer__field", rows: 1,
                         maxlength: Message::MAX_USER_CONTENT_LENGTH },
-          wrapper_html: { class: 'rounded-5 flex-grow-1', style: 'margin-bottom: 0 !important' } %>
-    </div>
+          wrapper_html: { class: 'chat-composer__field-wrapper' } %>
 
-    <%# Only appears near the limit: a counter on an empty box is noise, and
-        silently swallowing keystrokes at 2,000 characters is worse. %>
-    <p class="chat-count small text-muted mb-0 me-2 align-self-center" hidden
-       data-char-count-target="counter"></p>
+    <%# The controls sit inside the same card as the field, under it, so the
+        two read as one surface rather than a box with a button parked beside
+        it. %>
+    <div class="chat-composer__controls">
+      <%# Only appears near the limit: a counter on an empty box is noise, and
+          silently swallowing keystrokes at 2,000 characters is worse. %>
+      <p class="chat-count small text-muted mb-0" hidden
+         data-char-count-target="counter"></p>
 
-    <div class="d-flex align-items-center">
-        <%= f.button :submit, 'Send',
-              class: 'submit-btn js-submit-btn rounded-5 me-3',
-              data: { reset_form_target: "submit" }
-              %>
-  <% end %>
       <i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon"
-        data-load-target="icon"
-      ></i>
-    </div>
-  </div>
+         data-load-target="icon" aria-hidden="true"></i>
 
+      <%# A button rather than an input[type=submit], because the label is an
+          icon now. title as well as aria-label: Capybara's button selector
+          matches title, and the system tests find this one by the name "Send".
+          reply_stream_controller's lock selector had to learn about it too. %>
+      <button type="submit" class="send-btn" title="Send" aria-label="Send"
+              data-reset-form-target="submit">
+        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+      </button>
+    </div>
+  <% end %>
 </div>

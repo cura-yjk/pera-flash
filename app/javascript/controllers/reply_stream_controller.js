@@ -42,7 +42,7 @@ export default class extends Controller {
   // looks it up rather than holding a reference to an element that may already
   // have been thrown away.
   lockInput(locked = true) {
-    document.querySelectorAll("#new_message textarea, #new_message input[type=submit]")
+    document.querySelectorAll("#new_message textarea, #new_message button[type=submit]")
             .forEach((field) => { field.disabled = locked })
   }
 

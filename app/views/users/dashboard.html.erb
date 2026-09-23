@@ -36,25 +36,34 @@
     <p class="text-secondary mb-5"><%= t(".no_decks") %></p>
   <% end %>
 
-  <!-- Stats -->
-  <div class="d-flex gap-5 mb-5">
-
+  <%# Stats. A real grid row rather than a d-flex: col-* only sizes correctly
+      inside .row, and as bare flex children these two asked for 66.67% + 33.33%
+      plus a 3rem gap -- over 100%, so flex shrank them, which on a phone left
+      the count panel 74px wide with its own label hanging outside it. The row
+      also stacks them below lg, which the flex version never did. %>
+  <div class="row g-4 mb-5">
   <!-- Random flashcard -->
-    <div class="card p-3 mb-5 rounded-5 dash-card js-dash-card col-8">
-      <h4 class="pera-green mb-4"><%= t(".random_card") %></h4>
-      <% if @random_flashcard %>
-        <%# Was printing the stored text as-is, so this panel alone showed
-            猫[ねこ] rather than the reading above the kanji. %>
-        <p><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(@random_flashcard.question, show: show_furigana?) %></p>
-        <p><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(@random_flashcard.answer, show: show_furigana?) %></p>
-      <% else %>
-        <p class="pera-text"><%= t(".no_cards_yet") %></p>
-      <% end %>
+    <div class="col-12 col-lg-8">
+      <%# h-100 so both cards fill the row's height: the two used to differ by
+          exactly the mb-5 that was on this one and not its neighbour. %>
+      <div class="card p-3 h-100 rounded-5 dash-card js-dash-card">
+        <h4 class="pera-green mb-4"><%= t(".random_card") %></h4>
+        <% if @random_flashcard %>
+          <%# Was printing the stored text as-is, so this panel alone showed
+              猫[ねこ] rather than the reading above the kanji. %>
+          <p><strong class="pera-green"><%= t("flashcards.question_prefix") %></strong> <%= with_furigana(@random_flashcard.question, show: show_furigana?) %></p>
+          <p><strong class="pera-green"><%= t("flashcards.answer_prefix") %></strong> <%= with_furigana(@random_flashcard.answer, show: show_furigana?) %></p>
+        <% else %>
+          <p class="pera-text"><%= t(".no_cards_yet") %></p>
+        <% end %>
+      </div>
     </div>
 
-    <div class="card p-3 text-center flex-fill rounded-5 dash-card js-dash-card col-4">
-      <h3 class="pera-green"><%= @flashcard_count %></h3>
-      <p class="mb-0"><%= t(".flashcards") %></p>
+    <div class="col-12 col-lg-4">
+      <div class="card p-3 h-100 text-center rounded-5 dash-card js-dash-card">
+        <h3 class="pera-green"><%= @flashcard_count %></h3>
+        <p class="mb-0"><%= t(".flashcards") %></p>
+      </div>
     </div>
   </div>
 

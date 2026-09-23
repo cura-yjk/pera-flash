@@ -35,9 +35,47 @@
   border: solid 1px $pera-green;
 }
 
-.dash-card-dark {
+// Descendants of .dark-mode rather than a class JavaScript stamps on.
+//
+// dark_mode_controller used to walk .js-dash-card at connect and on toggle and
+// add .dash-card-dark to each. Anything Turbo delivered afterwards never got
+// it: the edit modal arrives in a turbo_frame, and the rate-limit, reply-failed
+// and flashcard-preview notices arrive as turbo_streams -- all after connect
+// has run. The edit modal opened as a light panel with near-black text in the
+// middle of a dark page, and no amount of toggling fixed it, because toggling
+// only walks what is on the page at the time.
+//
+// CSS has no such problem: a rule applies to an element the moment it exists.
+.dark-mode .dash-card,
+.dark-mode .js-dash-card {
   background-color: #3E3E3E;
   color: var(--text-body);
+}
+
+// Form controls do not inherit colour, so a themed panel still held black text
+// on a dark field.
+.dark-mode {
+  .form-control,
+  .form-select {
+    background-color: #3E3E3E;
+    border-color: var(--surface-border);
+    color: var(--text-body);
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    background-color: #3E3E3E;
+    color: var(--text-body);
+  }
+
+  .form-control::placeholder {
+    color: var(--text-muted);
+  }
+
+  .form-label,
+  label {
+    color: var(--text-body);
+  }
 }
 
 // Bootstrap sets these with !important, so overriding them takes the same.

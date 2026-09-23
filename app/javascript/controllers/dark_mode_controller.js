@@ -1,45 +1,35 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Remembers the theme and puts it on <body>. Everything else is CSS.
+//
+// This used to walk .js-dash-card and stamp .dash-card-dark on each element at
+// connect and on toggle, which only ever covered what was on the page at that
+// moment. Anything Turbo delivered afterwards -- the edit modal in its frame,
+// the rate-limit and reply-failed notices in their streams -- arrived
+// unthemed, and toggling did not help, because toggling walked the same stale
+// set. The stylesheet now matches on .dark-mode descendants, so a panel is
+// themed the moment it exists.
 export default class extends Controller {
-  static targets = ["dark-toggle", "dark-dash",'rotate-icon'];
+  static targets = ["darkToggle"]
 
-  connect () {
-  const savedTheme = localStorage.getItem("theme");
-  const dashCard = document.querySelectorAll(".js-dash-card");
-
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark-mode");
-
-    dashCard.forEach((card) => {
-      card.classList.add("dash-card-dark");
-    });
-
-    if (this.hasDarkToggleTarget) {
-      this.darkToggleTarget.classList.add("dark-btn");
-    }
-    if (this.hasDarkDashTarget) {
-      this.darkDashTarget.classList.add("dash-card-dark");
-    }
-    }
+  connect() {
+    if (localStorage.getItem("theme") === "dark") this.apply(true)
   }
 
   toggle() {
-    const dashCard = document.querySelectorAll(".js-dash-card");
-    document.body.classList.toggle("dark-mode");
+    this.apply(!document.body.classList.contains("dark-mode"))
+    localStorage.setItem("theme", this.dark ? "dark" : "light")
+  }
 
-    dashCard.forEach((card) => {
-      card.classList.toggle("dash-card-dark");
-    });
+  apply(dark) {
+    document.body.classList.toggle("dark-mode", dark)
 
-    if (this.hasDarkToggleTarget) {
-      this.darkToggleTarget.classList.toggle("dark-btn");
-    }
+    // The toggle button is its own control rather than a themed surface, and
+    // it is always on the page, so it keeps its class.
+    if (this.hasDarkToggleTarget) this.darkToggleTarget.classList.toggle("dark-btn", dark)
+  }
 
-    if (this.hasDarkDashTarget) {
-      this.darkDashTarget.classList.toggle("dash-card-dark");
-    }
-
-    const isDark = document.body.classList.contains("dark-mode");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+  get dark() {
+    return document.body.classList.contains("dark-mode")
   }
 }

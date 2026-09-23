@@ -37,6 +37,8 @@ class EditingACardTest < ApplicationSystemTestCase
     assert_text "What does 犬 mean?"
   end
 
+  # Saving failed the same way closing did, and more quietly: the card was
+  # updated, but the learner got Turbo's error instead of the confirmation.
   test "an edit made in it sticks" do
     card = @deck.flashcards.create!(question: "Typo here", answer: "Cat")
 
@@ -46,6 +48,28 @@ class EditingACardTest < ApplicationSystemTestCase
     click_and_confirm("Save", expect: "What does 猫 mean?")
 
     assert_equal "What does 猫 mean?", card.reload.question
+    assert_no_text "Content missing"
+
+    # visible: :all because the flash is a toast: .pera-flash animates
+    # fadeInOut over 3.5s with fill-mode forwards, so it is on its way out by
+    # the time an assertion reaches it. What matters is that the app answered
+    # the save at all -- Turbo's error used to take its place.
+    assert_selector ".pera-flash", text: I18n.t("flashcards.updated"), visible: :all
+  end
+
+  # Closing it is a frame navigation unless the frame says otherwise, and a
+  # turbo-frame request is rendered without the layout -- which is where this
+  # frame lives. So the response had no #modal, and Turbo wrote its error into
+  # the frame, which the layout puts below the footer.
+  test "closing the form leaves nothing behind" do
+    @deck.flashcards.create!(question: "What does 鳥 mean?", answer: "Bird")
+
+    visit flashcards_path
+    open_card("What does 鳥 mean?")
+    find(".modal .btn-close").click
+
+    assert_no_selector ".modal", wait: 5
+    assert_no_text "Content missing"
   end
 
   private

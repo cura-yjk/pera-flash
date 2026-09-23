@@ -22,7 +22,7 @@
   <div class="d-grid gap-2 mx-auto mt-4" style="max-width: 34rem;">
     <% @question.options.each do |option| %>
       <%= button_to quiz_path_for(@deck), method: :post, params: { choice: option },
-            class: "btn btn-outline-secondary rounded-4 text-start py-3 px-4 w-100" do %>
+            class: "btn btn-outline-secondary text-start py-3 px-4 w-100" do %>
         <%= with_furigana(option, show: show_furigana?) %>
       <% end %>
     <% end %>

@@ -1,16 +1,31 @@
+// One radius for every button, set here rather than in the markup.
+//
+// It used to be a utility class on each element, and they disagreed: .pera-btn
+// alone appeared with rounded-3 eight times, rounded-4 eight times, rounded-5
+// once and nothing at all twice -- four different corners on one button. A
+// button cannot drift from the others if it is not being asked to declare its
+// own shape.
+$btn-radius: 0.5rem;
+
 // Buttons were all fixed widths, so a row of three squeezed or overflowed on a
 // phone. min-width keeps the desktop proportions while letting a narrow screen
 // shrink them to fit their label.
-.pera-btn {
-  cursor: pointer;
-
-  background-color: #2BAE8F;
-
-  transition: 0.5s ease-in-out;
-
+.pera-btn,
+.pera-btn-outline,
+.btn-outline-secondary {
   min-height: 40px;
   height: auto;
   min-width: 120px;
+
+  border-radius: $btn-radius;
+
+  transition: 0.5s ease-in-out;
+}
+
+.pera-btn {
+  cursor: pointer;
+
+  background-color: $pera-green;
 }
 
 .pera-btn:hover {
@@ -19,25 +34,26 @@
   border: solid 2px $pera-green;
 }
 
+// The one outline button. This and .gen-flash-btn were the same thing under
+// two names -- green border, brand-coloured label, transparent fill -- and
+// differed only in which they capped, a min-width or a max-width, and in what
+// colour their label turned on hover.
 .pera-btn-outline {
   border: solid 2px $pera-green;
   color: var(--text-brand);
-
-  min-height: 40px;
-  height: auto;
-  min-width: 120px;
-
-  transition: 0.5s ease-in-out;
 }
 
+// Near-black on the brand green, not near-white. The two names disagreed here
+// too: one turned its label #EBFFFA, which is 2.68:1 on that green, and the
+// other #3E3E3E. This is the same fill every other button hovers to.
 .pera-btn-outline:hover {
-  background-color: #2BAE8F;
-  color: #EBFFFA;
+  background-color: $pera-green;
+  color: $gray;
 }
 
 input[type="checkbox"].pera-check:checked {
-  background-color: #2BAE8F !important;
-  border-color: #2BAE8F !important;
+  background-color: $pera-green !important;
+  border-color: $pera-green !important;
 }
 
 .pera-text {
@@ -48,33 +64,13 @@ input[type="checkbox"].pera-check:checked {
   visibility: hidden;
 }
 
-.gen-flash-btn {
-  border: solid 2px $pera-green;
-  color: var(--text-brand);
-
-  transition: 0.5s ease-in-out;
-
-  min-height: 40px;
-  height: auto;
-  width: auto;
-  max-width: 220px;
-}
-
-.gen-flash-btn:hover {
-  background-color: #2BAE8F;
-  color: #3E3E3E;
-}
-
 // Three grade buttons at 120px each plus gaps come to about 384px, which is
 // wider than the usable width of a small phone once the container's padding is
 // taken off. They keep their proportions on anything larger.
 @media (max-width: 575.98px) {
   .pera-btn,
-  .pera-btn-outline {
+  .pera-btn-outline,
+  .btn-outline-secondary {
     min-width: 96px;
-  }
-
-  .gen-flash-btn {
-    max-width: 100%;
   }
 }

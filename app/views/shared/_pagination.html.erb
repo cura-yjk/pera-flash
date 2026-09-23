@@ -4,19 +4,19 @@
 <% if page.many? %>
   <nav class="d-flex justify-content-center align-items-center gap-3 my-4" aria-label="<%= t("pagination.label") %>">
     <% if page.first? %>
-      <span class="btn pera-btn-outline rounded-4 disabled"><%= t("pagination.previous") %></span>
+      <span class="btn pera-btn-outline disabled"><%= t("pagination.previous") %></span>
     <% else %>
       <%= link_to t("pagination.previous"), url_for(request.query_parameters.merge(page: page.number - 1)),
-                  class: "btn pera-btn-outline rounded-4", data: link_data %>
+                  class: "btn pera-btn-outline", data: link_data %>
     <% end %>
 
     <span class="small text-muted"><%= t("pagination.position", current: page.number, total: page.pages) %></span>
 
     <% if page.last? %>
-      <span class="btn pera-btn-outline rounded-4 disabled"><%= t("pagination.next") %></span>
+      <span class="btn pera-btn-outline disabled"><%= t("pagination.next") %></span>
     <% else %>
       <%= link_to t("pagination.next"), url_for(request.query_parameters.merge(page: page.number + 1)),
-                  class: "btn pera-btn-outline rounded-4", data: link_data %>
+                  class: "btn pera-btn-outline", data: link_data %>
     <% end %>
   </nav>
 <% end %>

@@ -11,7 +11,7 @@
         controller sets it when you press "Show answer". %>
     <%= button_to toggle_furigana_path, method: :patch,
           params: { revealed: "" },
-          class: "btn btn-sm btn-outline-secondary rounded-4 ms-auto",
+          class: "btn btn-sm btn-outline-secondary ms-auto",
           form: { data: { controller: "reveal-state", action: "click->reveal-state#capture" } },
           data: { turbo_submits_with: t("furigana.updating") } do %>
       <i class="fa-solid fa-language me-1"></i>

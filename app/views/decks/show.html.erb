@@ -3,20 +3,20 @@
     <h1 class="mb-0"><%= @deck.name %></h1>
     <%= form_with url: deck_path(@deck), method: :get, class: "d-flex" do |f| %>
       <%= f.text_field :query, value: params[:query], placeholder: t(".search_placeholder"), class: "form-control me-2 rounded-4 user-details-input" %>
-      <%= f.submit t("search.submit"), class: "btn rounded-4 pera-btn" %>
+      <%= f.submit t("search.submit"), class: "btn pera-btn" %>
     <% end %>
     <% if @due_count.to_i.positive? %>
-      <%= link_to deck_review_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center justify-content-center gap-2" do %>
+      <%= link_to deck_review_path(@deck), class: "btn pera-btn d-flex align-items-center justify-content-center gap-2" do %>
         <i class="fa-solid fa-brain"></i>
         Review <span class="badge rounded-5 bg-light text-dark"><%= @due_count %></span>
       <% end %>
     <% end %>
     <% if @flashcards.size >= QuizQuestion::OPTION_COUNT %>
-      <%= link_to deck_quiz_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center justify-content-center gap-2" do %>
+      <%= link_to deck_quiz_path(@deck), class: "btn pera-btn d-flex align-items-center justify-content-center gap-2" do %>
         <i class="fa-solid fa-list-check"></i> Quiz
       <% end %>
     <% end %>
-    <%= link_to export_deck_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center justify-content-center gap-2" do %>
+    <%= link_to export_deck_path(@deck), class: "btn pera-btn d-flex align-items-center justify-content-center gap-2" do %>
       <i class="fa-solid fa-file-export"></i> Export
     <% end %>
   </div>

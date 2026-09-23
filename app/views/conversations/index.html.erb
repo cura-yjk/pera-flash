@@ -3,7 +3,7 @@
     <h1 class="mb-0"><%= t(".title") %></h1>
     <%= link_to t("conversations.new_chat"), conversations_path,
                 data: { turbo_method: :post },
-                class: "btn pera-btn rounded-3" %>
+                class: "btn pera-btn" %>
   </div>
 
   <% if @conversations.any? %>

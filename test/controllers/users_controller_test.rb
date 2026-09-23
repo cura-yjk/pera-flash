@@ -39,12 +39,4 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_select "a[href=?]", review_path, count: 0
   end
-
-  test "navbar search goes to the flashcard index" do
-    sign_in users(:learner)
-
-    get dashboard_path
-
-    assert_select "form[action=?][method=?]", flashcards_path, "get"
-  end
 end

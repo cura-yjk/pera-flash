@@ -11,7 +11,7 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 ## What it does
 
 **Chatting**
-- Write Japanese at whatever level you're at; Pera corrects it and explains why, in your language
+- Write Japanese at whatever level you're at; Pera corrects it and explains why, in English
 - Replies stream in as they're generated rather than landing all at once
 - Pera is reminded of the recent conversation *and* of the cards you keep getting wrong, so the
   tutoring stays pointed at your actual weak spots
@@ -32,7 +32,6 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 - Study everything at once, or one deck at a time
 
 **Elsewhere**
-- Interface in six languages: English, 日本語, 한국어, 简体中文, 繁體中文 and Deutsch
 - Installs to a phone's home screen as a PWA
 
 ## Getting Started

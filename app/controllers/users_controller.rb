@@ -7,16 +7,6 @@ class UsersController < ApplicationController
     redirect_to back_with_reveal_state
   end
 
-  # Saved on the user, so the choice follows them to another device rather
-  # than living in a cookie. Until someone picks, the browser's own languages
-  # decide -- see ApplicationController#chosen_locale.
-  def update_locale
-    locale = params[:locale].to_s
-    current_user.update!(locale: locale) if I18n.available_locales.map(&:to_s).include?(locale)
-
-    redirect_back fallback_location: dashboard_path
-  end
-
   # How many of each list the dashboard shows. Everything below is "recent",
   # so the newest few, taken in the query rather than by loading the lot.
   RECENT = 3

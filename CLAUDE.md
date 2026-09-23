@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Pera Flash is a Rails 8 app for learning Japanese by talking. A learner chats with ペラ (Pera), an
 LLM tutor that corrects their Japanese and explains the grammar, and any conversation can be turned
 into flashcards. Those cards are organised into decks, reviewed on a spaced-repetition schedule,
-quizzed as multiple choice, searched, and exported as Anki-importable CSV. The interface is
-translated into six languages and installs as a PWA.
+quizzed as multiple choice, searched, and exported as Anki-importable CSV. The app installs as a
+PWA.
 
 ## Commands
 
@@ -84,10 +84,11 @@ happened while ease also drifts for cards answered "easy" a lot; and `mastered?`
 the `due` and `in_review_order` scopes — never studied first, then most overdue.
 
 **Deck export (`DecksController#export`)**: CSV, Anki-importable. Three details are deliberate and
-easy to "fix" wrongly: the `Question,Answer` headers stay in **English** in every locale because Anki
-maps fields by them; the response is prefixed with a UTF-8 BOM so spreadsheet apps read Japanese
-correctly; and `spreadsheet_safe` prefixes any value starting with a formula trigger to defuse CSV
-injection. **This feature belongs to a teammate — document it, don't rewrite it.**
+easy to "fix" wrongly: the `Question,Answer` headers are what Anki maps fields by, so they are
+pinned by a test and must not be renamed to anything friendlier; the response is prefixed with a
+UTF-8 BOM so spreadsheet apps read Japanese correctly; and `spreadsheet_safe` prefixes any value
+starting with a formula trigger to defuse CSV injection. **This feature belongs to a teammate —
+document it, don't rewrite it.**
 
 **Auth and scoping**: Devise on `User` (`database_authenticatable, registerable, recoverable,
 rememberable, validatable, lockable` — `lockable` means repeated failed sign-ins lock an
@@ -98,11 +99,14 @@ go through `configure_permitted_parameters`, not a Devise override. **Every look
 preserve that when adding actions. `ConversationsController` also uses Rails 8's built-in
 `rate_limit` on generation, per user, burst and hourly.
 
-**i18n**: six interface languages (`en`, `ja`, `ko`, `zh-CN`, `zh-TW`, `de`) plus Devise and
-simple_form locale files. `ApplicationController#use_chosen_locale` is an **`around_action`, not a
-`before_action`** — `I18n.locale` is global, so it has to be restored after the request.
-`test/models/locale_coverage_test.rb` fails when a key exists in one locale and not the others; add
-new copy to every file.
+**Interface language**: English only. The app shipped six interface languages and a per-user
+locale; that was removed deliberately to cut the cost of every new string being copy for six files.
+Copy still goes through `t()` and `config/locales/en.yml` — keep it there rather than hard-coding
+strings into views, since that is what would make re-adding a language a translation job rather
+than a rewrite. `PeraPrompt::EXPLANATION_LANGUAGE_RULE` names English outright; it is **shared** with
+the card generator so chat and cards cannot disagree. Do not reword it to follow the student's own
+language: a learner practising writes Japanese, so "the language the student writes in" points at
+the language being taught, and beginners got feedback they could not read.
 
 **Frontend**: server-rendered ERB + Bootstrap 5 + Hotwire (Turbo + Stimulus) + importmap — no
 Node/webpack/yarn build step. Forms use `simple_form`. Twelve Stimulus controllers in
@@ -120,7 +124,7 @@ PWA (`app/views/pwa/manifest.json.erb`, `service-worker.js`).
   bare `assert` with hand-written messages on purpose — `assert_equal` would print the live key into
   CI logs on exactly the run that proves it is exposed.
 - Coverage: `test/models` for `Flashcard`, `Deck`, `Conversation`, `Message`, `Page`, `User`,
-  `QuizQuestion` and locale coverage; `test/controllers` for flashcards, conversations and quizzes;
+  `QuizQuestion`; `test/controllers` for flashcards, conversations and quizzes;
   `test/services` for `LlmChat` and `PeraPrompt`; `test/system` for chatting, studying, search,
   input box and phone layout; plus a PWA integration test. Not covered: `PeraReply` and the SSE
   path in `MessagesController`, `DecksController#export`, and all JS.

@@ -81,7 +81,48 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     assert_equal "stacked", panel_arrangement
   end
 
+  # The account menu is the only way to reach decks, chat history, flashcards,
+  # the furigana toggle and logging out, and nothing else in the suite opens it
+  # at phone width.
+  #
+  # Taking the navbar's collapse away left the menu subject to a Bootstrap rule
+  # written for one: below the expand breakpoint .navbar-nav .dropdown-menu is
+  # position: static, which is right inside a collapse panel -- opening it
+  # should push the panel open. In the bar itself it put a ~340px block in the
+  # flow of the row, so the avatar wrapped onto a second line and the menu
+  # shoved the page down beneath it.
+  test "opening the account menu does not rearrange the navbar" do
+    sign_in_as(users(:learner))
+    visit dashboard_path
+    settled = avatar_top
+
+    open_account_menu
+
+    assert_equal settled, avatar_top,
+                 "the avatar moved when the menu opened, so the bar rewrapped"
+    assert_no_horizontal_scroll "the dashboard with the account menu open"
+  end
+
   private
+
+  # Through a DOM click if the pointer one does not land: the bar is
+  # fixed-top, and a driver click at those coordinates is the flakiest part of
+  # this file -- see click_and_confirm, which does the same.
+  def open_account_menu
+    toggle = find(".nav-link.dropdown-toggle")
+    toggle.click
+    return if has_selector?(".dropdown-menu.show", wait: 2)
+
+    toggle.evaluate_script("this.click()")
+    assert_selector ".dropdown-menu.show", wait: 5
+  end
+
+  def avatar_top
+    page.evaluate_script(
+      "Math.round(document.querySelector('.nav-link.dropdown-toggle')" \
+      ".getBoundingClientRect().top)"
+    )
+  end
 
   def panel_arrangement
     page.evaluate_script(<<~JS)

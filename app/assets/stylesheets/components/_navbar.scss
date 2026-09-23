@@ -31,19 +31,20 @@
   cursor: pointer;
 }
 
-.search-btn {
-  background-color: #3E3E3E;
-  color: #EBFFFA;
-  transition: 0.5s ease-in-out;
-}
-.search-btn:hover {
-  background-color: #2BAE8F;
-  border: solid 1px #3E3E3E;
-  color: #3E3E3E;
-}
-
 .dropdown-menu .dropdown-item:hover {
   color: #2BAE8F !important;
+}
+
+// Bootstrap makes a navbar dropdown static below the expand breakpoint --
+// correct when the menu lives inside the collapse panel, where it should push
+// the panel open rather than float over it. This one sits in the bar itself,
+// so in-flow it widened the <ul> past the row and dropped the avatar onto a
+// second line, with the menu pushing the page down under it.
+//
+// -end keeps it aligned to the avatar's right edge rather than running off the
+// screen, which is what an absolute menu anchored left does at 414px.
+.nav-bar .navbar-nav .dropdown-menu {
+  position: absolute;
 }
 
 // Count of cards due, riding on the review icon. Sized here rather than with

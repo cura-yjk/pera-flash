@@ -18,13 +18,10 @@ class DeckExportTest < ActionDispatch::IntegrationTest
     assert_match "What does 猫 mean?", response.body
   end
 
-  # The header is a column name an importer reads, not interface text. When it
-  # followed the interface language, a Japanese learner exported 問題,答え and a
-  # German one Frage,Antwort -- a different file format per language, which
-  # anything importing the file would have to guess at.
-  test "the header stays English whatever language the app is in" do
-    users(:learner).update!(locale: "ja")
-
+  # The header is a column name an importer reads, not interface text. Anki
+  # maps fields by it, so it is pinned here: translating it, or renaming it to
+  # something friendlier, silently changes the file format.
+  test "the header is the one Anki maps fields by" do
     get export_deck_path(@deck)
 
     assert_match "Question,Answer", response.body

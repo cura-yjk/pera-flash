@@ -11,8 +11,8 @@
   </p>
 
   <div class="d-flex flex-wrap justify-content-center gap-2">
-    <%# The Japanese example stays Japanese in every locale: it is the thing
-        being practised, not interface text. %>
+    <%# The suggestions stay Japanese while the rest of the copy is English:
+        they are the thing being practised, not interface text. %>
     <% t(".suggestions").each do |suggestion| %>
       <%= button_to suggestion,
             conversation_messages_path(conversation),

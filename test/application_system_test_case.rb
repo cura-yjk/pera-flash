@@ -82,12 +82,26 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # answers, the page re-renders -- it just does not depend on the driver
   # landing a pointer on a coordinate. Capybara has already established the
   # element is visible by finding it.
+  # The fallback is only for a click that did nothing. A click that worked but
+  # was still rendering also fails the 3s probe, and by then the button belongs
+  # to a page that no longer exists -- so clicking it again raised
+  # StaleElementReferenceError and failed the test for the opposite reason to
+  # the one this helper exists to prevent. It hit roughly one random test per
+  # run, always through sign_in_as, because every test signs in.
+  #
+  # A stale reference is the proof the click landed: only a navigation could
+  # have taken the element away. So it is not an error here -- it means wait.
   def click_and_confirm(label, expect:, wait: 10)
     button = find_button(label, match: :first)
     button.click
     return if page.has_text?(expect, wait: 3)
 
-    button.evaluate_script("this.click()")
+    begin
+      button.evaluate_script("this.click()")
+    rescue Selenium::WebDriver::Error::StaleElementReferenceError
+      nil
+    end
+
     assert_text expect, wait: wait
   end
 

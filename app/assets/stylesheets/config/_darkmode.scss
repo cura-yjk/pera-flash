@@ -1,14 +1,89 @@
+// Dark mode is a class on <body>, toggled by dark_mode_controller and
+// remembered in localStorage.
+//
+// The colours below are custom properties rather than a rule per element,
+// because the rule-per-element version kept missing things: .text-muted stayed
+// at its light-mode colour on the dark background and measured 1.93:1, the
+// furigana in a quiz option measured 2.28:1, and nothing in the stylesheet
+// said so. A token that both themes define cannot be forgotten in one of them.
+:root {
+  --text-body: #{$gray};
+  --text-brand: #{$pera-green-text};
+
+  // Bootstrap's own muted grey is #6C757D, which is 4.26:1 here -- already
+  // under the bar before dark mode is involved.
+  --text-muted: #5A5A5A;
+
+  --surface: #FFFFFF;
+  --surface-border: rgba(0, 0, 0, 0.12);
+}
+
 .dark-mode {
+  --text-body: #EBFFFA;
+  --text-brand: #{$pera-green-text-dark};
+  --text-muted: #C2C2C2;
+
+  --surface: #4A4A4A;
+  --surface-border: rgba(255, 255, 255, 0.14);
+
   background-color: #3E3E3E;
-  color: #EBFFFA;
+  color: var(--text-body);
 }
 
 .dark-btn {
   background-color: #3E3E3E;
-  border: solid 1px #2BAE8F;
+  border: solid 1px $pera-green;
 }
 
 .dash-card-dark {
   background-color: #3E3E3E;
-  color: #EBFFFA;
+  color: var(--text-body);
+}
+
+// Bootstrap sets these with !important, so overriding them takes the same.
+// They are the two utilities the app reaches for whenever text is meant to
+// recede, and neither followed the theme.
+.text-muted,
+.text-secondary {
+  color: var(--text-muted) !important;
+}
+
+// A quiz option holds the answer, and the furigana inside it inherits this
+// colour -- so Bootstrap's secondary grey at 4.37:1 took the readings down
+// with it. The border keeps the outline look; only the text changes.
+.btn-outline-secondary {
+  color: var(--text-body);
+}
+
+// Quiz options and the review grade buttons. In dark mode these kept
+// Bootstrap's secondary grey and took the furigana inside them down with it.
+.dark-mode {
+  .btn-outline-secondary {
+    color: var(--text-body);
+    border-color: var(--surface-border);
+  }
+
+  .btn-outline-secondary:hover {
+    color: $gray;
+  }
+
+  // The account menu was a white panel with near-black text sitting in an
+  // otherwise dark page. Readable, but the only light surface left on screen.
+  .dropdown-menu {
+    background-color: var(--surface);
+    border-color: var(--surface-border);
+  }
+
+  .dropdown-item {
+    color: var(--text-body) !important;
+  }
+
+  .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .list-group-item {
+    background-color: transparent;
+    color: var(--text-body);
+  }
 }

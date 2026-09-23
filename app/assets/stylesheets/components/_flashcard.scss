@@ -13,9 +13,11 @@
   justify-content: center;
 }
 
+// As text rather than as a fill, so this takes the legible variant -- the raw
+// brand green is 2.53:1 on the light background. See config/_colors.scss.
 .stack-icon,
 .pera-green {
-  color:#2BAE8F;
+  color: var(--text-brand);
 }
 
 .wand-icon {

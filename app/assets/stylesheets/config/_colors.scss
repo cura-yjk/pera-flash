@@ -9,3 +9,15 @@ $green: #1EDD88;
 $gray: #0E0000;
 $light-gray: #F4F4F4;
 $pearl-aqua: #7CDEC8;
+
+// The brand green, and the two variants of it that are legible as *text*.
+//
+// #2BAE8F is a fill: it works under a button label or inside a badge. As text
+// on a light background it measures 2.53:1, well under the 4.5:1 that counts
+// as readable, and it was being used that way for every section heading, every
+// Q:/A: prefix and every card count. These two keep the hue and move the
+// lightness until they pass: 5.21:1 on the light background, 4.86:1 on the
+// dark one.
+$pera-green: #2BAE8F;
+$pera-green-text: #1C735E;
+$pera-green-text-dark: #31C4A1;

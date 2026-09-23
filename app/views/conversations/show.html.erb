@@ -1,15 +1,18 @@
 <div class="container my-5 chat-page">
-  <div class="d-flex justify-content-between align-items-center">
-    <nav aria-label="breadcrumb">
-      <div id="conversation_title">
-        <%= render "conversations/title", conversation: @conversation %>
-      </div>
-    </nav>
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><%= link_to 'New Chat', conversations_path(@conversation), data: { turbo_method: :post }, class: "text-secondary" %></li>
-      </ol>
-    </nav>
+  <%= render "shared/back_link", path: conversations_path, label: t("conversations.index.title") %>
+
+  <%# Both of these used to sit in <nav aria-label="breadcrumb"><ol class="breadcrumb">.
+      Neither was a breadcrumb: one wrapped the conversation's title, the other
+      a button that starts a new conversation. A screen reader announced a
+      trail of ancestors and found a heading and an action. The way back is the
+      link above, which is the thing a breadcrumb would have been for. %>
+  <div class="d-flex justify-content-between align-items-center mt-2">
+    <div id="conversation_title">
+      <%= render "conversations/title", conversation: @conversation %>
+    </div>
+
+    <%= link_to t("conversations.new_chat"), conversations_path(@conversation),
+          data: { turbo_method: :post }, class: "text-secondary text-decoration-none" %>
   </div>
   <div id="messages">
     <%= render "messages/empty", conversation: @conversation if @messages.empty? %>

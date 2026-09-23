@@ -2,6 +2,6 @@
   <% if @next_card %>
     <%= render "card", card: @next_card, remaining: @remaining, deck: @deck %>
   <% else %>
-    <%= render "empty", studied_any: true %>
+    <%= render "empty", studied_any: true, deck: @deck %>
   <% end %>
 <% end %>

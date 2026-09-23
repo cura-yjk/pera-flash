@@ -14,6 +14,18 @@ module ApplicationHelper
   # A quiz needs enough cards to build wrong answers from, so the link stays
   # hidden below that -- the dashboard applies the same guard, and QuizzesController
   # renders `too_few` for anyone who gets there anyway.
+  # Where "back" goes from a study session: the deck it was started from, or
+  # the dashboard when it covers every deck. The finished states used to send
+  # everyone to the deck index regardless, which is neither of the places the
+  # session was opened from.
+  def study_back_path(deck)
+    deck ? deck_path(deck) : dashboard_path
+  end
+
+  def study_back_label(deck)
+    deck ? deck.name : t("nav.dashboard")
+  end
+
   def quiz_available?
     return false unless user_signed_in?
 

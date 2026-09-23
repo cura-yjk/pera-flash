@@ -40,6 +40,23 @@ input[type="checkbox"].pera-check:checked {
   border-color: #2BAE8F !important;
 }
 
+// The way out of a page, so it is a control and sized like one. Text alone is
+// a 24px target, which is the thing the navbar boxes were just widened to
+// avoid; the padding is vertical so the row above the heading does not grow
+// wider than it needs to.
+.back-link {
+  min-height: 44px;
+  padding-block: 0.5rem;
+  padding-inline-end: 0.5rem;
+
+  color: var(--text-brand);
+}
+
+.back-link:hover {
+  color: var(--text-brand);
+  text-decoration: underline !important;
+}
+
 .pera-text {
   color: var(--text-brand);
 }

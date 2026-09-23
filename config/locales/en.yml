@@ -11,6 +11,7 @@ en:
     updating: "Updating…"
 
   nav:
+    back: "Back to %{target}"
     dashboard: "Dashboard"
     theme: "Switch theme"
     account: "Account"

@@ -1,0 +1,10 @@
+<%# The way out of a page, drawn by the page itself.
+    The app installs with "display": "standalone", so on a home screen there is
+    no browser chrome and no back button -- on iOS, no back gesture either.
+    Whatever a page draws is the only way out of it, and the task pages drew
+    nothing: mid-review and mid-quiz the sole exit was the navbar. %>
+<%= link_to path, class: "back-link d-inline-flex align-items-center gap-1 text-decoration-none pera-text",
+      aria: { label: t("nav.back", target: label) } do %>
+  <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+  <span><%= label %></span>
+<% end %>

@@ -18,6 +18,6 @@
 
   <div class="d-flex justify-content-center gap-2">
     <%= link_to t(".again"), quiz_path_for(@deck), class: "btn gen-flash-btn rounded-4 px-4" %>
-    <%= link_to t("decks.back"), decks_path, class: "btn btn-outline-secondary rounded-4 px-4" %>
+    <%= link_to study_back_label(@deck), study_back_path(@deck), class: "btn btn-outline-secondary rounded-4 px-4" %>
   </div>
 </div>

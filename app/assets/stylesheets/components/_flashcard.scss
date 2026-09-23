@@ -3,7 +3,11 @@
 
   // A flat height clipped longer cards once the text wrapped on a narrow
   // screen -- and a card whose answer is cut off is worse than a tall card.
-  min-height: 340px;
+  // It is a minimum, so a long card still grows past it; what it sets is the
+  // floor, and 340px was three times what a typical card needs. The blanket
+  // .card rule in pages/dashboard used to override this to 280px anyway --
+  // that rule is gone, so this number is now the one that applies.
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   justify-content: center;

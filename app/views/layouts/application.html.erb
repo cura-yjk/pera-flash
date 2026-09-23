@@ -67,6 +67,15 @@
     </div>
 
     <%= render "shared/footer" %>
-    <%= turbo_frame_tag "modal" %>
+    <%# The modal every card's edit link opens into. target: "_top" belongs on
+        this one, not on the frame inside edit.html.erb: Turbo replaces a
+        frame's children and keeps the element already in the DOM, so the
+        target declared in the response never applied.
+
+        Without it, the close link navigated the frame to /flashcards. Rails
+        renders a turbo-frame request without the layout, and this frame is in
+        the layout -- so the response had no #modal, and Turbo wrote its
+        "Content missing" error into the frame, which sits below the footer. %>
+    <%= turbo_frame_tag "modal", target: "_top" %>
   </body>
 </html>

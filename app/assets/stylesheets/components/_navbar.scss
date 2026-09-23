@@ -35,6 +35,18 @@
   color: #2BAE8F !important;
 }
 
+// Bootstrap makes a navbar dropdown static below the expand breakpoint --
+// correct when the menu lives inside the collapse panel, where it should push
+// the panel open rather than float over it. This one sits in the bar itself,
+// so in-flow it widened the <ul> past the row and dropped the avatar onto a
+// second line, with the menu pushing the page down under it.
+//
+// -end keeps it aligned to the avatar's right edge rather than running off the
+// screen, which is what an absolute menu anchored left does at 414px.
+.nav-bar .navbar-nav .dropdown-menu {
+  position: absolute;
+}
+
 // Count of cards due, riding on the review icon. Sized here rather than with
 // .pera-btn, which is 120x40px for real buttons and would swallow the icon.
 .nav-due-badge {

@@ -7,7 +7,7 @@
     <% end %>
     <% if @due_count.to_i.positive? %>
       <%= link_to deck_review_path(@deck), class: "btn pera-btn rounded-4 d-flex align-items-center justify-content-center gap-2" do %>
-        <i class="fa-solid fa-layer-group"></i>
+        <i class="fa-solid fa-brain"></i>
         Review <span class="badge rounded-5 bg-light text-dark"><%= @due_count %></span>
       <% end %>
     <% end %>

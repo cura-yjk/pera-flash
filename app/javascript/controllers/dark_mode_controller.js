@@ -10,8 +10,6 @@ import { Controller } from "@hotwired/stimulus"
 // set. The stylesheet now matches on .dark-mode descendants, so a panel is
 // themed the moment it exists.
 export default class extends Controller {
-  static targets = ["darkToggle"]
-
   connect() {
     if (localStorage.getItem("theme") === "dark") this.apply(true)
   }
@@ -23,10 +21,6 @@ export default class extends Controller {
 
   apply(dark) {
     document.body.classList.toggle("dark-mode", dark)
-
-    // The toggle button is its own control rather than a themed surface, and
-    // it is always on the page, so it keeps its class.
-    if (this.hasDarkToggleTarget) this.darkToggleTarget.classList.toggle("dark-btn", dark)
   }
 
   get dark() {

@@ -30,11 +30,6 @@
   color: var(--text-body);
 }
 
-.dark-btn {
-  background-color: #3E3E3E;
-  border: solid 1px $pera-green;
-}
-
 // Descendants of .dark-mode rather than a class JavaScript stamps on.
 //
 // dark_mode_controller used to walk .js-dash-card at connect and on toggle and

@@ -40,36 +40,34 @@
       <% end %>
     </div>
 
-    <div>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse d-lg-flex align-items-lg-center gap-lg-3" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-               title="<%= t("nav.account") %>" aria-label="<%= t("nav.account") %>">
-              <i class="fa-solid fa-circle-user" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><%= link_to t("decks.index.title"), decks_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
-              <li><%= link_to t("conversations.index.title"), conversations_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
-              <li><%= link_to t("flashcards.index.title"), flashcards_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <%= button_to toggle_furigana_path, method: :patch,
-                              class: "dropdown-item text-dark pera-text border-0 bg-transparent",
-                              data: { turbo_submits_with: t("furigana.updating") } do %>
-                  <i class="fa-solid fa-language me-1"></i>
-                  <%= show_furigana? ? t("furigana.hide") : t("furigana.show") %>
-                <% end %>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li><%= link_to t("sessions.log_out"), destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item text-pera" %></li>
-            </ul>
+    <%# No collapse and no hamburger. What lived behind the toggle was the
+        search box and this menu; with the search gone it wrapped a single
+        icon, so a phone needed two taps to reach a menu that fits in the bar
+        -- one to reveal the avatar, one to open it. The avatar is its own
+        toggle, which is the job the hamburger was doing. %>
+    <ul class="navbar-nav">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+           title="<%= t("nav.account") %>" aria-label="<%= t("nav.account") %>">
+          <i class="fa-solid fa-circle-user" style="color: rgb(0, 0, 0);" aria-hidden="true"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><%= link_to t("decks.index.title"), decks_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
+          <li><%= link_to t("conversations.index.title"), conversations_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
+          <li><%= link_to t("flashcards.index.title"), flashcards_path, class: "text-dark text-decoration-none me-3 pera-text dropdown-item" %></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <%= button_to toggle_furigana_path, method: :patch,
+                          class: "dropdown-item text-dark pera-text border-0 bg-transparent",
+                          data: { turbo_submits_with: t("furigana.updating") } do %>
+              <i class="fa-solid fa-language me-1"></i>
+              <%= show_furigana? ? t("furigana.hide") : t("furigana.show") %>
+            <% end %>
           </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><%= link_to t("sessions.log_out"), destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item text-pera" %></li>
         </ul>
-    </div>
-
+      </li>
+    </ul>
   </div>
 </nav>

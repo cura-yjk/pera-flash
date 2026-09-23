@@ -15,6 +15,19 @@
   max-width: 124px;
 }
 
+// The bar holds the logo and six 44px tap targets. At 390px that leaves about
+// 100px for the logo, and at 52px tall it takes 124 -- enough to push the
+// account menu onto a second row.
+//
+// components/navbar had this override already and it never applied: both
+// selectors are #pera-logo, and application.scss imports this file after that
+// one, so 52px won. A media query adds no specificity.
+@media (max-width: 575.98px) {
+  #pera-logo {
+    height: 32px;
+  }
+}
+
 #pera-chat {
   height: 72px;
   margin-bottom: -32px;

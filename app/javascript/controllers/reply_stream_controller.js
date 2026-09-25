@@ -133,7 +133,9 @@ export default class extends Controller {
   fail() {
     this.close()
     this.stopRevealing()
-    this.show(this.total)
+    // Everything that arrived, at full strength: a fade left on the last
+    // words reads as text still coming, beside a notice saying it is not.
+    this.show(this.total, { fade: false })
     this.unlockInput()
     this.cursorTarget.innerHTML =
       '<i class="fa-solid fa-triangle-exclamation text-warning"></i> ' +
@@ -179,8 +181,8 @@ export default class extends Controller {
     this.frame = null
   }
 
-  show(characters) {
-    this.textTarget.replaceChildren(...excerpt(this.reply, Math.floor(characters)).childNodes)
+  show(characters, { fade = true } = {}) {
+    this.textTarget.replaceChildren(...excerpt(this.reply, Math.floor(characters), fade).childNodes)
   }
 
   // Swaps in the finished message, rendered by the same partial as a page
@@ -213,7 +215,7 @@ export default class extends Controller {
 // The first `count` characters of the rendered reply, still inside the markup
 // they belong to -- a bold word stays bold and a table grows cell by cell --
 // with the newest few fading in.
-function excerpt(source, count) {
+function excerpt(source, count, fade = true) {
   const copy = source.cloneNode(true)
   const walker = document.createTreeWalker(copy, NodeFilter.SHOW_TEXT)
   const kept = []
@@ -232,7 +234,7 @@ function excerpt(source, count) {
     remaining -= node.length
   }
 
-  fadeIn(kept)
+  if (fade) fadeIn(kept)
   return copy
 }
 

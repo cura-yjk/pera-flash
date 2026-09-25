@@ -15,7 +15,8 @@ PWA.
 - Setup: `bin/setup` (installs gems, prepares the DB; `--skip-server` skips starting the server)
 - Run dev server: `bin/dev`
 - Run all tests: `bin/rails test` (does **not** include system tests)
-- Run system tests: `bin/rails test:system` (real browser; kept separate, as in `config/ci.rb`)
+- Run system tests: `bin/rails test:system` (real browser; kept separate, as in `config/ci.rb`).
+  Chrome by default and in CI; `BROWSER=firefox bin/rails test:system` runs the same suite in Firefox
 - Run a single test file: `bin/rails test test/models/flashcard_test.rb`
 - Run a single test: `bin/rails test test/models/flashcard_test.rb -n test_method_name`
 - Lint: `bin/rubocop` (`rubocop-rails-omakase` base)
@@ -79,6 +80,18 @@ set by the backlog, with the newest characters fading in, and swaps in the finis
 once the reveal catches up. Sending scrolls the question up under the navbar once and holds a
 `min-height` below it for the reply; the page does not follow the reply down.
 
+**Generating flashcards (`FlashcardGeneration`)**: the prompt, the request and the limits live in
+`app/services/flashcard_generation.rb`; `ConversationsController#generate_flashcards` only renders.
+Input is `Conversation#messages_for_flashcards` — what was said since the last batch, capped at
+`FLASHCARD_MESSAGE_LIMIT` (20) — and output is capped at `FlashcardsSchema::MAX_CARDS` (10), set in
+the schema, the prompt and a trim. Every generation logs one `Flashcard generation for
+conversation …` line with its time and input size. The action streams when the browser sends
+`Accept: text/event-stream` (`flashcard_stream_controller.js` does, POSTing with `fetch` — not
+`EventSource`, which can only GET and reconnects on its own, spending another generation):
+`StreamedCards` picks each card out of the JSON as it completes and it is sent as rendered HTML.
+Everything short of a generation is still a turbo_stream, handed to Turbo. `EventStreaming`
+(`app/controllers/concerns/`) holds the SSE helpers both controllers share.
+
 **Spaced repetition (`Flashcard`)**: an SM-2 variant, all local. `GRADES` are `again`/`good`/`easy`;
 `review!(grade)` updates `interval_days`, `ease` (`STARTING_EASE` 2.5, floor `MINIMUM_EASE` 1.3) and
 `due_at`. Two judgements are expressed in constants and worth preserving: `struggling` keys off
@@ -113,9 +126,9 @@ language: a learner practising writes Japanese, so "the language the student wri
 the language being taught, and beginners got feedback they could not read.
 
 **Frontend**: server-rendered ERB + Bootstrap 5 + Hotwire (Turbo + Stimulus) + importmap — no
-Node/webpack/yarn build step. Forms use `simple_form`. Twelve Stimulus controllers in
+Node/webpack/yarn build step. Forms use `simple_form`. Thirteen Stimulus controllers in
 `app/javascript/controllers/` cover the chat UX (autogrow, enter-submit, char count, scroll,
-reply streaming), studying (reveal, reveal-state), live search and dark mode. The app ships as a
+reply streaming, flashcard streaming), studying (reveal, reveal-state), live search and dark mode. The app ships as a
 PWA (`app/views/pwa/manifest.json.erb`, `service-worker.js`).
 
 ## Notes
@@ -129,8 +142,8 @@ PWA (`app/views/pwa/manifest.json.erb`, `service-worker.js`).
   CI logs on exactly the run that proves it is exposed.
 - Coverage: `test/models` for `Flashcard`, `Deck`, `Conversation`, `Message`, `Page`, `User`,
   `QuizQuestion`; `test/controllers` for flashcards, conversations and quizzes;
-  `test/services` for `LlmChat` and `PeraPrompt`; `test/system` for chatting, studying, search,
-  input box and phone layout; plus a PWA integration test. Not covered: `PeraReply` and the SSE
+  `test/services` for `LlmChat`, `PeraPrompt` and `StreamedCards`; `test/system` for chatting,
+  generating flashcards, studying, search, input box and phone layout; plus a PWA integration test. Not covered: `PeraReply` and the SSE
   path in `MessagesController`, `DecksController#export`, and all JS.
 - The services in `app/services/` carry long comments explaining *why* each constant and structure
   is what it is. Read them before changing a number — most of them record a problem that was hit.

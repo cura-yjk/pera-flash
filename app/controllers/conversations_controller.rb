@@ -53,7 +53,7 @@ class ConversationsController < ApplicationController
     # generation that could only return an empty array.
     return render :no_new_material if messages.none?
 
-    @flashcards = build_flashcards(transcript_of(messages))
+    @flashcards = timed_generation(messages) { |transcript| build_flashcards(transcript) }
     render :generation_failed if @flashcards.nil?
   end
 
@@ -72,6 +72,22 @@ class ConversationsController < ApplicationController
     messages.map { |m| "#{m.role}: #{m.content}" }.join("\n\n")
   end
 
+  # One line per generation, with what went in and how long it took.
+  # Generation was "slow sometimes" and nothing recorded when, or with what:
+  # the request log only shows the total, and Heroku keeps too few lines to
+  # find it again. This is the line to grep for.
+  def timed_generation(messages)
+    transcript = transcript_of(messages)
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    yield(transcript).tap do |cards|
+      elapsed = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
+      Rails.logger.info("Flashcard generation for conversation #{@conversation.id}: " \
+                        "#{cards.nil? ? 'failed' : "#{cards.size} cards"} in #{elapsed}ms " \
+                        "from #{messages.size} messages (#{transcript.size} characters)")
+    end
+  end
+
   # Returns the built (unsaved) cards, or nil when the provider could not be
   # reached -- the conversation is untouched either way, so the learner can
   # simply try again.
@@ -82,7 +98,9 @@ class ConversationsController < ApplicationController
     # JSON string, and String#[] with a key is a substring match -- so
     # content["flashcards"] gave back the word "flashcards" and every card
     # arrived blank.
-    Array(response.parsed&.dig("flashcards")).map do |card|
+    # Trimmed as well as asked for: the schema's maxItems and the prompt both
+    # say ten, but a model can ignore either.
+    Array(response.parsed&.dig("flashcards")).first(FlashcardsSchema::MAX_CARDS).map do |card|
       @conversation.flashcards.build(question: card["question"], answer: card["answer"])
     end
   rescue StandardError => e
@@ -96,7 +114,7 @@ class ConversationsController < ApplicationController
   # cannot see the old material to repeat it.
   def flashcard_prompt(transcript)
     <<~PROMPT
-      Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
+      Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates. Return at most #{FlashcardsSchema::MAX_CARDS} cards; if more concepts were covered, choose the #{FlashcardsSchema::MAX_CARDS} most useful for a beginner to remember.
 
       #{PeraPrompt::EXPLANATION_LANGUAGE_RULE}
 

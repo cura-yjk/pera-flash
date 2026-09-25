@@ -162,6 +162,27 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # A provider outage used to 500 the whole action.
+  # One tap, one request. ruby_llm retried a failed request three more times
+  # on its own, so a single tap on a bad Gemini day spent four of the free
+  # tier's few daily requests and kept the learner waiting two minutes. The
+  # notice asks them to try again instead, which is their call to make.
+  test "a failed generation is sent once, not retried" do
+    stub_request(:post, llm_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url, times: 1
+    assert_match ERB::Util.html_escape(I18n.t("conversations.generation_failed.title")), response.body
+  end
+
+  test "a generation that times out is sent once, not retried" do
+    stub_request(:post, llm_url).to_timeout
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url, times: 1
+  end
+
   test "says so when flashcards cannot be generated" do
     stub_request(:post, llm_url).to_timeout
 

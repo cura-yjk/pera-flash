@@ -220,21 +220,9 @@ export default class extends Controller {
   // load. It goes inside this element rather than in place of it, because this
   // element is what holds the room made for the reply.
   complete() {
-    const { html, title } = this.finished
-
-    this.element.innerHTML = html
+    this.element.innerHTML = this.finished.html
     this.element.removeAttribute("data-controller")
     this.unlockInput()
-    this.updateTitle(title)
-  }
-
-  // The first exchange names the conversation, and the heading was rendered
-  // before that happened.
-  updateTitle(title) {
-    if (!title) return
-
-    const heading = document.querySelector("#conversation_title h1, #conversation_title h2")
-    if (heading) heading.textContent = title
   }
 
   close() {

@@ -125,6 +125,12 @@ en:
       title: "Chat History"
       start_one: "Start one"
       empty_html: "No conversations yet. %{start} and Pera will turn what you talk about into flashcards."
+    title:
+      rename: "Rename chat"
+    edit:
+      label: "Chat name"
+      save: "Save"
+      cancel: "Cancel"
     generate_flashcards:
       title: "Review your flashcards"
       question: "Question"

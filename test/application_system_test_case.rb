@@ -105,7 +105,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # A stale reference is the proof the click landed: only a navigation could
   # have taken the element away. So it is not an error here -- it means wait.
   def click_and_confirm(label, expect:, wait: 10)
-    button = find_button(label, match: :first)
+    # Links as well as buttons: the pencil that renames a chat is a link.
+    button = find(:link_or_button, label, match: :first)
     button.click
     return if page.has_text?(expect, wait: 3)
 

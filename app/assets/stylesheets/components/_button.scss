@@ -83,10 +83,14 @@ input[type="checkbox"].pera-check:checked {
 // Three grade buttons at 120px each plus gaps come to about 384px, which is
 // wider than the usable width of a small phone once the container's padding is
 // taken off. They keep their proportions on anything larger.
+//
+// Not icon buttons: this comes after .icon-btn, so an icon in a .pera-btn --
+// the rename form's save -- was held at 96px here and squeezed the field
+// beside it.
 @media (max-width: 575.98px) {
-  .pera-btn,
-  .pera-btn-outline,
-  .btn-outline-secondary {
+  .pera-btn:not(.icon-btn),
+  .pera-btn-outline:not(.icon-btn),
+  .btn-outline-secondary:not(.icon-btn) {
     min-width: 96px;
   }
 }

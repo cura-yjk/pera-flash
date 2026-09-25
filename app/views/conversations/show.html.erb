@@ -1,9 +1,8 @@
 <div class="container my-5 chat-page">
   <div class="d-flex justify-content-between align-items-center">
-    <nav aria-label="breadcrumb">
-      <div id="conversation_title">
-        <%= render "conversations/title", conversation: @conversation %>
-      </div>
+    <%# Grows into the row, so the rename box has room beside "New Chat". %>
+    <nav aria-label="breadcrumb" class="flex-grow-1 me-3" style="min-width: 0">
+      <%= render "conversations/title", conversation: @conversation %>
     </nav>
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">

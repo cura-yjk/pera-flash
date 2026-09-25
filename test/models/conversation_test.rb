@@ -29,17 +29,6 @@ class ConversationTest < ActiveSupport::TestCase
     assert_equal @conversation.messages.count, @conversation.messages_for_flashcards.count
   end
 
-  # Titling is cosmetic -- a conversation keeping its default title is a far
-  # better outcome than failing the message that triggered the attempt.
-  test "a failed title attempt does not raise" do
-    stub_request(:post, llm_url).to_timeout
-    conversation = conversations(:lesson)
-    conversation.update!(title: "Let's chat!")
-
-    assert_nothing_raised { conversation.generate_title_from_first_message }
-    assert_equal "Let's chat!", conversation.reload.title
-  end
-
   # Regression: lead-in context was returned even with nothing new after it,
   # which made "nothing to generate" look like "one message to generate".
   test "offers nothing at all when no messages follow the last flashcard" do
@@ -71,46 +60,59 @@ class ConversationTest < ActiveSupport::TestCase
   end
 
 
-  # What turns a history list of "Let's chat!" into something navigable. It is
-  # one more model call, made after the first reply is saved.
-  test "names the chat after the first thing the learner said" do
-    stub_title("Talking about cats")
-    conversation = default_titled_conversation
-    conversation.messages.create!(role: "user", content: "ねこがすきです")
+  # --- naming a chat --------------------------------------------------------
 
-    conversation.generate_title_from_first_message
-
-    assert_equal "Talking about cats", conversation.reload.title
+  test "a short first message is the name as it is" do
+    assert_equal "How does this app work?", Conversation.name_from("How does this app work?")
   end
 
-  test "takes the title as the model gives it, without the surrounding space" do
-    stub_title("  Cats and how to like them\n")
-    conversation = default_titled_conversation
-    conversation.messages.create!(role: "user", content: "ねこがすきです")
+  test "a long first message is cut at a word" do
+    name = Conversation.name_from("I keep mixing up は and が when I talk about what I like and what I do not")
 
-    conversation.generate_title_from_first_message
-
-    assert_equal "Cats and how to like them", conversation.reload.title
+    assert_equal "I keep mixing up は and が when I talk…", name
+    assert_operator name.length, :<=, Conversation::NAME_LENGTH
   end
 
-  # Only the default title is replaced, so a conversation is named once and a
-  # later message cannot rename it -- nor pay for a call to do so.
-  test "does not rename a chat that already has one" do
-    conversation = conversations(:lesson)
+  # Japanese has no spaces to cut at.
+  test "long Japanese is cut at the length" do
+    name = Conversation.name_from("にほんごのべんきょうをはじめたばかりですがなにからはじめればいいかぜんぜんわかりません")
 
-    conversation.generate_title_from_first_message
-
-    assert_not_requested :post, llm_url
-    assert_equal "Talking about cats", conversation.reload.title
+    assert_equal Conversation::NAME_LENGTH, name.length
+    assert name.end_with?("…")
   end
 
-  test "waits until there is something to name it after" do
-    conversation = default_titled_conversation
+  # Readings are for reading the chat, not for a list of chat names.
+  test "furigana is left out of the name" do
+    assert_equal "猫が好きです", Conversation.name_from("猫[ねこ]が好[す]きです")
+  end
 
-    conversation.generate_title_from_first_message
+  test "the name comes from the first line with something on it" do
+    assert_equal "ねこが すきです。", Conversation.name_from("\n\n  ねこが すきです。\nIs this right?")
+  end
 
-    assert_not_requested :post, llm_url
-    assert_equal "Let's chat!", conversation.reload.title
+  test "names a new chat after the first thing the learner said" do
+    conversation = users(:learner).conversations.create!
+    message = conversation.messages.create!(role: "user", content: "How do I count flat things?")
+
+    conversation.name_after(message)
+
+    assert_equal "How do I count flat things?", conversation.reload.title
+  end
+
+  # Named once: a later message cannot rename it, and nor can the first
+  # message of a chat the learner had already renamed.
+  test "does not rename a chat that already has a name" do
+    message = @conversation.messages.create!(role: "user", content: "Something else entirely")
+
+    @conversation.name_after(message)
+
+    assert_equal "Talking about cats", @conversation.reload.title
+  end
+
+  test "a name longer than the limit is refused" do
+    @conversation.title = "a" * (Conversation::MAX_TITLE_LENGTH + 1)
+
+    assert_not @conversation.valid?
   end
 
   # A card is filed in a deck and reviewed from there; it outlives the chat it
@@ -125,26 +127,5 @@ class ConversationTest < ActiveSupport::TestCase
 
     assert Flashcard.exists?(card.id), "the card should survive its conversation"
     assert_nil card.reload.conversation_id
-  end
-
-  private
-
-  # Follows LlmChat, so switching provider cannot silently leave these stubs
-  # pointing at an endpoint nothing calls.
-  # A conversation as #create leaves it: the default title, which is the only
-  # one generate_title_from_first_message will replace.
-  def default_titled_conversation
-    users(:learner).conversations.create!
-  end
-
-  def stub_title(text)
-    stub_request(:post, llm_url).to_return(
-      status: 200, headers: { "Content-Type" => "application/json" },
-      body: { "candidates" => [{ "content" => { "parts" => [{ "text" => text }] } }] }.to_json
-    )
-  end
-
-  def llm_url
-    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:generateContent}
   end
 end

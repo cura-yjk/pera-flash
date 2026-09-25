@@ -38,6 +38,12 @@ come from a chat, be filed in a deck, or both — so there is no `user_id` on it
 resolved through `Flashcard.for_user`, which left-joins both parents and matches either one's
 `user_id`. Use that scope rather than reaching for a direct user association that doesn't exist.
 
+A `Conversation` is named after the first thing the learner says (`Conversation#name_after`, called
+from `MessagesController#create`), and can be renamed in place from its title — `edit`/`update`,
+inside the `conversation_title` turbo frame. Naming is deliberately **not** an LLM call: the
+model-written titles cost a free-tier request per chat, held up the first reply, fell back to
+"Let's chat!" whenever Gemini was busy, and were often worse than the message itself.
+
 Two classes in `app/models/` are **not** ActiveRecord:
 
 - `QuizQuestion` — one multiple-choice question, built per request. `OPTION_COUNT` is 4 and the

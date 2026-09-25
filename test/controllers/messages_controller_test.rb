@@ -99,6 +99,34 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "does this survive?", conversations(:lesson).messages.order(:created_at).last.content
   end
 
+  # --- naming the chat --------------------------------------------------------
+
+  # Named from the message itself, the moment it is sent: the page's title is
+  # in the same response, not waiting on the reply.
+  test "the first message names the chat" do
+    conversation = users(:learner).conversations.create!
+
+    ask("How do I count flat things?", conversation)
+
+    assert_equal "How do I count flat things?", conversation.reload.title
+    assert_includes response.body, "How do I count flat things?"
+  end
+
+  # Naming used to be a second model call, made after the first reply and
+  # before it was marked finished -- one more request out of the free tier,
+  # and a first reply held up until it came back.
+  test "the first reply makes no second request to name the chat" do
+    conversation = users(:learner).conversations.create!
+    stub_llm_stream("Like this.")
+    ask("How do I count flat things?", conversation)
+
+    get conversation_reply_path(conversation)
+
+    assert_match "event: done", response.body
+    assert_requested :post, stream_url, times: 1
+    assert_not_requested :post, llm_url
+  end
+
   # A notice persisted as a message would be replayed to the model next turn.
   test "the failure notice is not stored as a message" do
     stub_llm_stream_failure

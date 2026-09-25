@@ -201,12 +201,6 @@ li > a:hover {
     // display: inline;
 }
 
-// The reply as it streams in: plain text until the finished, formatted version
-// replaces it, so newlines from the model still need to show as newlines.
-.streaming-text {
-  white-space: pre-wrap;
-}
-
 // Pera's grammar tables are the widest thing in the app and the most useful.
 // They scroll within the message rather than taking the page sideways with
 // them, and the readings above kanji need the row height to breathe.

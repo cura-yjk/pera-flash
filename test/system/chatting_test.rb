@@ -63,6 +63,40 @@ class ChattingTest < ApplicationSystemTestCase
     end
   end
 
+  # The reply streamed into a box styled white-space: pre-wrap, left over from
+  # when it streamed as plain text. Once it streamed as HTML, the line breaks
+  # between tags showed as blank lines: measured, a four-block reply stood
+  # 432px tall while writing and dropped to 184px when it finished.
+  test "the reply does not shrink when it finishes" do
+    stub_stream("初めまして！\n\n", "I am ペラ.\n\n", "- one\n- two\n\n", "Let us practise.")
+
+    visit conversation_path(@conversation)
+    page.execute_script(<<~JS)
+      window.tallestWhileWriting = 0;
+      new MutationObserver(() => {
+        const text = document.querySelector("[data-reply-stream-target=text]");
+        if (text) window.tallestWhileWriting = Math.max(window.tallestWhileWriting, text.getBoundingClientRect().height);
+      }).observe(document.getElementById("messages"), { childList: true, subtree: true });
+    JS
+    type_into("はじめまして")
+    click_and_confirm("Send", expect: "はじめまして")
+
+    assert_text "Let us practise.", wait: 15
+    assert_no_selector "[data-controller~='reply-stream']", wait: 15
+
+    finished = page.evaluate_script(<<~JS)
+      (function () {
+        const replies = document.querySelectorAll("#messages .assistant-message");
+        const reply = replies[replies.length - 1];
+        const style = getComputedStyle(reply);
+        return reply.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      })()
+    JS
+    tallest = page.evaluate_script("window.tallestWhileWriting")
+
+    assert_operator tallest, :<=, finished, "the reply stood #{tallest.round}px while writing and #{finished.round}px when finished"
+  end
+
   test "a new chat suggests what to say" do
     empty = @user.conversations.create!(title: "Fresh chat")
 

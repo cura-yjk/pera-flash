@@ -63,6 +63,27 @@ class ChattingTest < ApplicationSystemTestCase
     end
   end
 
+  # The page holds still while the reply grows, so a long one runs on under the
+  # input box with nothing to say it is still coming. Long enough here to be
+  # revealing for a few seconds, which is the window the button lives in.
+  test "a reply running on out of sight offers a way down to it" do
+    stub_stream(*(1..80).map { |i| "これは #{i} 行目です。\n\n" })
+
+    visit conversation_path(@conversation)
+    type_into("ながい こたえを ください")
+    click_and_confirm("Send", expect: "ながい こたえを ください")
+
+    start = page.evaluate_script("window.scrollY")
+    click_button "More below", wait: 10
+
+    page.document.synchronize(5) do
+      raise Capybara::ExpectationNotMet, "clicking did not scroll down" unless page.evaluate_script("window.scrollY") > start + 100
+    end
+
+    assert_text "80 行目", wait: 15
+    assert_no_button "More below", wait: 15
+  end
+
   # The reply streamed into a box styled white-space: pre-wrap, left over from
   # when it streamed as plain text. Once it streamed as HTML, the line breaks
   # between tags showed as blank lines: measured, a four-block reply stood

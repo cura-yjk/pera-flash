@@ -24,7 +24,7 @@ const FADE_STEP = 4
 // implementation in the browser that could disagree with it. What this does
 // with it is choose how much of it to show.
 export default class extends Controller {
-  static targets = ["text", "cursor"]
+  static targets = ["text", "cursor", "more"]
   static values = { url: String }
 
   connect() {
@@ -33,6 +33,9 @@ export default class extends Controller {
     // last unanswered question, so the second one sat there looking ignored.
     this.lockInput()
     this.makeRoom()
+
+    this.checkMore = () => this.updateMore()
+    window.addEventListener("scroll", this.checkMore, { passive: true })
 
     this.reply = document.createElement("div")
     this.shown = 0
@@ -50,6 +53,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    window.removeEventListener("scroll", this.checkMore)
     this.close()
     this.stopRevealing()
     this.unlockInput()
@@ -183,6 +187,33 @@ export default class extends Controller {
 
   show(characters, { fade = true } = {}) {
     this.textTarget.replaceChildren(...excerpt(this.reply, Math.floor(characters), fade).childNodes)
+    this.updateMore()
+  }
+
+  // The "More below" button: shown while the newest text has run on under the
+  // input box, where the reader cannot see it arriving.
+  //
+  // The finished message is swapped in before Stimulus gets round to
+  // disconnecting this, so a scroll in between finds the targets gone.
+  updateMore() {
+    if (!this.hasMoreTarget || !this.hasCursorTarget) return
+
+    this.moreTarget.hidden = this.latestOverflow() <= 0
+  }
+
+  // Brings the newest text up to just above the input box. Once, on request:
+  // the page still does not follow the reply of its own accord.
+  scrollToLatest() {
+    window.scrollBy({ top: this.latestOverflow(), behavior: "smooth" })
+  }
+
+  // How far the "is writing" line under the newest text sits below the top of
+  // the input box, with a little clearance. Positive means out of sight.
+  latestOverflow() {
+    const dock = document.querySelector(".chat-dock")
+    const limit = (dock ? dock.getBoundingClientRect().top : window.innerHeight) - 16
+
+    return this.cursorTarget.getBoundingClientRect().bottom - limit
   }
 
   // Swaps in the finished message, rendered by the same partial as a page

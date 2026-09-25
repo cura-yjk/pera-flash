@@ -267,6 +267,18 @@ li > a:hover {
   scroll-margin-top: calc(50px + 1rem);
 }
 
+// Floats just above the docked input while a reply runs on out of sight. Sits
+// on --chat-dock-space so it moves with the dock rather than behind it.
+.more-below {
+  position: fixed;
+  left: 50%;
+  bottom: var(--chat-dock-space);
+  z-index: 1031; // over .fixed-top and .fixed-bottom (1030)
+  transform: translateX(-50%);
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .chat-dock {
   background-color: #F4F4F4;
   padding: 24px;

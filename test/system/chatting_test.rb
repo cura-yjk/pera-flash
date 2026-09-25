@@ -41,6 +41,87 @@ class ChattingTest < ApplicationSystemTestCase
                     "the newest text sits #{clearance_below_last_message.abs}px underneath the input box"
   end
 
+  # Sending moves the question up under the navbar once, and then the page
+  # holds still while the reply grows below it. It used to follow the reply
+  # down, which kept the text being written against the input box and moved
+  # the page under the reader with every chunk. The reply here is several
+  # windows long, so a page that still chased it would end up far from the
+  # question.
+  test "the question moves to the top and stays there while the reply grows" do
+    stub_stream(*(1..30).map { |i| "これは #{i} 行目です。\n\n" })
+
+    visit conversation_path(@conversation)
+    type_into("ながい こたえを ください")
+    click_and_confirm("Send", expect: "ながい こたえを ください")
+
+    assert_text "30 行目", wait: 15
+    assert_no_selector "[data-controller~='reply-stream']", wait: 15
+
+    page.document.synchronize(5) do
+      gap = gap_between_navbar_and_question
+      raise Capybara::ExpectationNotMet, "the question sits #{gap}px below the navbar" unless gap.between?(8, 24)
+    end
+  end
+
+  # The page holds still while the reply grows, so a long one runs on under the
+  # input box with nothing to say it is still coming. Long enough here to be
+  # revealing for a few seconds, which is the window the button lives in.
+  test "a reply running on out of sight offers a way down to it" do
+    stub_stream(*(1..80).map { |i| "これは #{i} 行目です。\n\n" })
+
+    visit conversation_path(@conversation)
+    type_into("ながい こたえを ください")
+    click_and_confirm("Send", expect: "ながい こたえを ください")
+
+    start = page.evaluate_script("window.scrollY")
+    click_button "More below", wait: 10
+
+    # Any distance down, not a fixed amount: the button appears as soon as the
+    # newest line slips out of sight, so the scroll it asks for can be small.
+    # A 100px threshold passed in Chrome and failed in Firefox, which clicked
+    # when the line was 76px out.
+    page.document.synchronize(5) do
+      raise Capybara::ExpectationNotMet, "clicking did not scroll down" unless page.evaluate_script("window.scrollY") > start
+    end
+
+    assert_text "80 行目", wait: 15
+    assert_no_button "More below", wait: 15
+  end
+
+  # The reply streamed into a box styled white-space: pre-wrap, left over from
+  # when it streamed as plain text. Once it streamed as HTML, the line breaks
+  # between tags showed as blank lines: measured, a four-block reply stood
+  # 432px tall while writing and dropped to 184px when it finished.
+  test "the reply does not shrink when it finishes" do
+    stub_stream("初めまして！\n\n", "I am ペラ.\n\n", "- one\n- two\n\n", "Let us practise.")
+
+    visit conversation_path(@conversation)
+    page.execute_script(<<~JS)
+      window.tallestWhileWriting = 0;
+      new MutationObserver(() => {
+        const text = document.querySelector("[data-reply-stream-target=text]");
+        if (text) window.tallestWhileWriting = Math.max(window.tallestWhileWriting, text.getBoundingClientRect().height);
+      }).observe(document.getElementById("messages"), { childList: true, subtree: true });
+    JS
+    type_into("はじめまして")
+    click_and_confirm("Send", expect: "はじめまして")
+
+    assert_text "Let us practise.", wait: 15
+    assert_no_selector "[data-controller~='reply-stream']", wait: 15
+
+    finished = page.evaluate_script(<<~JS)
+      (function () {
+        const replies = document.querySelectorAll("#messages .assistant-message");
+        const reply = replies[replies.length - 1];
+        const style = getComputedStyle(reply);
+        return reply.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      })()
+    JS
+    tallest = page.evaluate_script("window.tallestWhileWriting")
+
+    assert_operator tallest, :<=, finished, "the reply stood #{tallest.round}px while writing and #{finished.round}px when finished"
+  end
+
   test "a new chat suggests what to say" do
     empty = @user.conversations.create!(title: "Fresh chat")
 
@@ -68,6 +149,22 @@ class ChattingTest < ApplicationSystemTestCase
         last.scrollIntoView({ block: "end", behavior: "instant" });
 
         return Math.round(dock.getBoundingClientRect().top - last.getBoundingClientRect().bottom);
+      })()
+    JS
+  end
+
+  # From the bottom of the fixed navbar to the top of the question just sent.
+  # Retried by the caller rather than measured once: the scroll up to the
+  # question is smooth, and reading mid-animation gives a number that is
+  # neither where it started nor where it ends.
+  def gap_between_navbar_and_question
+    page.evaluate_script(<<~JS)
+      (function () {
+        const questions = document.querySelectorAll("#messages .user-message");
+        const question = questions[questions.length - 1];
+        const navbar = document.querySelector(".nav-bar");
+
+        return Math.round(question.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom);
       })()
     JS
   end

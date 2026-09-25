@@ -201,12 +201,6 @@ li > a:hover {
     // display: inline;
 }
 
-// The reply as it streams in: plain text until the finished, formatted version
-// replaces it, so newlines from the model still need to show as newlines.
-.streaming-text {
-  white-space: pre-wrap;
-}
-
 // Pera's grammar tables are the widest thing in the app and the most useful.
 // They scroll within the message rather than taking the page sideways with
 // them, and the readings above kanji need the row height to breathe.
@@ -264,12 +258,61 @@ li > a:hover {
   padding-bottom: var(--chat-dock-space);
 }
 
-// Anything scrolled to by scrollIntoView keeps clear of the docked input. The
-// streaming reply scrolls the page to its end instead (see
-// reply_stream_controller), but the user's own message uses scrollIntoView on
-// the way in.
+// Anything scrolled to by scrollIntoView keeps clear of the docked input at
+// the bottom and the fixed navbar at the top (50px, set in _navbar.scss).
+// Sending a message scrolls it up to the top, and reply_stream_controller reads
+// scroll-margin-top to know how much room to leave beneath it.
 .chat-page #messages > * {
   scroll-margin-bottom: var(--chat-dock-space);
+  scroll-margin-top: calc(50px + 1rem);
+}
+
+// Floats just above the docked input while a reply runs on out of sight. Sits
+// on --chat-dock-space so it moves with the dock rather than behind it.
+//
+// Text rather than a filled button: a hint, not a call to action. Still a
+// <button>, so it can be reached and pressed without a mouse. The backdrop is
+// the page colour, see-through, because bare text floating over the reply
+// collided with the lines behind it.
+.more-below {
+  position: fixed;
+  left: 50%;
+  bottom: var(--chat-dock-space);
+  z-index: 1031; // over .fixed-top and .fixed-bottom (1030)
+  transform: translateX(-50%);
+
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  background-color: rgba(245, 247, 246, 0.85);
+  backdrop-filter: blur(4px);
+
+  color: var(--text-brand);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.more-below:hover,
+.more-below:focus-visible {
+  text-decoration: underline;
+}
+
+.more-below i {
+  animation: more-below-bob 1.4s ease-in-out infinite;
+}
+
+@keyframes more-below-bob {
+  50% { transform: translateY(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more-below i {
+    animation: none;
+  }
+}
+
+.dark-mode .more-below {
+  background-color: rgba(62, 62, 62, 0.85);
 }
 
 .chat-dock {

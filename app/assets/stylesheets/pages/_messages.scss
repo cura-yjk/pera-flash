@@ -252,12 +252,14 @@ li > a:hover {
   // below, and they have to agree: one keeps the last message clear of the
   // dock when the page is at rest, the other keeps it clear while the page is
   // being scrolled to it.
-  // Was 9rem, for a composer that stacked its controls under the field. The
-  // dock measures 80px at rest now; this leaves a little clearance over it.
+  // Was 9rem, for a composer that stacked its controls under the field, then
+  // 6rem for an 80px dock. The dock's 24px padding makes it 99px at rest; this
+  // keeps the same ~16px of clearance over it. Change the two together:
+  // "the newest message stays clear of the input box" fails when they drift.
   //
   // Still a fixed number against a dock that grows with the field, which it
   // has always been -- a very long draft can reach over the last message.
-  --chat-dock-space: 6rem;
+  --chat-dock-space: 7.25rem;
 
   padding-bottom: var(--chat-dock-space);
 }
@@ -272,9 +274,8 @@ li > a:hover {
 
 .chat-dock {
   background-color: #F4F4F4;
-  padding-block: 0.6rem;
-  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.07);
   padding: 24px;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.07);
 }
 
 // Follows the theme toggle, which puts .dark-mode on the body rather than

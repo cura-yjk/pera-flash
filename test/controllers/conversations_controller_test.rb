@@ -157,6 +157,26 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Flashcard generation for conversation \d+: 1 cards in \d+ms from \d+ messages \(\d+ characters\)/, log)
   end
 
+  # Generation reads a long stretch of chat and Gemini can take a while to
+  # start; the 30s every other call waits threw away answers it was about to
+  # give. Both ways of generating ask for the longer wait.
+  test "generation waits longer for Gemini than a reply does" do
+    timeouts = []
+    original = LlmChat.method(:with_chat)
+    # Minitest 6 has no #stub; swapped by hand and put back.
+    LlmChat.define_singleton_method(:with_chat) do |timeout: nil, &_block|
+      timeouts << timeout
+      raise RubyLLM::Error.new(nil, "stop here")
+    end
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+    post_for_stream
+
+    assert_equal [FlashcardGeneration::TIMEOUT] * 2, timeouts
+  ensure
+    LlmChat.define_singleton_method(:with_chat, original)
+  end
+
   # --- streamed generation ------------------------------------------------------
 
   test "a streamed generation sends each card as its own event" do

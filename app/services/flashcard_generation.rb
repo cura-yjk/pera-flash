@@ -4,6 +4,18 @@
 # Raises when the provider cannot be reached, and leaves what the learner sees
 # to the controller. Either way, every generation logs one line: see #timed.
 class FlashcardGeneration
+  # How long to wait for Gemini to send anything, where replies wait 30s
+  # (config/initializers/ruby_llm.rb). A generation reads a whole stretch of
+  # chat -- Pera's replies are long, and 13 messages came to 16,000
+  # characters -- and Gemini was measured taking 22s to write its first word
+  # on a smaller one. At 30s, generations it was about to answer were thrown
+  # away, having already cost the request.
+  #
+  # Under 55 because that is how long Heroku lets a response go silent once it
+  # has started, and a streamed generation has started: the empty preview is
+  # sent before Gemini is asked.
+  TIMEOUT = 50
+
   def initialize(conversation, messages)
     @conversation = conversation
     @messages = messages
@@ -12,7 +24,7 @@ class FlashcardGeneration
   # The cards, built but not saved.
   def call
     timed do
-      response = LlmChat.with_chat { |chat| chat.with_schema(FlashcardsSchema).ask(prompt) }
+      response = LlmChat.with_chat(timeout: TIMEOUT) { |chat| chat.with_schema(FlashcardsSchema).ask(prompt) }
 
       # #parsed, not #content: ruby_llm 2.0 returns a schema response as the raw
       # JSON string, and String#[] with a key is a substring match -- so
@@ -29,7 +41,7 @@ class FlashcardGeneration
   def stream(on_reset: nil, &on_card)
     timed do
       cards = []
-      LlmChat.with_chat do |chat|
+      LlmChat.with_chat(timeout: TIMEOUT) do |chat|
         on_reset&.call if cards.any?
         cards.clear
         stream_from(chat, cards, &on_card)

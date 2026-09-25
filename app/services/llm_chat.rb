@@ -50,11 +50,14 @@ module LlmChat
   #
   # The block must do the whole exchange, not just build the chat, so a retry
   # replays the instructions and history against the new key.
-  def with_chat
+  #
+  # timeout overrides config.request_timeout (30s) for this exchange only: how
+  # long to wait for Gemini to send anything. See FlashcardGeneration::TIMEOUT.
+  def with_chat(timeout: nil)
     exhausted = []
 
     keys.each do |key|
-      return yield chat_on(key)
+      return yield chat_on(key, timeout: timeout)
     rescue RubyLLM::RateLimitError => e
       exhausted << e
       Rails.logger.warn("Gemini key ending #{key.last(6)} is out of quota; trying the next one")
@@ -66,9 +69,14 @@ module LlmChat
   # A chat on one specific key. RubyLLM.context keeps the credential to this
   # chat rather than mutating global config, which two requests being served at
   # once would otherwise race over.
-  def chat_on(key)
-    RubyLLM.context { |config| config.gemini_api_key = key }
+  def chat_on(key, timeout: nil)
+    RubyLLM.context { |config| configure(config, key, timeout) }
            .chat(model: MODEL, provider: PROVIDER, assume_model_exists: true)
            .with_provider_options(generationConfig: THINKING_OFF)
+  end
+
+  def configure(config, key, timeout)
+    config.gemini_api_key = key
+    config.request_timeout = timeout if timeout
   end
 end

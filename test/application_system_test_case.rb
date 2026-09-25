@@ -123,12 +123,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     input.set(text)
     return if input.value == text
 
-    page.execute_script(<<~JS, input)
-      arguments[0].value = #{'#{text.to_json}'};
+    # The text goes in as an argument rather than spliced into the script. It
+    # was spliced in through a doubly quoted interpolation that produced the
+    # literal characters #{text.to_json}, so this fallback was a syntax error
+    # on every run that reached it.
+    page.execute_script(<<~JS, input, text)
+      arguments[0].value = arguments[1];
       arguments[0].dispatchEvent(new Event("input", { bubbles: true }));
     JS
 
-    assert_equal text, find(field).value, "could not get #{'#{text.inspect}'} into #{'#{field}'}"
+    assert_equal text, find(field).value, "could not get #{text.inspect} into #{field}"
   end
 
   # True when the page can be scrolled sideways -- which, on a phone, means

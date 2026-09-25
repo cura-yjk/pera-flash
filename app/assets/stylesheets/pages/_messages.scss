@@ -269,6 +269,11 @@ li > a:hover {
 
 // Floats just above the docked input while a reply runs on out of sight. Sits
 // on --chat-dock-space so it moves with the dock rather than behind it.
+//
+// Text rather than a filled button: a hint, not a call to action. Still a
+// <button>, so it can be reached and pressed without a mouse. The backdrop is
+// the page colour, see-through, because bare text floating over the reply
+// collided with the lines behind it.
 .more-below {
   position: fixed;
   left: 50%;
@@ -276,7 +281,38 @@ li > a:hover {
   z-index: 1031; // over .fixed-top and .fixed-bottom (1030)
   transform: translateX(-50%);
 
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.25rem 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  background-color: rgba(245, 247, 246, 0.85);
+  backdrop-filter: blur(4px);
+
+  color: var(--text-brand);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.more-below:hover,
+.more-below:focus-visible {
+  text-decoration: underline;
+}
+
+.more-below i {
+  animation: more-below-bob 1.4s ease-in-out infinite;
+}
+
+@keyframes more-below-bob {
+  50% { transform: translateY(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more-below i {
+    animation: none;
+  }
+}
+
+.dark-mode .more-below {
+  background-color: rgba(62, 62, 62, 0.85);
 }
 
 .chat-dock {

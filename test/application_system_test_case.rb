@@ -18,6 +18,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   cached = Dir[File.expand_path("~/.cache/selenium/chrome/*/*/chrome")].max
   Selenium::WebDriver::Chrome.path = cached if cached && !system("which google-chrome chromium >/dev/null 2>&1")
 
+  # The same for Firefox (see BROWSER below). Selenium Manager downloads it on a
+  # plain Selenium session, but under the test suite it did not look in its own
+  # cache and failed with "unable to find binary in default location".
+  cached = Dir[File.expand_path("~/.cache/selenium/firefox/*/*/firefox")].max
+  Selenium::WebDriver::Firefox.path = cached if cached && !system("which firefox >/dev/null 2>&1")
+
   # HEADED=1 opens a real window instead, so you can watch a test drive the
   # app. Useful for the thing an assertion cannot check: whether the page
   # looked right while it happened.
@@ -26,7 +32,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   #
   # SLOWMO=0.4 pauses after each Capybara action, since a headless-speed run is
   # hard to follow with the naked eye.
-  driven_by :selenium, using: ENV["HEADED"].present? ? :chrome : :headless_chrome, screen_size: DESKTOP
+  #
+  # BROWSER=firefox runs the same tests in Firefox. Selenium Manager downloads
+  # Firefox and geckodriver into ~/.cache/selenium if they are not installed,
+  # as it does for Chrome. Chrome stays the default, and what CI runs.
+  #
+  #   BROWSER=firefox bin/rails test:system
+  browser = ENV.fetch("BROWSER", "chrome")
+  driven_by :selenium, using: ENV["HEADED"].present? ? browser.to_sym : :"headless_#{browser}", screen_size: DESKTOP
 
   # Pauses after each action when SLOWMO is set. Capybara has no such setting,
   # so this wraps the session's own click and fill methods.

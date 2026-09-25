@@ -76,8 +76,12 @@ class ChattingTest < ApplicationSystemTestCase
     start = page.evaluate_script("window.scrollY")
     click_button "More below", wait: 10
 
+    # Any distance down, not a fixed amount: the button appears as soon as the
+    # newest line slips out of sight, so the scroll it asks for can be small.
+    # A 100px threshold passed in Chrome and failed in Firefox, which clicked
+    # when the line was 76px out.
     page.document.synchronize(5) do
-      raise Capybara::ExpectationNotMet, "clicking did not scroll down" unless page.evaluate_script("window.scrollY") > start + 100
+      raise Capybara::ExpectationNotMet, "clicking did not scroll down" unless page.evaluate_script("window.scrollY") > start
     end
 
     assert_text "80 行目", wait: 15

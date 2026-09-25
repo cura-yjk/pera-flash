@@ -41,6 +41,28 @@ class ChattingTest < ApplicationSystemTestCase
                     "the newest text sits #{clearance_below_last_message.abs}px underneath the input box"
   end
 
+  # Sending moves the question up under the navbar once, and then the page
+  # holds still while the reply grows below it. It used to follow the reply
+  # down, which kept the text being written against the input box and moved
+  # the page under the reader with every chunk. The reply here is several
+  # windows long, so a page that still chased it would end up far from the
+  # question.
+  test "the question moves to the top and stays there while the reply grows" do
+    stub_stream(*(1..30).map { |i| "これは #{i} 行目です。\n\n" })
+
+    visit conversation_path(@conversation)
+    type_into("ながい こたえを ください")
+    click_and_confirm("Send", expect: "ながい こたえを ください")
+
+    assert_text "30 行目", wait: 15
+    assert_no_selector "[data-controller~='reply-stream']", wait: 15
+
+    page.document.synchronize(5) do
+      gap = gap_between_navbar_and_question
+      raise Capybara::ExpectationNotMet, "the question sits #{gap}px below the navbar" unless gap.between?(8, 24)
+    end
+  end
+
   test "a new chat suggests what to say" do
     empty = @user.conversations.create!(title: "Fresh chat")
 
@@ -68,6 +90,22 @@ class ChattingTest < ApplicationSystemTestCase
         last.scrollIntoView({ block: "end", behavior: "instant" });
 
         return Math.round(dock.getBoundingClientRect().top - last.getBoundingClientRect().bottom);
+      })()
+    JS
+  end
+
+  # From the bottom of the fixed navbar to the top of the question just sent.
+  # Retried by the caller rather than measured once: the scroll up to the
+  # question is smooth, and reading mid-animation gives a number that is
+  # neither where it started nor where it ends.
+  def gap_between_navbar_and_question
+    page.evaluate_script(<<~JS)
+      (function () {
+        const questions = document.querySelectorAll("#messages .user-message");
+        const question = questions[questions.length - 1];
+        const navbar = document.querySelector(".nav-bar");
+
+        return Math.round(question.getBoundingClientRect().top - navbar.getBoundingClientRect().bottom);
       })()
     JS
   end

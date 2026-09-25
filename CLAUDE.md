@@ -73,7 +73,11 @@ sends the reply as server-sent events, consumed by `reply_stream_controller.js`.
 `X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump). Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping
 the lookup meant a 404 committed a 200 on its way out. Each event carries the whole reply-so-far,
-not a delta, so a mid-exchange key retry redraws instead of doubling the text.
+not a delta, so a mid-exchange key retry redraws instead of doubling the text. The browser does not
+show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed
+set by the backlog, with the newest characters fading in, and swaps in the finished message only
+once the reveal catches up. Sending scrolls the question up under the navbar once and holds a
+`min-height` below it for the reply; the page does not follow the reply down.
 
 **Spaced repetition (`Flashcard`)**: an SM-2 variant, all local. `GRADES` are `again`/`good`/`easy`;
 `review!(grade)` updates `interval_days`, `ease` (`STARTING_EASE` 2.5, floor `MINIMUM_EASE` 1.3) and

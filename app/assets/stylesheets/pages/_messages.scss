@@ -264,12 +264,13 @@ li > a:hover {
   padding-bottom: var(--chat-dock-space);
 }
 
-// Anything scrolled to by scrollIntoView keeps clear of the docked input. The
-// streaming reply scrolls the page to its end instead (see
-// reply_stream_controller), but the user's own message uses scrollIntoView on
-// the way in.
+// Anything scrolled to by scrollIntoView keeps clear of the docked input at
+// the bottom and the fixed navbar at the top (50px, set in _navbar.scss).
+// Sending a message scrolls it up to the top, and reply_stream_controller reads
+// scroll-margin-top to know how much room to leave beneath it.
 .chat-page #messages > * {
   scroll-margin-bottom: var(--chat-dock-space);
+  scroll-margin-top: calc(50px + 1rem);
 }
 
 .chat-dock {

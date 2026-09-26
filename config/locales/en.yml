@@ -143,6 +143,7 @@ en:
     reply_failed: "Pera couldn't reply just now. Your message is saved — try sending it again."
     rate_limited: "You are sending messages faster than Pera can answer them. Give it a moment."
     pending:
+      writing: "ペラ is writing"
       more_below: "More below"
     form:
       placeholder: "Ask something..."

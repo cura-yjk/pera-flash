@@ -180,9 +180,11 @@ PWA (`app/views/pwa/manifest.json.erb`, `service-worker.js`).
   bare `assert` with hand-written messages on purpose — `assert_equal` would print the live key into
   CI logs on exactly the run that proves it is exposed.
 - Coverage: `test/models` for `Flashcard`, `Deck`, `Conversation`, `Message`, `Page`, `User`,
-  `QuizQuestion`; `test/controllers` for flashcards, conversations and quizzes;
-  `test/services` for `LlmChat`, `PeraPrompt` and `StreamedCards`; `test/system` for chatting,
-  generating flashcards, studying, search, input box and phone layout; plus a PWA integration test. Not covered: `PeraReply` and the SSE
-  path in `MessagesController`, `DecksController#export`, and all JS.
+  `QuizQuestion`, `KnownCards`; `test/controllers` for every controller but `PagesController`, including the SSE path in
+  `MessagesController` (run inline — see **Streaming replies**), deck export and account locking;
+  `test/services` for `LlmChat`, `LlmFailure`, `PeraPrompt`, `PeraReply` and `StreamedCards`;
+  `test/helpers` for chat rendering and furigana; `test/lib` for the prompt lab; `test/system` for
+  chatting, generating and editing flashcards, studying, search, input box and phone layout; and
+  integration tests for the PWA and signed-out streaming. JS is covered only through system tests.
 - The services in `app/services/` carry long comments explaining *why* each constant and structure
   is what it is. Read them before changing a number — most of them record a problem that was hit.

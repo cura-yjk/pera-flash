@@ -122,6 +122,33 @@ class ChattingTest < ApplicationSystemTestCase
     assert_operator tallest, :<=, finished, "the reply stood #{tallest.round}px while writing and #{finished.round}px when finished"
   end
 
+  # Renamed in place: the pencil swaps the title for a box, and saving swaps it
+  # back, without leaving the chat.
+  test "a chat can be renamed from its title" do
+    visit conversation_path(@conversation)
+
+    open_rename
+    type_into("Cats, and liking them", field: "#conversation_name")
+    click_and_confirm("Save", expect: "Cats, and liking them")
+
+    assert_selector "h2", text: "Cats, and liking them"
+    assert_no_field "Chat name"
+
+    visit conversation_path(@conversation)
+    assert_selector "h2", text: "Cats, and liking them"
+  end
+
+  test "cancelling a rename keeps the name" do
+    visit conversation_path(@conversation)
+
+    open_rename
+    type_into("Something else", field: "#conversation_name")
+    click_link "Cancel"
+
+    assert_selector "h2", text: "Talking about cats", wait: 10
+    assert_equal "Talking about cats", @conversation.reload.title
+  end
+
   test "a new chat suggests what to say" do
     empty = @user.conversations.create!(title: "Fresh chat")
 
@@ -151,6 +178,17 @@ class ChattingTest < ApplicationSystemTestCase
         return Math.round(dock.getBoundingClientRect().top - last.getBoundingClientRect().bottom);
       })()
     JS
+  end
+
+  # The pencil, with the same fallback click_and_confirm gives a button: the
+  # form has no text of its own to wait for, so this waits for its field.
+  def open_rename
+    pencil = find_link("Rename chat")
+    pencil.click
+    return if page.has_field?("Chat name", wait: 3)
+
+    pencil.evaluate_script("this.click()")
+    assert_field "Chat name", wait: 10
   end
 
   # From the bottom of the fixed navbar to the top of the question just sent.

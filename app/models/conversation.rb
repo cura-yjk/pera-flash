@@ -8,7 +8,14 @@ class Conversation < ApplicationRecord
   # ActiveRecord::InvalidForeignKey for anyone who had ever saved a card.
   has_many :flashcards, dependent: :nullify
 
-  validates :title, presence: true
+  # What a chat is called before anything has been said in it.
+  DEFAULT_TITLE = "Let's chat!"
+  # How much of the first message an automatic name takes. Learners can rename
+  # a chat to anything up to MAX_TITLE_LENGTH.
+  NAME_LENGTH = 40
+  MAX_TITLE_LENGTH = 80
+
+  validates :title, presence: true, length: { maximum: MAX_TITLE_LENGTH }
   before_validation :set_title
 
   # See #messages_for_flashcards.
@@ -57,29 +64,31 @@ class Conversation < ApplicationRecord
   end
 
   def set_title
-    self.title = "Let's chat!" if title.nil?
+    self.title = DEFAULT_TITLE if title.nil?
   end
 
-  def generate_title_from_first_message
-    return unless title == "Let's chat!"
+  # Names the chat after the first thing the learner said, when they say it.
+  # Only the default title is replaced, so a later message -- or a chat the
+  # learner has already renamed -- keeps its name.
+  #
+  # This used to ask the model for a 3-6 word summary. That cost a request out
+  # of the free tier for every new chat, held up the first reply until it came
+  # back, left "Let's chat!" whenever Gemini was busy, and was often worse
+  # than the message itself: five chats that began "How does this app work?"
+  # came back as "App Functionality Explained".
+  def name_after(message)
+    return unless title == DEFAULT_TITLE
 
-    first_message = messages.where(role: "user").first
-    return unless first_message
-
-    update(title: titled_from(first_message))
-  rescue StandardError => e
-    # Cosmetic. The conversation keeps its default title, which is a far better
-    # outcome than failing the message that triggered this.
-    Rails.logger.warn("Could not title conversation #{id}: #{e.class}: #{e.message}")
+    update(title: self.class.name_from(message.content))
   end
 
-  def titled_from(message)
-    LlmChat.with_chat { |chat| chat.ask(<<~PROMPT).content.strip }
-      Reply with only a short 3-6 word title summarizing the topic of this message.
-      No quotes, no trailing punctuation, no explanation — just the title.
+  # The first line of what was said, without furigana, cut at a word where
+  # there is one. Japanese has no spaces to cut at, so it is cut at the length.
+  def self.name_from(text)
+    line = text.to_s.gsub(FuriganaHelper::ANNOTATION, '\\1').lines.map(&:squish).find(&:present?)
+    return DEFAULT_TITLE if line.nil?
 
-      Message: "#{message.content}"
-    PROMPT
+    line.truncate(NAME_LENGTH, separator: " ", omission: "…")
   end
 
   private

@@ -1,0 +1,25 @@
+<%# Renaming a chat, in place of its title (see _title.html.erb).
+
+    Save and Cancel are icons: as labelled buttons, their 120px minimum left a
+    phone's name box room for about seven characters. A plain text_field
+    rather than simple_form's input: that marks an untouched name valid with a
+    green tick, and its size="80" made the box the one thing that shrank. The
+    field has its own id: the default, conversation_title, is the frame's. %>
+<%= turbo_frame_tag "conversation_title" do %>
+  <%= simple_form_for @conversation, html: { class: "mb-2" } do |f| %>
+    <div class="d-flex align-items-center gap-2">
+      <%= f.label :title, t(".label"), for: "conversation_name", class: "visually-hidden" %>
+      <%= f.text_field :title, id: "conversation_name", class: "form-control flex-grow-1", style: "min-width: 0",
+                       maxlength: Conversation::MAX_TITLE_LENGTH, autofocus: true %>
+      <%= button_tag type: "submit", class: "btn pera-btn icon-btn flex-shrink-0",
+                     title: t(".save"), aria: { label: t(".save") } do %>
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+      <% end %>
+      <%= link_to conversation_path(@conversation), class: "btn btn-outline-secondary icon-btn flex-shrink-0",
+                  title: t(".cancel"), aria: { label: t(".cancel") } do %>
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      <% end %>
+    </div>
+    <%= f.error :title, class: "invalid-feedback d-block" %>
+  <% end %>
+<% end %>

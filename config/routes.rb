@@ -15,7 +15,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-  resources :conversations, only: [ :index, :new, :create, :show ] do
+  resources :conversations, only: [ :index, :new, :create, :show, :edit, :update ] do
     member do
         post :generate_flashcards
     end

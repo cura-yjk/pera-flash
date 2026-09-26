@@ -44,6 +44,23 @@ class ConversationsController < ApplicationController
     end
   end
 
+  # The rename form, shown in place of the title (see _title.html.erb).
+  def edit
+    @conversation = current_user.conversations.find(params[:id])
+  end
+
+  # Back to the chat either way it is reached: inside the title's turbo frame,
+  # Turbo follows the redirect and takes just the frame from the page.
+  def update
+    @conversation = current_user.conversations.find(params[:id])
+
+    if @conversation.update(params.require(:conversation).permit(:title))
+      redirect_to conversation_path(@conversation), status: :see_other
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   # Turn what has been discussed since the last generation into flashcards.
   #
   # Deliberately not the whole conversation: see

@@ -1,1 +1,14 @@
-<h2><%= conversation.title %></h2>
+<%# The chat's name, with a pencil to rename it. A turbo frame, so the pencil
+    swaps this for the form in edit.html.erb and saving swaps it back, without
+    leaving the chat. It carries the id itself: create.turbo_stream replaces
+    #conversation_title, and a replacement without the id left nothing for the
+    next one to find. %>
+<%= turbo_frame_tag "conversation_title" do %>
+  <div class="d-flex align-items-center gap-1 mb-2">
+    <h2 class="mb-0"><%= conversation.title %></h2>
+    <%= link_to edit_conversation_path(conversation), class: "btn icon-btn border-0 text-secondary",
+                title: t("conversations.title.rename"), aria: { label: t("conversations.title.rename") } do %>
+      <i class="fa-solid fa-pen" aria-hidden="true"></i>
+    <% end %>
+  </div>
+<% end %>

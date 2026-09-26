@@ -77,6 +77,36 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # --- renaming -----------------------------------------------------------------
+
+  test "the rename form sits in the title's frame" do
+    get edit_conversation_path(conversations(:lesson))
+
+    assert_response :success
+    assert_select "turbo-frame#conversation_title input[name='conversation[title]'][value=?]", "Talking about cats"
+  end
+
+  test "renaming a chat saves the new name" do
+    patch conversation_path(conversations(:lesson)), params: { conversation: { title: "Cats, and liking them" } }
+
+    assert_redirected_to conversation_path(conversations(:lesson))
+    assert_equal "Cats, and liking them", conversations(:lesson).reload.title
+  end
+
+  test "a blank name is refused and the old one kept" do
+    patch conversation_path(conversations(:lesson)), params: { conversation: { title: " " } }
+
+    assert_response :unprocessable_entity
+    assert_equal "Talking about cats", conversations(:lesson).reload.title
+  end
+
+  test "another user's chat cannot be renamed" do
+    patch conversation_path(conversations(:other_users_lesson)), params: { conversation: { title: "Mine now" } }
+
+    assert_response :not_found
+    assert_not_equal "Mine now", conversations(:other_users_lesson).reload.title
+  end
+
   # --- flashcard generation -------------------------------------------------
 
   test "generates cards only from what was said since the last batch" do

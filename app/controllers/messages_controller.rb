@@ -25,6 +25,10 @@ class MessagesController < ApplicationController
 
     return render_invalid unless @message.save
 
+    # Named now rather than after the reply, so the title in the page -- which
+    # create.turbo_stream replaces -- changes the moment the learner sends.
+    @conversation.name_after(@message)
+
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to conversation_path(@conversation) }
@@ -92,11 +96,9 @@ class MessagesController < ApplicationController
     return send_event("failed", {}) if reply.blank?
 
     message = @conversation.messages.create!(content: reply, role: "assistant")
-    @conversation.generate_title_from_first_message if first_exchange?
 
     send_event("done", html: render_to_string(partial: "messages/message", formats: [:html],
-                                              locals: { message: message }),
-                       title: @conversation.reload.title)
+                                              locals: { message: message }))
   end
 
   def rate_limited
@@ -106,10 +108,6 @@ class MessagesController < ApplicationController
       format.turbo_stream { render :rate_limited, locals: { notice: notice }, status: :too_many_requests }
       format.html { redirect_back fallback_location: dashboard_path, alert: notice }
     end
-  end
-
-  def first_exchange?
-    @conversation.messages.where(role: "user").one?
   end
 
   def render_reply_failed

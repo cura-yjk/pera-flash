@@ -91,6 +91,12 @@ class FlashcardGeneration
   # The transcript is already scoped to new material, so this no longer has to
   # ask the model to focus on recent topics or avoid the existing cards -- it
   # cannot see the old material to repeat it.
+  #
+  # The front is the Japanese alone, like a paper flashcard. The first prompt
+  # asked for "a clear prompt testing recall", and got quiz questions --
+  # "How do you say 'one person' when arriving at a restaurant?" -- rather
+  # than flashcards. Question and answer keep their names: they are the
+  # columns, and the headers Anki export maps by.
   def prompt
     <<~PROMPT
       Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates. Return at most #{FlashcardsSchema::MAX_CARDS} cards; if more concepts were covered, choose the #{FlashcardsSchema::MAX_CARDS} most useful for a beginner to remember.
@@ -99,8 +105,8 @@ class FlashcardGeneration
 
       #{PeraPrompt::FURIGANA_RULE}
       Guidelines:
-      - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
-      - Answer = concise, correct answer.
+      - Question = the Japanese alone, as it would be written on the front of a paper flashcard: one word, set phrase or grammar pattern, and nothing around it. Never phrase it as a question. For example: いらっしゃいませ, 猫[ねこ], 〜が好[す]きです.
+      - Answer = what it means, in a few words: "Welcome (said by shop staff)", "cat", "to like ~ (the liked thing takes が)". For a grammar pattern, add one short example sentence.
       - Keep difficulty appropriate for a beginner (hiragana/katakana known, minimal kanji/grammar).
       - The first message may be lead-in context from earlier. Only card it if the exchange below actually teaches it.
       - If nothing here teaches a distinct concept, return an empty array.

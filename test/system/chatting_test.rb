@@ -35,6 +35,10 @@ class ChattingTest < ApplicationSystemTestCase
     visit conversation_path(@conversation)
     type_into("are you there?")
     click_and_confirm("Send", expect: "busy right now")
+    # One notice, and nothing spilled: the page's own copy of it once broke
+    # out of its attribute and showed as a second notice and a stray ">.
+    assert_selector "[data-action='reply-stream#retry']", count: 1
+    assert_no_text '">'
 
     assert_no_difference -> { @conversation.messages.where(role: "user").count } do
       click_and_confirm("Try again", expect: "Here I am!")

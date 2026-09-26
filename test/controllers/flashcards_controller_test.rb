@@ -185,6 +185,64 @@ class FlashcardsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "assistant", @conversation.messages.order(:created_at).last.role
   end
 
+  # --- duplicates -------------------------------------------------------------
+
+  test "skips a card the learner already has, whichever deck it is in" do
+    own_card(question: "猫[ねこ]", answer: "cat")
+
+    assert_no_difference -> { Flashcard.count } do
+      post conversation_flashcards_path(@conversation), params: saving("猫", "Cat"), as: :turbo_stream
+    end
+  end
+
+  test "saves the new cards in a batch and skips only the known one" do
+    own_card(question: "猫[ねこ]", answer: "cat")
+    cards = { "0" => { question: "猫", answer: "Cat" }, "1" => { question: "犬[いぬ]", answer: "dog" } }
+
+    post conversation_flashcards_path(@conversation), params: { conversation: { flashcards: cards } },
+                                                     as: :turbo_stream
+
+    assert_equal ["犬[いぬ]"], @conversation.flashcards.where.not(id: flashcards(:neko_card)).pluck(:question)
+  end
+
+  test "a batch cannot save the same card twice" do
+    cards = { "0" => { question: "犬[いぬ]", answer: "dog" }, "1" => { question: "犬", answer: "Dog" } }
+
+    assert_difference -> { Flashcard.count }, 1 do
+      post conversation_flashcards_path(@conversation), params: { conversation: { flashcards: cards } },
+                                                       as: :turbo_stream
+    end
+  end
+
+  test "the confirmation says what was left out" do
+    own_card(question: "猫[ねこ]", answer: "cat")
+    cards = { "0" => { question: "猫", answer: "Cat" }, "1" => { question: "犬", answer: "dog" } }
+
+    post conversation_flashcards_path(@conversation), params: { conversation: { flashcards: cards } },
+                                                     as: :turbo_stream
+
+    confirmation = @conversation.messages.order(:created_at).last.content
+    assert_match(/1 card added/, confirmation)
+    assert_match(/1 was already in your flashcards/, confirmation)
+  end
+
+  test "a save of nothing but known cards says so, and still ends the batch" do
+    own_card(question: "猫[ねこ]", answer: "cat")
+
+    post conversation_flashcards_path(@conversation), params: saving("猫", "Cat"), as: :turbo_stream
+
+    assert_match(/already in your flashcards/, @conversation.messages.order(:created_at).last.content)
+    assert_empty @conversation.reload.messages_for_flashcards
+  end
+
+  # The confirmation is written after the cards, and was counted as something
+  # new to card: generating again straight after a save spent a request on it.
+  test "straight after a save the chat has nothing new to card" do
+    post conversation_flashcards_path(@conversation), params: saving("犬", "dog"), as: :turbo_stream
+
+    assert_empty @conversation.reload.messages_for_flashcards
+  end
+
   test "redirects back to the conversation when asked for HTML" do
     post conversation_flashcards_path(@conversation), params: saving("猫", "Cat")
 

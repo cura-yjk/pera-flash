@@ -59,7 +59,17 @@ en:
     deleted: "Flashcard deleted."
     no_match: 'No flashcards match "%{query}".'
     # Shown in the chat after cards are saved; the markdown link is rendered.
-    added: "%{count} cards added! [View your flashcards](%{path})"
+    added:
+      one: "1 card added! [View your flashcards](%{path})"
+      other: "%{count} cards added! [View your flashcards](%{path})"
+    # Appended to "added" when some of the batch repeated cards the learner
+    # already had (KnownCards), and used instead of it when all of them did.
+    skipped:
+      one: "1 was already in your flashcards, so it was left out."
+      other: "%{count} were already in your flashcards, so they were left out."
+    none_added:
+      one: "Nothing added: that card was already in your flashcards."
+      other: "Nothing added: all %{count} were already in your flashcards."
     index:
       title: "Flashcards"
       search_placeholder: "Search flashcards..."
@@ -137,6 +147,8 @@ en:
       answer: "Answer"
       save: "Save to Flashcards"
       writing: "ペラ is writing your flashcards"
+      duplicate: "Already in your flashcards — won't be saved again:"
+      duplicate_in_batch: "Same as a card above — won't be saved twice."
     no_new_material:
       title: "You're all caught up"
       explanation: "Everything from this chat is already in your flashcards. Keep chatting, then generate again to turn the new material into cards."

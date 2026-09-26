@@ -63,6 +63,11 @@ class Conversation < ApplicationRecord
     messages.order(:created_at).where(id: recent)
   end
 
+  # Called once a save has finished, confirmation included: see carded_through.
+  def mark_carded!
+    touch(:carded_at)
+  end
+
   def set_title
     self.title = DEFAULT_TITLE if title.nil?
   end
@@ -95,7 +100,7 @@ class Conversation < ApplicationRecord
 
   def flashcard_candidates
     ordered = messages.order(:created_at)
-    since = flashcards.maximum(:created_at)
+    since = carded_through
     return ordered if since.nil?
 
     fresh = ordered.where("messages.created_at > ?", since)
@@ -107,5 +112,13 @@ class Conversation < ApplicationRecord
     return fresh if lead_in.nil?
 
     ordered.where(id: [lead_in.id] + fresh.ids)
+  end
+
+  # Where the last batch ended. carded_at is stamped after the save's "✅ N
+  # cards added" message, so that message is not new material, and it moves
+  # even when every card was a duplicate and none were saved. Conversations
+  # carded before the column existed fall back to their newest card.
+  def carded_through
+    [carded_at, flashcards.maximum(:created_at)].compact.max
   end
 end

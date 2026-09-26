@@ -55,6 +55,33 @@ class ConversationTest < ActiveSupport::TestCase
     assert_empty @conversation.messages_for_flashcards
   end
 
+  # A save whose cards were all already known saves none, and used to leave
+  # the cutoff where it was: the next generation re-read the same messages.
+  test "a save that added no cards still ends the batch" do
+    @conversation.flashcards.destroy_all
+
+    @conversation.mark_carded!
+
+    assert_empty @conversation.messages_for_flashcards
+  end
+
+  test "carding moves the cutoff past messages written before it, including the confirmation" do
+    @conversation.messages.create!(role: "assistant", content: "✅ 1 cards added!")
+
+    @conversation.mark_carded!
+
+    assert_empty @conversation.messages_for_flashcards
+  end
+
+  test "whatever is said after carding is new material again" do
+    @conversation.mark_carded!
+    travel 1.minute do
+      @conversation.messages.create!(role: "user", content: "犬は？")
+    end
+
+    assert_includes @conversation.messages_for_flashcards.map(&:content), "犬は？"
+  end
+
   test "is ordered oldest first" do
     ordered = @conversation.messages_for_flashcards.order(:created_at).to_a
 

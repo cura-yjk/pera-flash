@@ -12,8 +12,8 @@ class FlashcardsController < ApplicationController
 
     return head :unprocessable_entity if cards[:flashcards].to_h.size > MAX_CARDS_PER_SAVE
 
-    created = save_cards(conversation, cards[:flashcards])
-    @message = confirmation_message(conversation, created.size)
+    created, skipped = save_cards(conversation, cards[:flashcards])
+    @message = finish_batch(conversation, created.size, skipped)
 
     respond_to do |format|
       format.turbo_stream
@@ -50,19 +50,38 @@ class FlashcardsController < ApplicationController
   private
 
   # A conversation's cards land in a deck named after it, created on first save.
+  # A card the learner already has -- in any deck, or earlier in this batch --
+  # is skipped rather than saved twice; see KnownCards. Checked here and not
+  # trusted from the preview, since the learner may have edited the front.
+  # Returns the cards saved and how many were skipped.
   def save_cards(conversation, cards)
-    deck = current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
+    known = KnownCards.new(current_user)
+    deck = nil
 
-    cards.each_value.map { |card| conversation.flashcards.create!(card.merge(deck: deck)) }
+    created = cards.each_value.filter_map do |card|
+      next if known.match(card[:question])
+
+      deck ||= current_user.decks.find_or_create_by!(name: conversation.title.presence || "Untitled Deck")
+      conversation.flashcards.create!(card.merge(deck: deck)).tap { |saved| known.add(saved) }
+    end
+    [created, cards.to_h.size - created.size]
+  end
+
+  # The confirmation in the chat, then the end of the batch. In that order:
+  # the confirmation is a message, and marking the conversation carded after
+  # it keeps it from counting as something new to card.
+  def finish_batch(conversation, added, skipped)
+    message = conversation.messages.create!(role: "assistant", content: "✅ #{confirmation(added, skipped)}")
+    conversation.mark_carded!
+    message
   end
 
   # Shown in the chat as a system notification -- see messages/_message.
-  def confirmation_message(conversation, count)
-    Message.create!(
-      content: "✅ #{t('flashcards.added', count: count, path: flashcards_path)}",
-      role: "assistant",
-      conversation: conversation
-    )
+  def confirmation(added, skipped)
+    return t("flashcards.none_added", count: skipped) if added.zero? && skipped.positive?
+
+    [t("flashcards.added", count: added, path: flashcards_path),
+     (t("flashcards.skipped", count: skipped) if skipped.positive?)].compact.join(" ")
   end
 
   def flashcard_params

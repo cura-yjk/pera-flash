@@ -105,6 +105,15 @@ conversation …` line with its time and input size. The action streams when the
 Everything short of a generation is still a turbo_stream, handed to Turbo. `EventStreaming`
 (`app/controllers/concerns/`) holds the SSE helpers both controllers share.
 
+Duplicates are caught by lookup, not by asking the model: `KnownCards` indexes the learner's cards by
+their text with readings, spacing, punctuation and 〜 removed, against both question *and* answer
+(cards from before fronts became Japanese carry the Japanese on the back). A generated card that
+repeats one — or an earlier card in the batch — is marked in the preview, and the save checks again
+(the learner may have edited it) and skips it. "Since the last batch" keys off
+`conversations.carded_at`, stamped by `mark_carded!` *after* the "✅ N cards added" message, so an
+all-duplicate save still ends the batch and the confirmation is never new material; conversations
+carded before the column existed fall back to their newest card.
+
 **Spaced repetition (`Flashcard`)**: an SM-2 variant, all local. `GRADES` are `again`/`good`/`easy`;
 `review!(grade)` updates `interval_days`, `ease` (`STARTING_EASE` 2.5, floor `MINIMUM_EASE` 1.3) and
 `due_at`. Two judgements are expressed in constants and worth preserving: `struggling` keys off

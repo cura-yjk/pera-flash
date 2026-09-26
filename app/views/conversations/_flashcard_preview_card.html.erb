@@ -7,6 +7,19 @@
       <i class="fa-solid fa-layer-group opacity-75 stack-icon"></i>
     </div>
     <div class="p-3">
+      <%# Left out on save unless the front is edited into something new --
+          the save checks again rather than trusting this mark. %>
+      <% if (known = flashcard.duplicate_of) %>
+        <p class="small text-warning-emphasis mb-3" data-duplicate>
+          <i class="fa-solid fa-clone me-1" aria-hidden="true"></i>
+          <% if known.persisted? %>
+            <%= t("conversations.generate_flashcards.duplicate") %>
+            <span class="d-block text-body-secondary mt-1"><%= with_furigana(known.question) %> — <%= with_furigana(known.answer) %></span>
+          <% else %>
+            <%= t("conversations.generate_flashcards.duplicate_in_batch") %>
+          <% end %>
+        </p>
+      <% end %>
       <label class="text-uppercase small fw-semibold mb-3 d-block pera-green"><%= t("conversations.generate_flashcards.question") %></label>
       <%= text_area_tag "conversation[flashcards][#{index}][question]", flashcard.question,
             class: "form-control border-0 px-0 flashcard-textarea mb-4 rounded-4 px-3 js-dash-card", rows: 2 %>

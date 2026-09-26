@@ -1,8 +1,13 @@
 <%# Where the reply streams in. Starts as the loading state and is replaced by
     the finished message -- rendered server-side, because markdown and furigana
-    cannot be rendered from a half-written string. %>
+    cannot be rendered from a half-written string.
+
+    The failure notice goes into an attribute, so .to_str: rendered HTML is
+    marked safe and would go in unescaped, its quotes ending the attribute
+    early and the rest spilling into the page as a stray notice and a "> . %>
 <div data-controller="reply-stream"
-     data-reply-stream-url-value="<%= conversation_reply_path(conversation) %>">
+     data-reply-stream-url-value="<%= conversation_reply_path(conversation) %>"
+     data-reply-stream-failed-value="<%= render("messages/reply_failed").to_str %>">
   <%= image_tag "pera.png", alt: "Pera", id: "pera-chat" %>
   <div class="d-flex justify-content-start mb-5">
     <div class="px-3 pb-0 pt-3 assistant-message my-4">

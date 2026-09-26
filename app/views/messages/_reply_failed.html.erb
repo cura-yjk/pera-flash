@@ -1,0 +1,14 @@
+<%# What replaces "ペラ is writing" when a reply fails. reason is LlmFailure's.
+    Try again reopens the same reply stream, which answers the question already
+    saved -- the old advice, "try sending it again", saved a second copy.
+    Rendered without a reason into _pending too, for a connection the browser
+    sees drop on its own. %>
+<span class="text-body">
+  <i class="fa-solid fa-triangle-exclamation text-warning" aria-hidden="true"></i>
+  <%= t("messages.reply_failed_stream.title") %>
+  <%= t("failures.#{local_assigns[:reason] || :other}") %>
+  <%= t("messages.reply_failed_stream.saved") %>
+</span>
+<button type="button" class="btn btn-sm pera-btn-outline d-block mt-2 mb-3" data-action="reply-stream#retry">
+  <%= t("failures.try_again") %>
+</button>

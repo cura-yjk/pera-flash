@@ -154,12 +154,21 @@ en:
       explanation: "Everything from this chat is already in your flashcards. Keep chatting, then generate again to turn the new material into cards."
     generation_failed:
       title: "Couldn't make flashcards just now"
-      explanation: "Pera couldn't be reached. Nothing was lost from your chat — try generating again in a moment."
+      nothing_lost: "Nothing was lost from your chat."
+    # A generation that worked and found nothing worth a card: small talk, or
+    # questions about the app. The batch is marked done so another tap does
+    # not pay to read the same messages again.
+    nothing_to_card:
+      title: "Nothing to make cards from"
+      explanation: "This part of the chat didn't teach anything new to put on a card. Keep chatting, then generate again."
     generation_rate_limited:
       title: "One moment"
 
   messages:
     reply_failed: "Pera couldn't reply just now. Your message is saved — try sending it again."
+    reply_failed_stream:
+      title: "Pera couldn't reply just now."
+      saved: "Your message is saved."
     rate_limited: "You are sending messages faster than Pera can answer them. Give it a moment."
     pending:
       writing: "ペラ is writing"
@@ -208,3 +217,13 @@ en:
       dashboard_blurb: "Review cards and more!"
       go: "Go"
       chat_blurb: "Chat with Pera and learn!"
+
+  # Why a request to Gemini failed (LlmFailure), for both a chat reply and a
+  # card generation. A 429 can be the per-minute limit or the day's allowance,
+  # and the error does not reliably say which -- hence rate_limited covering both.
+  failures:
+    overloaded: "Gemini, the AI behind Pera, is busy right now. Try again in a minute."
+    rate_limited: "Pera has reached its request limit for now. Try again in a minute — if it still fails, today's allowance is used up and resets at 16:00 JST."
+    timeout: "Gemini took too long to answer. Try again in a moment."
+    other: "Pera couldn't be reached. Try again in a moment."
+    try_again: "Try again"

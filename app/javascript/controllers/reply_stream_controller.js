@@ -25,7 +25,7 @@ const FADE_STEP = 4
 // with it is choose how much of it to show.
 export default class extends Controller {
   static targets = ["text", "cursor", "more"]
-  static values = { url: String }
+  static values = { url: String, failed: String }
 
   connect() {
     // Nothing stopped a second message being sent while the first was still
@@ -37,19 +37,37 @@ export default class extends Controller {
     this.checkMore = () => this.updateMore()
     window.addEventListener("scroll", this.checkMore, { passive: true })
 
+    this.instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    this.writing = this.cursorTarget.innerHTML
+
+    this.open()
+  }
+
+  open() {
     this.reply = document.createElement("div")
     this.shown = 0
     this.total = 0
-    this.instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    this.finished = null
+    this.lastFrame = null
 
     this.source = new EventSource(this.urlValue)
 
     this.source.addEventListener("chunk", (event) => this.append(event))
     this.source.addEventListener("done", (event) => this.finish(event))
-    this.source.addEventListener("failed", () => this.fail())
+    this.source.addEventListener("failed", (event) => this.fail(JSON.parse(event.data).html))
     // Fires when the connection drops rather than closing cleanly. A reply
     // that was already swapped in has nothing left to fail.
     this.source.onerror = () => { if (this.source) this.fail() }
+  }
+
+  // The failure notice's Try again. The reply endpoint answers the question
+  // already saved, so this asks for it again rather than sending it twice --
+  // which is what "try sending it again" used to lead to.
+  retry() {
+    this.textTarget.replaceChildren()
+    this.cursorTarget.innerHTML = this.writing
+    this.lockInput()
+    this.open()
   }
 
   disconnect() {
@@ -134,16 +152,16 @@ export default class extends Controller {
     this.reveal()
   }
 
-  fail() {
+  // html is the server's notice, saying why (LlmFailure). A connection that
+  // dropped has no server to ask, so it gets the page's own copy instead.
+  fail(html) {
     this.close()
     this.stopRevealing()
     // Everything that arrived, at full strength: a fade left on the last
     // words reads as text still coming, beside a notice saying it is not.
     this.show(this.total, { fade: false })
     this.unlockInput()
-    this.cursorTarget.innerHTML =
-      '<i class="fa-solid fa-triangle-exclamation text-warning"></i> ' +
-      "Pera couldn't reply just now. Your message is saved — try sending it again."
+    this.cursorTarget.innerHTML = html || this.failedValue
   }
 
   reveal() {

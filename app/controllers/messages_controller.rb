@@ -87,13 +87,17 @@ class MessagesController < ApplicationController
     nil
   rescue StandardError => e
     # The student's message is already saved, so a failure here must not lose
-    # it: they see a notice and can send it again.
+    # it: they are told why, and can try again for the same question.
     Rails.logger.error("Pera could not reply in conversation #{@conversation.id}: #{e.class}: #{e.message}")
-    send_event("failed", {})
+    send_event("failed", html: reply_failed_html(LlmFailure.reason(e)))
+  end
+
+  def reply_failed_html(reason)
+    render_to_string(partial: "messages/reply_failed", formats: [:html], locals: { reason: reason })
   end
 
   def finish_reply(reply)
-    return send_event("failed", {}) if reply.blank?
+    return send_event("failed", html: reply_failed_html(:other)) if reply.blank?
 
     message = @conversation.messages.create!(content: reply, role: "assistant")
 

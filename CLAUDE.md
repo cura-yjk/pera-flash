@@ -79,6 +79,14 @@ timeout. Failures show a notice asking the learner to try again. Moving to the n
 retry and still happens. Note Google applies free-tier limits per *project*, so keys created in the
 same project share one allowance and rotating between them gains nothing.
 
+**When Gemini fails**, `LlmFailure.reason` sorts the error into `overloaded` (503), `rate_limited`
+(429 — per-minute or daily, which the error doesn't reliably say, so the copy covers both),
+`timeout` (a read timeout; a connection that never opens is `other`) or `other`, and the learner is
+told that (`failures.*` in `en.yml`) with a **Try again** button. For a chat reply, Try again reopens
+the reply stream, which answers the question already saved — never resend it. A generation that
+works but finds nothing to card is not a failure: it says so and marks the batch carded. Every
+Pera reply logs one `Pera reply for conversation …` line with its length, time and `finish_reason`.
+
 `PeraPrompt` holds everything Pera is told before a conversation starts, including `FURIGANA_RULE`,
 which is deliberately **shared** between the chat and the flashcard generator so a word taught in
 chat and the card made from it are annotated identically. `PeraReply` decides what the model sees:

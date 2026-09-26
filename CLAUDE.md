@@ -91,7 +91,11 @@ requests: `#create` saves what the learner wrote and hands back an empty bubble,
 sends the reply as server-sent events, consumed by `reply_stream_controller.js`. The stream sets
 `X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump). Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping
-the lookup meant a 404 committed a 200 on its way out. Each event carries the whole reply-so-far,
+the lookup meant a 404 committed a 200 on its way out. Live runs *every* action of a controller
+that includes `EventStreaming` on its own thread, before_actions too, so Devise's `throw :warden`
+escapes Warden: `EventStreaming#authenticate_user!` catches it and answers with Devise's failure
+app. Controller tests can't see this (Rails runs Live inline under test);
+`test/integration/signed_out_streaming_test.rb` puts the real thread back. Each event carries the whole reply-so-far,
 not a delta, so a mid-exchange key retry redraws instead of doubling the text. The browser does not
 show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed
 set by the backlog, with the newest characters fading in, and swaps in the finished message only

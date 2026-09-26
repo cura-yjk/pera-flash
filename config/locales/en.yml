@@ -136,7 +136,7 @@ en:
       question: "Question"
       answer: "Answer"
       save: "Save to Flashcards"
-      writing: "ペラ is writing your flashcards…"
+      writing: "ペラ is writing your flashcards"
     no_new_material:
       title: "You're all caught up"
       explanation: "Everything from this chat is already in your flashcards. Keep chatting, then generate again to turn the new material into cards."

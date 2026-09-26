@@ -3,7 +3,7 @@ class MessagesController < ApplicationController
   # way every chat interface does it. #create no longer waits for the model: it
   # saves what the student wrote and hands back an empty bubble, which #stream
   # then fills over an SSE connection.
-  include ActionController::Live
+  include EventStreaming
 
   # Every message here is an LLM call, so this is where a script runs up a
   # bill. Two layers by account -- a burst nobody types through, and an hourly
@@ -56,14 +56,6 @@ class MessagesController < ApplicationController
 
   private
 
-  # Nothing between here and the browser may buffer, or the tokens arrive in one
-  # lump at the end and the streaming is pointless.
-  def prepare_event_stream
-    response.headers["Content-Type"] = "text/event-stream"
-    response.headers["Cache-Control"] = "no-cache"
-    response.headers["X-Accel-Buffering"] = "no"
-  end
-
   # The last message, if it is a question nobody has answered yet.
   def unanswered_message(conversation)
     last = conversation.messages.order(:created_at).last
@@ -106,17 +98,6 @@ class MessagesController < ApplicationController
                                               locals: { message: message }),
                        title: @conversation.reload.title)
   end
-
-  # A client that has navigated away closes the socket mid-write; that is an
-  # ordinary end to a stream, not an error worth reporting.
-  def send_event(name, payload)
-    response.stream.write("event: #{name}\ndata: #{payload.to_json}\n\n")
-  rescue ActionController::Live::ClientDisconnected, IOError
-    raise Stop
-  end
-
-  # Raised to unwind out of the streaming block when the client has gone.
-  class Stop < StandardError; end
 
   def rate_limited
     notice = t("messages.rate_limited")

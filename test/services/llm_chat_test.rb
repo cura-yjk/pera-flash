@@ -69,6 +69,15 @@ class LlmChatTest < ActiveSupport::TestCase
     assert_equal({ "thinkingConfig" => { "thinkingBudget" => 0 } }, payload["generationConfig"])
   end
 
+  # Read from the chat's own config, since that is what its requests use.
+  test "a timeout given for one exchange applies to that chat only" do
+    longer = LlmChat.chat_on("some-key", timeout: 50)
+    usual = LlmChat.chat_on("some-key")
+
+    assert_equal 50, longer.instance_variable_get(:@config).request_timeout
+    assert_equal RubyLLM.config.request_timeout, usual.instance_variable_get(:@config).request_timeout
+  end
+
   private
 
   def generate_url

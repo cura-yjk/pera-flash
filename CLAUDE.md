@@ -19,6 +19,11 @@ PWA.
   Chrome by default and in CI; `BROWSER=firefox bin/rails test:system` runs the same suite in Firefox
 - Run a single test file: `bin/rails test test/models/flashcard_test.rb`
 - Run a single test: `bin/rails test test/models/flashcard_test.rb -n test_method_name`
+- Prompt lab: `bin/rails prompt_lab:seed` (free; adds or refreshes `lab@mail.com` and its test
+  chats, touching no other user) then `bin/rails prompt_lab:run` (one real Gemini request per chat;
+  `ONLY=kanji` narrows it) to see what `FlashcardGeneration`'s prompt makes of each case. Reports
+  land in `tmp/prompt_lab/`. See `lib/prompt_lab.rb`. Never `db:seed` for this: `db/seeds.rb`
+  deletes every user first.
 - Lint: `bin/rubocop` (`rubocop-rails-omakase` base)
 - Security scan: `bin/brakeman`
 - Gem vulnerability audit: `bin/bundler-audit`

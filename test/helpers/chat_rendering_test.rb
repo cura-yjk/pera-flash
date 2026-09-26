@@ -34,6 +34,32 @@ class ChatRenderingTest < ActionView::TestCase
     assert_match(/<td>cat<\/td>/, html)
   end
 
+  # Pera often writes the breakdown table on the line straight after its
+  # label, and Kramdown only starts a table after a blank line -- so the table
+  # came out as a paragraph of raw pipes. The shape here is a real reply's.
+  test "a table straight after a line of text still renders, inside its list item" do
+    html = rendered(<<~MD)
+      * **Breakdown:**
+        | Japanese Word | English Meaning |
+        | :--- | :--- |
+        | が | subject marker particle |
+      * **Why:**
+        * が marks what you like.
+    MD
+
+    assert_match(/<li>.*<table/m, html)
+    assert_match(/<td>subject marker particle<\/td>/, html)
+    assert_no_match(/\| Japanese Word/, html)
+  end
+
+  test "pipes in an ordinary sentence are left alone" do
+    assert_no_match(/<table/, rendered("Choose one:\n| this | or that |"))
+  end
+
+  test "a table inside a code block stays code" do
+    assert_no_match(/<table/, rendered("```\nsome text\n| a | b |\n| --- | --- |\n```"))
+  end
+
   test "readings in a reply render as ruby" do
     assert_match(/<ruby>猫<rt>ねこ<\/rt><\/ruby>/, rendered("猫[ねこ]が 好[す]きです"))
   end

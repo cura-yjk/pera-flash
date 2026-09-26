@@ -5,6 +5,11 @@ class Flashcard < ApplicationRecord
   validates :question, presence: true
   validates :answer, presence: true
 
+  # Set on a freshly generated card that repeats one the learner has -- or an
+  # earlier card in the same batch -- so the preview can say it will be left
+  # out. Not stored: the save checks again (see KnownCards).
+  attr_accessor :duplicate_of
+
   # --- ownership ------------------------------------------------------------
 
   # A card reaches its owner through either association, and cards exist with

@@ -221,6 +221,22 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, events.last.last["count"]
   end
 
+  # Marked while it is written, so the learner sees before saving that it
+  # will be left out. The fixture learner already has "What does 猫 mean?".
+  test "a streamed card the learner already has is marked, and so is a repeat within the batch" do
+    stub_llm_stream([{ question: "What does 猫 mean?", answer: "Cat" },
+                     { question: "犬[いぬ]", answer: "dog" },
+                     { question: "犬", answer: "Dog" }])
+
+    post_for_stream
+
+    cards = events.select { |name, _| name == "card" }.map { |_, data| data["html"] }
+    assert_includes cards[0], "Already in your flashcards"
+    assert_includes cards[0], "Cat (neko)", "should show the card it repeats"
+    assert_not_includes cards[1], "Already in your flashcards"
+    assert_includes cards[2], "Same as a card above"
+  end
+
   # The same trim as the whole response: a streamed list stops at the limit.
   test "a streamed generation stops at the card limit" do
     limit = FlashcardsSchema::MAX_CARDS

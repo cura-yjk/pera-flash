@@ -44,6 +44,7 @@ class FlashcardGeneration
       LlmChat.with_chat(timeout: TIMEOUT) do |chat|
         on_reset&.call if cards.any?
         cards.clear
+        @known = nil # the discarded cards are not repeats of anything
         stream_from(chat, cards, &on_card)
       end
       cards
@@ -65,8 +66,14 @@ class FlashcardGeneration
     end
   end
 
+  # Each card is checked against the learner's cards and the ones before it,
+  # and marked if it repeats one; see KnownCards.
   def build(card)
-    @conversation.flashcards.build(question: card["question"], answer: card["answer"])
+    known = @known ||= KnownCards.new(@conversation.user)
+    built = @conversation.flashcards.build(question: card["question"], answer: card["answer"])
+    built.duplicate_of = known.match(built.question)
+    known.add(built)
+    built
   end
 
   def transcript

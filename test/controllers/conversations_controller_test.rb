@@ -120,6 +120,43 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "What does 犬 mean?"
   end
 
+  # A generation shows nothing until the whole list is written, so every extra
+  # card is extra waiting. The schema and prompt both ask for at most ten; this
+  # is the trim for a model that returns more anyway.
+  test "offers at most the card limit even when the model returns more" do
+    limit = FlashcardsSchema::MAX_CARDS
+    stub_llm_success((1..limit + 2).map { |i| { question: "Question number #{i}?", answer: "Answer #{i}" } })
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_includes response.body, "Question number #{limit}?"
+    assert_not_includes response.body, "Question number #{limit + 1}?"
+  end
+
+  test "generation is told how many cards it may return" do
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url do |request|
+      body = JSON.parse(request.body)
+      body.to_s.include?("at most #{FlashcardsSchema::MAX_CARDS} cards") &&
+        body.dig("generationConfig", "responseJsonSchema", "properties", "flashcards", "maxItems") == FlashcardsSchema::MAX_CARDS
+    end
+  end
+
+  # "Slow sometimes" could not be followed up: nothing recorded how long a
+  # generation took or how much it was given.
+  test "each generation logs how long it took and what went in" do
+    stub_llm_success([{ question: "What does 猫 mean?", answer: "Cat" }])
+
+    log = capture_log do
+      post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+    end
+
+    assert_match(/Flashcard generation for conversation \d+: 1 cards in \d+ms from \d+ messages \(\d+ characters\)/, log)
+  end
+
   # Generation only ever sees a transcript, and a transcript of Japanese
   # practice contains almost nothing to infer an explanation language from --
   # so it is told outright rather than left to guess.
@@ -244,6 +281,16 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def capture_log
+    output = StringIO.new
+    original = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(output)
+    yield
+    output.string
+  ensure
+    Rails.logger = original
+  end
 
   def current_user_conversation_with_no_messages
     users(:learner).conversations.create!(title: "Fresh chat")

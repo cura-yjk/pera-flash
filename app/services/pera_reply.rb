@@ -31,10 +31,32 @@ class PeraReply
   def call(&on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
-    LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) }
+    logged { LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) } }
   end
 
   private
+
+  # One line per reply: how long it was, how long it took, and why Gemini
+  # stopped -- :stop when it finished, :max_tokens when cut off, and so on.
+  # Replies were not logged at all, so a reply of just "Hello" to "How does
+  # this app work?" (2026-09-26) could not be told apart from one cut short.
+  # Written from ensure, so a reply that raised is logged as failed.
+  def logged
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    reply = yield
+  ensure
+    elapsed = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
+    Rails.logger.info("Pera reply for conversation #{@conversation.id}: " \
+                      "#{reply.nil? ? 'failed' : "#{reply.size} characters"} in #{elapsed}ms#{ending(reply)}")
+  end
+
+  def ending(reply)
+    return "" if reply.nil?
+
+    tokens = @response&.tokens
+    ", finished: #{@response&.finish_reason || 'unknown'}, " \
+      "tokens in/out: #{tokens&.input || '?'}/#{tokens&.output || '?'}"
+  end
 
   def prepare(chat)
     chat.with_instructions(PeraPrompt.for(struggling: struggling_cards,
@@ -46,7 +68,7 @@ class PeraReply
   def collect(chat)
     reply = +""
 
-    chat.ask(@question.content) do |chunk|
+    @response = chat.ask(@question.content) do |chunk|
       text = chunk.content.to_s
       next if text.empty?
 

@@ -281,6 +281,49 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes events.last.last["html"], "make flashcards just now"
   end
 
+  # Most failures are a busy model, and "try again in a minute" is right for
+  # those; the notice says which it was rather than one message for all.
+  test "a streamed failure says why, and offers to try again" do
+    stub_request(:post, llm_stream_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+
+    post_for_stream
+
+    html = events.last.last["html"]
+    assert_includes html, ERB::Util.html_escape(I18n.t("failures.overloaded"))
+    assert_includes html, I18n.t("failures.try_again")
+    assert_includes html, generate_flashcards_conversation_path(conversations(:lesson))
+  end
+
+  test "a spent quota is told apart from a busy model" do
+    stub_request(:post, llm_stream_url).to_return(status: 429, body: { error: { message: "quota" } }.to_json)
+
+    post_for_stream
+
+    assert_includes events.last.last["html"], ERB::Util.html_escape(I18n.t("failures.rate_limited"))
+  end
+
+  # Nothing worth a card is an answer, not a failure: it used to open an empty
+  # preview with Save enabled, and Save with nothing in it was a 400.
+  test "a streamed generation with nothing to card says so and ends the batch" do
+    stub_llm_stream([])
+
+    post_for_stream
+
+    assert_equal %w[open empty], events.map(&:first)
+    assert_includes events.last.last["html"], I18n.t("conversations.nothing_to_card.title")
+    assert_empty conversations(:lesson).reload.messages_for_flashcards
+  end
+
+  test "a whole generation with nothing to card says so and ends the batch" do
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_match I18n.t("conversations.nothing_to_card.title"), response.body
+    assert_no_match(/Save to Flashcards/, response.body)
+    assert_empty conversations(:lesson).reload.messages_for_flashcards
+  end
+
   # Generation only ever sees a transcript, and a transcript of Japanese
   # practice contains almost nothing to infer an explanation language from --
   # so it is told outright rather than left to guess.
@@ -344,8 +387,11 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_requested :post, llm_url, times: 1
   end
 
+  # A read timeout -- Gemini took the request and went quiet -- as it did
+  # through 2026-09-25. (to_timeout would be a connection timeout, which is
+  # "couldn't be reached" rather than "took too long".)
   test "says so when flashcards cannot be generated" do
-    stub_request(:post, llm_url).to_timeout
+    stub_request(:post, llm_url).to_raise(Net::ReadTimeout)
 
     post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
 
@@ -353,6 +399,7 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     # Matched against the translation so it stays true in any locale, and
     # escaped because t() escapes the apostrophe on its way into the page.
     assert_match ERB::Util.html_escape(I18n.t("conversations.generation_failed.title")), response.body
+    assert_match ERB::Util.html_escape(I18n.t("failures.timeout")), response.body
   end
 
   test "a failed generation leaves the conversation untouched" do

@@ -1,10 +1,23 @@
-<%# Nothing was saved, so trying again costs nothing. %>
+<%# Nothing was saved, so trying again costs nothing but the request.
+
+    reason is LlmFailure's, and picks the explanation: a busy model and a spent
+    quota need different advice. Without a conversation there is no Try again
+    button -- that is the copy the generate button carries for a failure the
+    browser sees itself, and that button renders this partial, so offering it
+    there would have the two render each other forever. %>
+<% reason = local_assigns[:reason] || :other %>
 <div class="my-5 response">
   <div class="d-flex align-items-center gap-2 mb-3">
     <i class="fa-solid fa-triangle-exclamation fs-4 text-warning me-2"></i>
     <h3 class="mb-0 pera-green"><%= t("conversations.generation_failed.title") %></h3>
   </div>
   <p class="mb-0">
-    <%= t("conversations.generation_failed.explanation") %>
+    <%= t("failures.#{reason}") %> <%= t("conversations.generation_failed.nothing_lost") %>
   </p>
+  <% if (conversation = local_assigns[:conversation]) %>
+    <div class="d-flex mt-3">
+      <%= render "flashcards/btn", conversation: conversation, messages: conversation.messages,
+                                   label: t("failures.try_again"), button_class: "mb-0" %>
+    </div>
+  <% end %>
 </div>

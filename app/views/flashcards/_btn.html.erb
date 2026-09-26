@@ -1,11 +1,13 @@
 <% if messages.any? %>
   <%# flashcard_stream_controller sends this itself so the cards can stream in.
-      Without JavaScript it is an ordinary Turbo form and they arrive together. %>
+      Without JavaScript it is an ordinary Turbo form and they arrive together.
+      Also the Try again button in a failure notice, with its own label. %>
   <%= button_to generate_flashcards_conversation_path(conversation),
           method: :post,
           form: { data: { controller: "flashcard-stream", action: "submit->flashcard-stream#generate",
                           flashcard_stream_failed_value: render("conversations/generation_failed") } },
-          class: "btn pera-btn-outline d-flex align-items-center justify-content-center gap-2 mb-5" do %>
-    <i class="fa-solid fa-layer-group"></i> <%= t("flashcards.generate") %>
+          class: "btn pera-btn-outline d-flex align-items-center justify-content-center gap-2 " \
+                 "#{local_assigns.fetch(:button_class, 'mb-5')}" do %>
+    <i class="fa-solid fa-layer-group"></i> <%= local_assigns[:label] || t("flashcards.generate") %>
   <% end %>
 <% end %>

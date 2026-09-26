@@ -99,6 +99,58 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "does this survive?", conversations(:lesson).messages.order(:created_at).last.content
   end
 
+  # The notice said "try sending it again" whatever went wrong -- and sending
+  # it again saved a second copy of the question. It now says why, and offers
+  # to fetch the reply to the question already saved.
+  test "a failed reply says why, and offers to try again" do
+    stub_request(:post, stream_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+    ask("are you busy?")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    html = JSON.parse(response.body[/^event: failed\ndata: (.*)$/, 1])["html"]
+    assert_includes html, ERB::Util.html_escape(I18n.t("failures.overloaded"))
+    assert_includes html, I18n.t("failures.try_again")
+    assert_includes html, "reply-stream#retry"
+  end
+
+  # Trying again is the same GET the page made: it answers the saved question
+  # rather than needing it sent twice.
+  test "trying again answers the question already saved" do
+    stub_request(:post, stream_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+    ask("second time lucky?")
+    get conversation_reply_path(conversations(:lesson))
+
+    stub_llm_stream("Yes!")
+    assert_no_difference -> { conversations(:lesson).messages.where(role: "user").count } do
+      get conversation_reply_path(conversations(:lesson))
+    end
+
+    assert_match "event: done", response.body
+    assert_equal "Yes!", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
+  # Pera's replies were not logged at all, so a reply of just "Hello" to "How
+  # does this app work?" could not be told apart from one cut short. One line
+  # per reply now says how long it was and why Gemini stopped.
+  test "every reply is logged with its length and why it ended" do
+    stub_llm_stream("Hello")
+    ask("How does this app work?")
+
+    log = capture_log { get conversation_reply_path(conversations(:lesson)) }
+
+    assert_match(/Pera reply for conversation \d+: 5 characters in \d+ms, finished: \S+/, log)
+  end
+
+  test "a reply that fails is logged as failed" do
+    stub_request(:post, stream_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+    ask("hello?")
+
+    log = capture_log { get conversation_reply_path(conversations(:lesson)) }
+
+    assert_match(/Pera reply for conversation \d+: failed in \d+ms/, log)
+  end
+
   # --- naming the chat --------------------------------------------------------
 
   # Named from the message itself, the moment it is sent: the page's title is
@@ -279,6 +331,16 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
   def stub_llm_stream_failure
     stub_request(:post, stream_url).to_timeout
+  end
+
+  def capture_log
+    output = StringIO.new
+    original = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(output)
+    yield
+    output.string
+  ensure
+    Rails.logger = original
   end
 
   # What #create leaves behind: a saved question waiting for #stream.

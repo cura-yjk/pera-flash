@@ -92,7 +92,10 @@ export default class extends Controller {
         this.preview.querySelector("[data-flashcard-status]")?.remove()
         this.preview.querySelector("[data-flashcard-save]")?.removeAttribute("disabled")
         break
+      // Failed, or worked and found nothing worth a card: either way the
+      // preview gives way to a notice the server has rendered.
       case "failed":
+      case "empty":
         this.ended = true
         this.preview.innerHTML = data.html
         break

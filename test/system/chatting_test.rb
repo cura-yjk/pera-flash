@@ -24,6 +24,23 @@ class ChattingTest < ApplicationSystemTestCase
     assert_text "Nicely done!"
   end
 
+  # Try again fetches the reply to the question already saved: the old advice
+  # was to send it again, which saved it twice.
+  test "a failed reply says why, and Try again fetches it without resending" do
+    stub_request(:post, %r{generativelanguage\.googleapis\.com/.*streamGenerateContent})
+      .to_return(status: 503, body: { error: { message: "high demand" } }.to_json).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
+                 body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Here I am!' }] } }] }.to_json}\n\n")
+
+    visit conversation_path(@conversation)
+    type_into("are you there?")
+    click_and_confirm("Send", expect: "busy right now")
+
+    assert_no_difference -> { @conversation.messages.where(role: "user").count } do
+      click_and_confirm("Try again", expect: "Here I am!")
+    end
+  end
+
   # The input box is fixed to the bottom of the window, and the newest message
   # scrolls itself into view. Lining its bottom up with the bottom of the
   # window put it behind the input box: measured, the last 100px of text sat

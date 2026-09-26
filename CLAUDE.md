@@ -61,6 +61,13 @@ build the chat: a retry has to replay the instructions and history. Singular `GE
 read as a fallback. The `openai_api_key` line in `config/initializers/ruby_llm.rb` is a spare
 credential for a provider the app is **not** pointed at — don't infer the provider from it.
 
+**No automatic retries** (`config.max_retries = 0` in the same initializer): one tap or message is
+one request. ruby_llm's default retried timeouts, 5xx and 429s three more times, so a single tap on
+a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
+timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
+retry and still happens. Note Google applies free-tier limits per *project*, so keys created in the
+same project share one allowance and rotating between them gains nothing.
+
 `PeraPrompt` holds everything Pera is told before a conversation starts, including `FURIGANA_RULE`,
 which is deliberately **shared** between the chat and the flashcard generator so a word taught in
 chat and the card made from it are annotated identically. `PeraReply` decides what the model sees:

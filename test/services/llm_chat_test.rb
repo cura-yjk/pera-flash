@@ -29,11 +29,11 @@ class LlmChatTest < ActiveSupport::TestCase
     answer = LlmChat.with_chat { |chat| chat.ask("hello") }
 
     assert_equal "ok", answer.content
-    # at_least_times, because ruby_llm's own Faraday retry middleware tries the
-    # exhausted key a few times (about 0.7s of backoff in total) before the
-    # error reaches us and we move on.
-    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "first-key" }, at_least_times: 1
-    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "second-key" }, at_least_times: 1
+    # Once each. ruby_llm's own retry middleware used to try the exhausted key
+    # three more times before the error reached us -- four refused requests
+    # before moving on. Retries are off (config/initializers/ruby_llm.rb).
+    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "first-key" }, times: 1
+    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "second-key" }, times: 1
   end
 
   test "raises once every key is exhausted" do

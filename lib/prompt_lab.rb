@@ -396,17 +396,36 @@ module PromptLab
     end
   end
 
+  # Seconds between cases. Not for the per-minute quota -- nine requests are
+  # well inside it -- but so a run is not nine requests in a burst on a day
+  # Gemini is short of capacity.
+  PAUSE = 15
+
   # Generates cards for every case, or the ones whose title contains only,
   # and returns the report as markdown. Each case is one real request.
-  def run(only: nil)
+  def run(only: nil, pause: PAUSE)
     learner = user or raise "No lab learner yet: run bin/rails prompt_lab:seed first"
 
     conversations = learner.conversations.order(:created_at).to_a
     conversations.select! { |c| c.title.downcase.include?(only.downcase) } if only.present?
 
-    report = [header]
-    conversations.each { |conversation| report << section(conversation) }
-    report.join("\n")
+    ([header] + sections(conversations, pause)).join("\n")
+  end
+
+  # Stops at the first "high demand" 503: that is Gemini short of capacity for
+  # everyone, and the cases after it would only spend requests on the same
+  # refusal. Other failures are one case's problem, reported in its section.
+  def sections(conversations, pause)
+    conversations.each_with_index.with_object([]) do |(conversation, i), report|
+      sleep(pause) if i.positive?
+      warn "[#{i + 1}/#{conversations.size}] #{conversation.title}"
+      report << section(conversation)
+    rescue RubyLLM::ServiceUnavailableError => e
+      skipped = conversations.drop(i).map { |c| "- #{c.title}" }.join("\n")
+      break report << "## Stopped: Gemini is overloaded\n\n#{e.message}\n\nNot run:\n\n#{skipped}\n"
+    rescue StandardError => e
+      report << "## #{conversation.title}\n\nFailed: #{e.class}: #{e.message}\n"
+    end
   end
 
   def header
@@ -433,8 +452,6 @@ module PromptLab
       | :--- | :--- |
       #{cards.map { |card| "| #{cell(card.question)} | #{cell(card.answer)} |" }.join("\n")}
     MD
-  rescue StandardError => e
-    "## #{conversation.title}\n\nFailed: #{e.class}: #{e.message}\n"
   end
 
   def timed

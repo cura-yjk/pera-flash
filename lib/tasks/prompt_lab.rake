@@ -9,11 +9,11 @@ namespace :prompt_lab do
          "#{learner.conversations.count} chats, #{Flashcard.for_user(learner).count} cards"
   end
 
-  desc "Generate cards for each lab chat and write a report (one Gemini request per chat; ONLY=title filters)"
+  desc "Generate cards for each lab chat: one Gemini request each, PAUSE seconds apart (ONLY=title filters)"
   task run: :environment do
     abort "prompt_lab is for development, not #{Rails.env}" if Rails.env.production?
 
-    report = PromptLab.run(only: ENV.fetch("ONLY", nil))
+    report = PromptLab.run(only: ENV.fetch("ONLY", nil), pause: ENV.fetch("PAUSE", PromptLab::PAUSE).to_f)
     path = Rails.root.join("tmp/prompt_lab/#{Time.current.strftime('%Y%m%d-%H%M%S')}.md")
     FileUtils.mkdir_p(path.dirname)
     File.write(path, report)

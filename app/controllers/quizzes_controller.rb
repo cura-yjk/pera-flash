@@ -1,9 +1,12 @@
 # Multiple-choice quizzing over cards the learner already has.
 #
-# Built on the review schedule rather than beside it: a wrong answer is an
-# "again" and a right one a "good", so quizzing and reviewing move the same
-# card through the same algorithm. Getting something wrong here brings it back
-# sooner, which is the whole reason to bother scoring.
+# Built on the review schedule rather than beside it, but allowed to move a
+# card in one direction only. A wrong answer is an "again", exactly as in
+# review, so what a quiz shows was forgotten comes back sooner. A right answer
+# changes nothing: picking an answer out of four is recognition, and a card
+# can be passed by ruling out the other three. Counting that as a "good" grew
+# the interval of cards the learner could not have recalled, so only review --
+# recall, graded by the learner -- moves a card further out.
 #
 # Like the review flow, nothing here calls the LLM -- distractors come from the
 # learner's other cards, so a quiz costs nothing and works offline.
@@ -96,8 +99,8 @@ class QuizzesController < ApplicationController
     return if card.nil?
 
     if card.answer == choice
+      # Scored, not scheduled: see the note at the top of this class.
       session[:quiz] = quiz.merge("correct" => quiz["correct"].to_i + 1)
-      card.review!("good")
     else
       # Same path a forgotten card takes in review: back into today's queue,
       # and harder to graduate next time.

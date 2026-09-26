@@ -46,15 +46,32 @@ class QuizzesControllerTest < ActionDispatch::IntegrationTest
     assert_operator card.ease, :<, 2.5
   end
 
-  test "a correct answer schedules the card forward" do
-    card = only_due_card(review_count: 0, interval_days: 0)
+  # Picking the answer out of four is recognition, and recall is harder: a
+  # card can be passed by ruling out the other three. So a right answer here
+  # leaves the card exactly where it was, and only recalling it in review
+  # moves it further out.
+  test "a correct answer leaves the card's schedule to review" do
+    card = only_due_card(review_count: 3, interval_days: 10, ease: 2.5)
+    before = card.reload.attributes.slice("interval_days", "ease", "due_at", "review_count", "lapse_count")
 
     get deck_quiz_path(@deck)
     post deck_quiz_answer_path(@deck), params: { choice: card.answer }
 
-    card.reload
-    assert_operator card.interval_days, :>, 0
-    assert_equal 0, card.lapse_count
+    assert_equal before, card.reload.attributes.slice(*before.keys)
+  end
+
+  test "a correct answer still counts toward the score" do
+    card = only_due_card
+    get deck_quiz_path(@deck)
+    post deck_quiz_answer_path(@deck), params: { choice: card.answer }
+
+    session[:quiz]["card_ids"].size.pred.times do
+      follow_redirect!
+      post deck_quiz_answer_path(@deck), params: { choice: "not it" }
+    end
+    follow_redirect!
+
+    assert_match(/1 of/, response.body)
   end
 
   # Regression, twice over. #answer has no template of its own, so it first

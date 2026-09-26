@@ -109,7 +109,7 @@ en:
       progress: "Question %{position} of %{total}"
     results:
       score: "%{score} of %{total}"
-      all_correct: "Everything correct. Those cards move further out."
+      all_correct: "Everything correct. Review them to move them further out."
       some_missed: "The ones you missed will come back today."
       none: "No cards to quiz on yet."
       again: "Quiz again"

@@ -50,7 +50,8 @@ Two classes in `app/models/` are **not** ActiveRecord:
 - `QuizQuestion` — one multiple-choice question, built per request. `OPTION_COUNT` is 4 and the
   distractors are sampled from the learner's own other cards rather than generated, which keeps a
   quiz free and offline and makes wrong answers plausibly confusable. There is no `quiz_questions`
-  table.
+  table. Grading moves a card one way only: a wrong answer is an `again`, a right one changes
+  nothing. Picking from four is recognition, not recall, so only review moves a card further out.
 - `Page` — a hand-rolled paginator (`Page.of(scope, number)`, `DEFAULT_SIZE` 24). There is no
   Kaminari or Pagy; don't add one without replacing this.
 

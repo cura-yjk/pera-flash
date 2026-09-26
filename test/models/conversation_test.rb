@@ -29,6 +29,24 @@ class ConversationTest < ActiveSupport::TestCase
     assert_equal @conversation.messages.count, @conversation.messages_for_flashcards.count
   end
 
+  # The first generation in a chat has no earlier cards to start from, so it
+  # sent the whole conversation: the longest prompts, the most cards to write,
+  # and the slowest generations.
+  test "offers only the most recent messages when there are more than the limit" do
+    conversation = users(:learner).conversations.create!(title: "Long chat")
+    total = Conversation::FLASHCARD_MESSAGE_LIMIT + 5
+    total.times do |i|
+      conversation.messages.create!(role: i.even? ? "user" : "assistant", content: "message #{i}",
+                                    created_at: (total - i).minutes.ago)
+    end
+
+    contents = conversation.messages_for_flashcards.map(&:content)
+
+    assert_equal Conversation::FLASHCARD_MESSAGE_LIMIT, contents.size
+    assert_equal "message #{total - 1}", contents.last, "expected the newest message, in order, last"
+    assert_not_includes contents, "message 0"
+  end
+
   # Regression: lead-in context was returned even with nothing new after it,
   # which made "nothing to generate" look like "one message to generate".
   test "offers nothing at all when no messages follow the last flashcard" do

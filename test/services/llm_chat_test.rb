@@ -29,11 +29,11 @@ class LlmChatTest < ActiveSupport::TestCase
     answer = LlmChat.with_chat { |chat| chat.ask("hello") }
 
     assert_equal "ok", answer.content
-    # at_least_times, because ruby_llm's own Faraday retry middleware tries the
-    # exhausted key a few times (about 0.7s of backoff in total) before the
-    # error reaches us and we move on.
-    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "first-key" }, at_least_times: 1
-    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "second-key" }, at_least_times: 1
+    # Once each. ruby_llm's own retry middleware used to try the exhausted key
+    # three more times before the error reached us -- four refused requests
+    # before moving on. Retries are off (config/initializers/ruby_llm.rb).
+    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "first-key" }, times: 1
+    assert_requested :post, generate_url, headers: { "X-Goog-Api-Key" => "second-key" }, times: 1
   end
 
   test "raises once every key is exhausted" do
@@ -67,6 +67,15 @@ class LlmChatTest < ActiveSupport::TestCase
     LlmChat.with_chat { |chat| chat.ask("hello") }
 
     assert_equal({ "thinkingConfig" => { "thinkingBudget" => 0 } }, payload["generationConfig"])
+  end
+
+  # Read from the chat's own config, since that is what its requests use.
+  test "a timeout given for one exchange applies to that chat only" do
+    longer = LlmChat.chat_on("some-key", timeout: 50)
+    usual = LlmChat.chat_on("some-key")
+
+    assert_equal 50, longer.instance_variable_get(:@config).request_timeout
+    assert_equal RubyLLM.config.request_timeout, usual.instance_variable_get(:@config).request_timeout
   end
 
   private

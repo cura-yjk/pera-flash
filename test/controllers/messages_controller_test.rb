@@ -127,6 +127,17 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :post, llm_url
   end
 
+  # One message, one request: the notice asks the learner to send again rather
+  # than the app retrying on its own and spending the free tier's quota.
+  test "a failed reply is sent once, not retried" do
+    stub_llm_stream_failure
+    ask("just once")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    assert_requested :post, stream_url, times: 1
+  end
+
   # A notice persisted as a message would be replayed to the model next turn.
   test "the failure notice is not stored as a message" do
     stub_llm_stream_failure

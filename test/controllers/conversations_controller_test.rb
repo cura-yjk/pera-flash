@@ -150,6 +150,121 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "What does 犬 mean?"
   end
 
+  # A generation shows nothing until the whole list is written, so every extra
+  # card is extra waiting. The schema and prompt both ask for at most ten; this
+  # is the trim for a model that returns more anyway.
+  test "offers at most the card limit even when the model returns more" do
+    limit = FlashcardsSchema::MAX_CARDS
+    stub_llm_success((1..limit + 2).map { |i| { question: "Question number #{i}?", answer: "Answer #{i}" } })
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_includes response.body, "Question number #{limit}?"
+    assert_not_includes response.body, "Question number #{limit + 1}?"
+  end
+
+  test "generation is told how many cards it may return" do
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url do |request|
+      body = JSON.parse(request.body)
+      body.to_s.include?("at most #{FlashcardsSchema::MAX_CARDS} cards") &&
+        body.dig("generationConfig", "responseJsonSchema", "properties", "flashcards", "maxItems") == FlashcardsSchema::MAX_CARDS
+    end
+  end
+
+  # "Slow sometimes" could not be followed up: nothing recorded how long a
+  # generation took or how much it was given.
+  test "each generation logs how long it took and what went in" do
+    stub_llm_success([{ question: "What does 猫 mean?", answer: "Cat" }])
+
+    log = capture_log do
+      post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+    end
+
+    assert_match(/Flashcard generation for conversation \d+: 1 cards in \d+ms from \d+ messages \(\d+ characters\)/, log)
+  end
+
+  # Generation reads a long stretch of chat and Gemini can take a while to
+  # start; the 30s every other call waits threw away answers it was about to
+  # give. Both ways of generating ask for the longer wait.
+  test "generation waits longer for Gemini than a reply does" do
+    timeouts = []
+    original = LlmChat.method(:with_chat)
+    # Minitest 6 has no #stub; swapped by hand and put back.
+    LlmChat.define_singleton_method(:with_chat) do |timeout: nil, &_block|
+      timeouts << timeout
+      raise RubyLLM::Error.new(nil, "stop here")
+    end
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+    post_for_stream
+
+    assert_equal [FlashcardGeneration::TIMEOUT] * 2, timeouts
+  ensure
+    LlmChat.define_singleton_method(:with_chat, original)
+  end
+
+  # --- streamed generation ------------------------------------------------------
+
+  test "a streamed generation sends each card as its own event" do
+    stub_llm_stream([{ question: "What does 猫 mean?", answer: "Cat" }, { question: "What does 犬 mean?", answer: "Dog" }])
+
+    post_for_stream
+
+    assert_equal "text/event-stream", response.media_type
+    assert_equal %w[open card card done], events.map(&:first)
+    assert_includes events[1].last["html"], "What does 猫 mean?"
+    assert_includes events[2].last["html"], "conversation[flashcards][1][question]"
+    assert_equal 2, events.last.last["count"]
+  end
+
+  # The same trim as the whole response: a streamed list stops at the limit.
+  test "a streamed generation stops at the card limit" do
+    limit = FlashcardsSchema::MAX_CARDS
+    stub_llm_stream((1..limit + 2).map { |i| { question: "Question number #{i}?", answer: "Answer #{i}" } })
+
+    post_for_stream
+
+    assert_equal limit, events.count { |name, _| name == "card" }
+    assert_equal limit, events.last.last["count"]
+  end
+
+  # Only a generation streams. Everything else comes back as the turbo_stream
+  # it always was, and the browser hands it to Turbo.
+  test "nothing new is still an ordinary turbo_stream when streaming was asked for" do
+    conversations(:lesson).flashcards.update_all(created_at: Time.current)
+
+    post_for_stream
+
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_match(/caught up/i, response.body)
+    assert_not_requested :post, llm_stream_url
+  end
+
+  # The rate limit's handler answers with respond_to, and a streaming request
+  # lists text/event-stream first. It has to fall through to turbo_stream
+  # rather than finding no format and answering 406.
+  test "a rate-limited streaming request gets the usual notice" do
+    conversations(:lesson).flashcards.update_all(created_at: Time.current)
+
+    6.times { post_for_stream }
+
+    assert_response :too_many_requests
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+  end
+
+  test "a streamed generation that fails says so" do
+    stub_request(:post, llm_stream_url).to_return(status: 500, body: "{}")
+
+    post_for_stream
+
+    assert_equal %w[open failed], events.map(&:first)
+    assert_includes events.last.last["html"], "make flashcards just now"
+  end
+
   # Generation only ever sees a transcript, and a transcript of Japanese
   # practice contains almost nothing to infer an explanation language from --
   # so it is told outright rather than left to guess.
@@ -192,6 +307,27 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # A provider outage used to 500 the whole action.
+  # One tap, one request. ruby_llm retried a failed request three more times
+  # on its own, so a single tap on a bad Gemini day spent four of the free
+  # tier's few daily requests and kept the learner waiting two minutes. The
+  # notice asks them to try again instead, which is their call to make.
+  test "a failed generation is sent once, not retried" do
+    stub_request(:post, llm_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url, times: 1
+    assert_match ERB::Util.html_escape(I18n.t("conversations.generation_failed.title")), response.body
+  end
+
+  test "a generation that times out is sent once, not retried" do
+    stub_request(:post, llm_url).to_timeout
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_requested :post, llm_url, times: 1
+  end
+
   test "says so when flashcards cannot be generated" do
     stub_request(:post, llm_url).to_timeout
 
@@ -274,6 +410,43 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def post_for_stream
+    post generate_flashcards_conversation_path(conversations(:lesson)),
+         headers: { "Accept" => "text/event-stream, text/vnd.turbo-stream.html" }
+  end
+
+  # [name, data] for each server-sent event in the response.
+  def events
+    response.body.split("\n\n").map do |frame|
+      [frame[/^event: (.*)$/, 1], JSON.parse(frame[/^data: (.*)$/, 1])]
+    end
+  end
+
+  def llm_stream_url
+    %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:streamGenerateContent}
+  end
+
+  # The cards' JSON as Gemini streams it: in pieces that split cards apart.
+  def stub_llm_stream(cards)
+    json = { flashcards: cards }.to_json
+    body = json.chars.each_slice(17).map do |piece|
+      "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => piece.join }] } }] }.to_json}\n\n"
+    end.join
+
+    stub_request(:post, llm_stream_url)
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: body)
+  end
+
+  def capture_log
+    output = StringIO.new
+    original = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(output)
+    yield
+    output.string
+  ensure
+    Rails.logger = original
+  end
 
   def current_user_conversation_with_no_messages
     users(:learner).conversations.create!(title: "Fresh chat")

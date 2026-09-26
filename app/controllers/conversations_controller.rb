@@ -1,5 +1,8 @@
 # Handles the "chat with AI to learn Japanese, then turn it into flashcards" flow
 class ConversationsController < ApplicationController
+  # Generated cards stream in one at a time; see #stream_flashcards.
+  include EventStreaming
+
   # A generation is a second LLM call per press, and the button sits right in
   # the chat -- cheaper to press repeatedly than to type a message.
   # `only:` is not optional here: without it these throttle every action in the
@@ -62,6 +65,11 @@ class ConversationsController < ApplicationController
   #
   # Deliberately not the whole conversation: see
   # Conversation#messages_for_flashcards for why the input is scoped.
+  #
+  # Streamed when the browser asks for it (flashcard_stream_controller does),
+  # and answered whole when it does not. Everything short of a generation --
+  # nothing new, rate limited, not found -- is an ordinary turbo_stream either
+  # way, which the controller hands to Turbo.
   def generate_flashcards
     @conversation = current_user.conversations.find(params[:id])
     messages = @conversation.messages_for_flashcards
@@ -70,7 +78,10 @@ class ConversationsController < ApplicationController
     # generation that could only return an empty array.
     return render :no_new_material if messages.none?
 
-    @flashcards = build_flashcards(transcript_of(messages))
+    generation = FlashcardGeneration.new(@conversation, messages)
+    return stream_flashcards(generation) if streaming_requested?
+
+    @flashcards = unless_failed { generation.call }
     render :generation_failed if @flashcards.nil?
   end
 
@@ -85,48 +96,61 @@ class ConversationsController < ApplicationController
     end
   end
 
-  def transcript_of(messages)
-    messages.map { |m| "#{m.role}: #{m.content}" }.join("\n\n")
+  # The browser lists text/event-stream first when it can read a stream, and
+  # turbo_stream after it for the responses that are not one.
+  def streaming_requested?
+    request.headers["Accept"].to_s.include?("text/event-stream")
   end
 
-  # Returns the built (unsaved) cards, or nil when the provider could not be
-  # reached -- the conversation is untouched either way, so the learner can
-  # simply try again.
-  def build_flashcards(transcript)
-    response = LlmChat.with_chat { |chat| chat.with_schema(FlashcardsSchema).ask(flashcard_prompt(transcript)) }
+  # Generation shows nothing until the whole JSON list is written, and its time
+  # grows with every card. Streamed, each card is sent as soon as it is
+  # complete: the first appears after a second or two rather than after all of
+  # them. It also keeps Heroku from ending a slow generation at 30 seconds,
+  # which only applies until the first byte is sent.
+  #
+  # Events: "open" (the preview, empty), "card" (one card), "reset" (a retry
+  # on the next API key is starting over), then "done" or "failed".
+  def stream_flashcards(generation)
+    prepare_event_stream
+    send_event("open", html: preview_html)
+    cards = unless_failed { stream_cards(generation) }
+    cards ? send_event("done", count: cards.size) : send_event("failed", html: failed_html)
+  rescue Stop
+    nil
+  ensure
+    response.stream.close
+  end
 
-    # #parsed, not #content: ruby_llm 2.0 returns a schema response as the raw
-    # JSON string, and String#[] with a key is a substring match -- so
-    # content["flashcards"] gave back the word "flashcards" and every card
-    # arrived blank.
-    Array(response.parsed&.dig("flashcards")).map do |card|
-      @conversation.flashcards.build(question: card["question"], answer: card["answer"])
+  def stream_cards(generation)
+    generation.stream(on_reset: -> { send_event("reset", {}) }) do |card, index|
+      send_event("card", html: card_html(card, index))
     end
+  end
+
+  # The generation's result, or nil when the provider could not be reached --
+  # the conversation is untouched either way, so the learner can simply try
+  # again. Stop is let through: it means the browser left, not that Gemini did.
+  def unless_failed
+    yield
+  rescue Stop
+    raise
   rescue StandardError => e
     Rails.logger.error("Could not generate flashcards for conversation #{@conversation.id}: " \
                        "#{e.class}: #{e.message}")
     nil
   end
 
-  # The transcript is already scoped to new material, so this no longer has to
-  # ask the model to focus on recent topics or avoid the existing cards -- it
-  # cannot see the old material to repeat it.
-  def flashcard_prompt(transcript)
-    <<~PROMPT
-      Based on the conversation below, generate flashcards covering the key Japanese vocabulary, grammar, or concepts discussed. Generate one per distinct concept actually covered -- if the conversation covered two things, return two cards. Never invent filler or pad with near-duplicates.
+  def preview_html
+    render_to_string(partial: "conversations/flashcard_preview", formats: [:html],
+                     locals: { conversation: @conversation, flashcards: [], streaming: true })
+  end
 
-      #{PeraPrompt::EXPLANATION_LANGUAGE_RULE}
+  def card_html(flashcard, index)
+    render_to_string(partial: "conversations/flashcard_preview_card", formats: [:html],
+                     locals: { flashcard: flashcard, index: index })
+  end
 
-      #{PeraPrompt::FURIGANA_RULE}
-      Guidelines:
-      - Question = a clear prompt testing recall (e.g., "What does 猫 mean?" or "How do you say 'I like cats' in Japanese?").
-      - Answer = concise, correct answer.
-      - Keep difficulty appropriate for a beginner (hiragana/katakana known, minimal kanji/grammar).
-      - The first message may be lead-in context from earlier. Only card it if the exchange below actually teaches it.
-      - If nothing here teaches a distinct concept, return an empty array.
-
-      Conversation:
-      #{transcript}
-    PROMPT
+  def failed_html
+    render_to_string(partial: "conversations/generation_failed", formats: [:html])
   end
 end

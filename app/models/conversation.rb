@@ -17,6 +17,10 @@ class Conversation < ApplicationRecord
 
   validates :title, presence: true, length: { maximum: MAX_TITLE_LENGTH }
   before_validation :set_title
+
+  # See #messages_for_flashcards.
+  FLASHCARD_MESSAGE_LIMIT = 20
+
   scope :empty, -> { left_joins(:messages).where(messages: { id: nil }) }
 
   # Message and card counts come back on the conversation rows themselves, so a
@@ -47,20 +51,16 @@ class Conversation < ApplicationRecord
   #
   # One message before the cutoff comes along as lead-in, so a topic already
   # under way when the last cards were made still has its opening line.
+  #
+  # At most FLASHCARD_MESSAGE_LIMIT of them, the most recent. The first
+  # generation in a chat has no earlier cards to start from, so it used to
+  # send the whole conversation: a long chat meant a long prompt, a long list
+  # of cards to write, and the slowest generations. Messages older than the
+  # limit are not carded -- the next batch starts after this one.
   def messages_for_flashcards
-    ordered = messages.order(:created_at)
-    since = flashcards.maximum(:created_at)
-    return ordered if since.nil?
+    recent = flashcard_candidates.reorder(created_at: :desc).limit(FLASHCARD_MESSAGE_LIMIT).select(:id)
 
-    fresh = ordered.where("messages.created_at > ?", since)
-    # Lead-in only accompanies new material; on its own it is old news, and
-    # returning it would trigger a generation with nothing new to card.
-    return fresh if fresh.empty?
-
-    lead_in = ordered.where(created_at: ..since).last
-    return fresh if lead_in.nil?
-
-    ordered.where(id: [lead_in.id] + fresh.ids)
+    messages.order(:created_at).where(id: recent)
   end
 
   def set_title
@@ -89,5 +89,23 @@ class Conversation < ApplicationRecord
     return DEFAULT_TITLE if line.nil?
 
     line.truncate(NAME_LENGTH, separator: " ", omission: "…")
+  end
+
+  private
+
+  def flashcard_candidates
+    ordered = messages.order(:created_at)
+    since = flashcards.maximum(:created_at)
+    return ordered if since.nil?
+
+    fresh = ordered.where("messages.created_at > ?", since)
+    # Lead-in only accompanies new material; on its own it is old news, and
+    # returning it would trigger a generation with nothing new to card.
+    return fresh if fresh.empty?
+
+    lead_in = ordered.where(created_at: ..since).last
+    return fresh if lead_in.nil?
+
+    ordered.where(id: [lead_in.id] + fresh.ids)
   end
 end

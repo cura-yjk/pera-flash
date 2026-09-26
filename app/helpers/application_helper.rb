@@ -42,8 +42,37 @@ module ApplicationHelper
   MARKDOWN_ATTRIBUTES = %w[href title class colspan rowspan].freeze
 
   def render_markdown(text)
-    html = Kramdown::Document.new(text.to_s, input: "GFM", syntax_highlighter: "rouge").to_html
+    html = Kramdown::Document.new(separate_tables(text.to_s), input: "GFM", syntax_highlighter: "rouge").to_html
 
     sanitize(html, tags: MARKDOWN_TAGS, attributes: MARKDOWN_ATTRIBUTES)
+  end
+
+  TABLE_ROW = /\A\s*\|.*\|\s*\z/
+  TABLE_DELIMITER = /\A\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*\z/
+  CODE_FENCE = /\A\s*(```|~~~)/
+
+  # Kramdown starts a table only after a blank line. Pera often writes its
+  # breakdown table on the line straight after "**Breakdown:**", and the whole
+  # table then rendered as a paragraph of raw pipes -- one of the four real
+  # correction replies on file on 2026-09-26. A blank line is put in front of
+  # any table header (a row followed by a |---| row) that follows text, keeping
+  # its indentation so the table stays inside its list item. Code blocks are
+  # left as they are.
+  def separate_tables(text)
+    lines = text.lines(chomp: true)
+    in_code = false
+
+    lines.each_with_index.flat_map do |line, i|
+      in_code = !in_code if line.match?(CODE_FENCE)
+      table_after_text?(lines, i) && !in_code ? ["", line] : [line]
+    end.join("\n")
+  end
+
+  def table_after_text?(lines, index)
+    return false if index.zero?
+
+    previous = lines[index - 1]
+    lines[index].match?(TABLE_ROW) && lines[index + 1].to_s.match?(TABLE_DELIMITER) &&
+      previous.strip.present? && !previous.match?(TABLE_ROW)
   end
 end

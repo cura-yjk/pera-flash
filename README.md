@@ -17,10 +17,16 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
   tutoring stays pointed at your actual weak spots
 - Every kanji is annotated with its reading as furigana — switch them off when you want to test
   yourself
-- Conversations are titled automatically and kept, so you can go back to one
+- Each chat is named after the first thing you say, can be renamed from its title, and is kept so
+  you can go back to it
+- When Gemini is busy or out of quota, Pera says which, and a **Try again** button picks the reply
+  back up without resending your message
 
 **Flashcards**
-- Turn any conversation into cards; a correction becomes a question and an answer
+- Turn any conversation into cards: they stream in one at a time as Pera writes them, with the
+  Japanese on the front, and you can edit any of them before saving
+- Only what was said since the last batch is carded, and a card you already have is marked and
+  skipped rather than saved twice
 - Organise them into decks, search across them as you type, edit or delete any of them
 - Export a deck as CSV, with the headers Anki expects
 
@@ -37,10 +43,7 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 ## Getting Started
 ### Setup
 
-Install gems
-```
-bundle install
-```
+Needs Ruby 3.3.5 and PostgreSQL.
 
 ### ENV Variables
 Create `.env` file
@@ -54,26 +57,31 @@ GEMINI_API_KEYS=your_gemini_api_key
 `GEMINI_API_KEYS` takes a comma-separated list — Pera falls through to the next key when one
 runs out of quota. A single key is fine. `GEMINI_API_KEY` (singular) is still read as a fallback.
 
-### DB Setup
+### Install and run
 ```
-rails db:create
-rails db:migrate
-rails db:seed
+bin/setup
 ```
+This installs gems, prepares the database and starts the server (`bin/setup --skip-server` stops
+short of that; `bin/dev` starts it later).
 
-### Run a server
+For sample data, `bin/rails db:seed` — but note it **deletes every user** first, so don't run it
+against a database whose accounts you want to keep.
+
+### Tests
 ```
-rails s
+bin/rails test          # models, controllers, services
+bin/rails test:system   # in a real browser (Chrome; BROWSER=firefox for Firefox)
+bin/ci                  # everything CI runs: lint, security scans, tests
 ```
-(or `bin/dev`, which this repo also has set up as a shortcut for the same thing)
+The test suite never calls Gemini, so it needs no key.
 
 ## Built With
 - [Rails 8](https://guides.rubyonrails.org/) - Backend / Front-end
-- [Stimulus JS](https://stimulus.hotwired.dev/) - Front-end JS
+- [Hotwire](https://hotwired.dev/) (Turbo + Stimulus) - Front-end JS
 - [Heroku](https://heroku.com/) - Deployment
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Bootstrap](https://getbootstrap.com/) — Styling
-- [RubyLLM](https://rubyllm.com/) + [Gemini](https://ai.google.dev/) — Chat tutor, conversation titling and structured flashcard generation
+- [RubyLLM](https://rubyllm.com/) + [Gemini](https://ai.google.dev/) — Chat tutor and structured flashcard generation
 
 ## Acknowledgements
 

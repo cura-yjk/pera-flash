@@ -36,6 +36,9 @@ Metrics/CyclomaticComplexity:
 Metrics/ModuleLength:
   Exclude:
     - "app/services/pera_prompt.rb"
+    # Mostly the lab's test chats, written out in full: a length limit there
+    # would only push the transcripts into another file.
+    - "lib/prompt_lab.rb"
 Style/MissingRespondToMissing:
   Enabled: false
 Lint/MissingSuper:

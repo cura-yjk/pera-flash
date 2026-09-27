@@ -22,6 +22,27 @@ class PeraReplyTest < ActiveSupport::TestCase
     assert_raises(ArgumentError) { PeraReply.new(@conversation, @question).call }
   end
 
+  # 30s was the app-wide default, and on 2026-09-27 every answer Gemini gave
+  # took longer. The stream's heartbeat keeps Heroku waiting; this is how long
+  # Pera itself will.
+  test "waits longer for Gemini than the app-wide default" do
+    timeout = nil
+    original = LlmChat.method(:with_chat)
+    LlmChat.define_singleton_method(:with_chat) do |**options, &_block|
+      timeout = options[:timeout]
+      +""
+    end
+
+    begin
+      PeraReply.new(@conversation, @question).call { |_| }
+    ensure
+      LlmChat.define_singleton_method(:with_chat, original)
+    end
+
+    assert_equal PeraReply::TIMEOUT, timeout
+    assert_operator PeraReply::TIMEOUT, :>, RubyLLM.config.request_timeout
+  end
+
   test "yields the reply in pieces and returns the whole of it" do
     stub_gemini("猫が", "好きです。", " Nicely done!")
 

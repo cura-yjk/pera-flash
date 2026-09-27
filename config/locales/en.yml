@@ -172,6 +172,7 @@ en:
     rate_limited: "You are sending messages faster than Pera can answer them. Give it a moment."
     pending:
       writing: "ペラ is writing"
+      slow: "Gemini is slow right now — ペラ is still waiting for an answer"
       more_below: "More below"
     form:
       placeholder: "Ask something..."

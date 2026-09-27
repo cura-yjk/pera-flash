@@ -70,7 +70,7 @@ class MessagesController < ApplicationController
   # rendered from a half-finished string mid-stream.
   def stream_reply(question)
     open_event_stream
-    finish_reply(streamed_reply(question))
+    finish_reply(while_waiting { streamed_reply(question) })
   rescue Stop
     # The student navigated away mid-reply. Nothing to report and nothing to
     # save -- the next thing they send starts a fresh exchange.

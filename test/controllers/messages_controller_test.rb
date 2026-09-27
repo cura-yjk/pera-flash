@@ -170,6 +170,37 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match "event: failed", response.body
   end
 
+  # On 2026-09-27 Gemini took 29 to 80 seconds to answer. Heroku ends a
+  # response that goes quiet for 55s, so the stream says something every
+  # heartbeat while it waits -- a comment, which the browser ignores.
+  test "the stream keeps talking while Gemini is slow" do
+    stub_request(:post, stream_url).to_return do
+      sleep 0.35
+      { status: 200, headers: { "Content-Type" => "text/event-stream" },
+        body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'やっと!' }] } }] }.to_json}\n\n" }
+    end
+    ask("are you slow today?")
+
+    begin
+      usual = EventStreaming.heartbeat_seconds
+      EventStreaming.heartbeat_seconds = 0.1
+      get conversation_reply_path(conversations(:lesson))
+    ensure
+      EventStreaming.heartbeat_seconds = usual
+    end
+
+    before_reply = response.body.split("event: chunk").first
+    assert_operator before_reply.scan(": waiting").size, :>=, 2, "expected heartbeats while Gemini was silent"
+    assert_match "event: done", response.body
+  end
+
+  test "the page has a notice ready for a slow reply" do
+    ask("hello?")
+
+    assert_includes response.body, "data-reply-stream-slow-value"
+    assert_includes response.body, ERB::Util.html_escape(I18n.t("messages.pending.slow"))
+  end
+
   # Pera's replies were not logged at all, so a reply of just "Hello" to "How
   # does this app work?" could not be told apart from one cut short. One line
   # per reply now says how long it was and why Gemini stopped.

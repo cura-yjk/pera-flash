@@ -100,9 +100,12 @@ learner keeps failing, which is the app's durable memory in place of unbounded h
 requests: `#create` saves what the learner wrote and hands back an empty bubble, then `#stream`
 sends the reply as server-sent events, consumed by `reply_stream_controller.js`. The stream sets
 `X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump), and
-opens with an SSE comment before Gemini is asked: Heroku drops a request with no first byte in 30s
-(H12), which is also ruby_llm's timeout, so a silent Gemini got the router's 503 instead of the
-app's own timeout notice. Note the
+opens with an SSE comment before Gemini is asked, then sends another every
+`EventStreaming.heartbeat_seconds` (15) while it waits (`while_waiting`, on its own thread). Heroku
+drops a response with no first byte in 30s (H12) or silent for 55s after that; on 2026-09-27
+Gemini took 29–80s to answer, so the reply waits `PeraReply::TIMEOUT` (90s) rather than the
+app-wide 30s — still one request. After 10s with no words the page swaps "ペラ is writing" for
+`messages.pending.slow`. Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping
 the lookup meant a 404 committed a 200 on its way out. Live runs *every* action of a controller
 that includes `EventStreaming` on its own thread, before_actions too, so Devise's `throw :warden`

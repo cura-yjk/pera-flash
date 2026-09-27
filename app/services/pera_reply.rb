@@ -24,6 +24,14 @@ class PeraReply
   # rather than returned, so the controller treats it as the failure it is.
   class Blocked < StandardError; end
 
+  # How long Pera waits for Gemini to say anything, in seconds. The app-wide
+  # 30s (config/initializers/ruby_llm.rb) was also Heroku's limit for a first
+  # byte, so waiting longer was pointless; the stream now opens at once and
+  # keeps talking (EventStreaming#while_waiting), and on 2026-09-27 every
+  # answer Gemini gave took 29 to 80 seconds. Waiting costs no quota -- it is
+  # still one request.
+  TIMEOUT = 90
+
   def initialize(conversation, question)
     @conversation = conversation
     @question = question
@@ -38,7 +46,7 @@ class PeraReply
   def call(&on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
-    reply = logged { LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) } }
+    reply = logged { LlmChat.with_chat(timeout: TIMEOUT) { |chat| collect(prepare(chat), &on_text) } }
     # After the log line, so it still says how far the reply got and why.
     raise Blocked, "Gemini stopped the reply: #{@response.finish_reason}" if @response&.content_filtered?
 

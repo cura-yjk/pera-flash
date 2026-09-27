@@ -14,6 +14,12 @@ module EventStreaming
   # Raised to unwind out of the streaming block when the client has gone.
   class Stop < StandardError; end
 
+  # How often a stream that is waiting on Gemini says something. Heroku ends a
+  # response that has been silent for 55 seconds, and on 2026-09-27 Gemini took
+  # 29 to 80 seconds to answer. A setting rather than a constant so a test can
+  # shorten it.
+  mattr_accessor :heartbeat_seconds, default: 15
+
   private
 
   # Live runs every action here on a thread of its own, before_actions
@@ -62,6 +68,28 @@ module EventStreaming
     response.stream.write(": open\n\n")
   rescue ActionController::Live::ClientDisconnected, IOError
     raise Stop
+  end
+
+  # Writes a comment every heartbeat_seconds for as long as the block runs, so
+  # the router never sees a silent response however long Gemini takes. From a
+  # thread of its own, because the request's thread is blocked inside the
+  # Gemini call. If the client has gone, the heartbeat just stops: the next
+  # write on the request's own thread notices and raises Stop.
+  def while_waiting
+    beating = Thread.new { heartbeat }
+    yield
+  ensure
+    beating&.kill
+    beating&.join
+  end
+
+  def heartbeat
+    loop do
+      sleep EventStreaming.heartbeat_seconds
+      response.stream.write(": waiting\n\n")
+    end
+  rescue ActionController::Live::ClientDisconnected, IOError
+    nil
   end
 
   # A client that has navigated away closes the socket mid-write; that is an

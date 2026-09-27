@@ -130,6 +130,77 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Yes!", conversations(:lesson).messages.order(:created_at).last.content
   end
 
+  # Twice in two days (2026-09-26, 2026-09-27) Gemini answered a plain
+  # question with one token and finish_reason content_filter, and "Hello" was
+  # saved as Pera's reply. A blocked reply is a failure: nothing is kept, and
+  # the learner can ask for it again.
+  test "a reply Gemini stops for its content filter is not saved" do
+    stub_llm_stream("Hello", finish: "SAFETY")
+    ask("What should I learn first?")
+
+    assert_no_difference -> { conversations(:lesson).messages.where(role: "assistant").count } do
+      get conversation_reply_path(conversations(:lesson))
+    end
+
+    html = JSON.parse(response.body[/^event: failed\ndata: (.*)$/, 1])["html"]
+    assert_includes html, ERB::Util.html_escape(I18n.t("failures.stopped"))
+    assert_includes html, "reply-stream#retry"
+    assert_no_match "event: done", response.body
+  end
+
+  test "a blocked reply is still logged with why it ended" do
+    stub_llm_stream("Hello", finish: "SAFETY")
+    ask("What should I learn first?")
+
+    log = capture_log { get conversation_reply_path(conversations(:lesson)) }
+
+    assert_match(/Pera reply for conversation \d+: 5 characters in \d+ms, finished: content_filter/, log)
+  end
+
+  # Heroku drops a request that has sent nothing after 30s (H12). The stream
+  # sent nothing until Gemini did, so a slow Gemini got the router's 503 and
+  # the page's generic notice rather than the app's own timeout, which says why.
+  test "the stream opens before the model is asked" do
+    stub_llm_stream_failure
+    ask("are you there?")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    assert response.body.start_with?(": "), "the stream should open with an SSE comment"
+    assert_match "event: failed", response.body
+  end
+
+  # On 2026-09-27 Gemini took 29 to 80 seconds to answer. Heroku ends a
+  # response that goes quiet for 55s, so the stream says something every
+  # heartbeat while it waits -- a comment, which the browser ignores.
+  test "the stream keeps talking while Gemini is slow" do
+    stub_request(:post, stream_url).to_return do
+      sleep 0.35
+      { status: 200, headers: { "Content-Type" => "text/event-stream" },
+        body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'やっと!' }] } }] }.to_json}\n\n" }
+    end
+    ask("are you slow today?")
+
+    begin
+      usual = EventStreaming.heartbeat_seconds
+      EventStreaming.heartbeat_seconds = 0.1
+      get conversation_reply_path(conversations(:lesson))
+    ensure
+      EventStreaming.heartbeat_seconds = usual
+    end
+
+    before_reply = response.body.split("event: chunk").first
+    assert_operator before_reply.scan(": waiting").size, :>=, 2, "expected heartbeats while Gemini was silent"
+    assert_match "event: done", response.body
+  end
+
+  test "the page has a notice ready for a slow reply" do
+    ask("hello?")
+
+    assert_includes response.body, "data-reply-stream-slow-value"
+    assert_includes response.body, ERB::Util.html_escape(I18n.t("messages.pending.slow"))
+  end
+
   # Pera's replies were not logged at all, so a reply of just "Hello" to "How
   # does this app work?" could not be told apart from one cut short. One line
   # per reply now says how long it was and why Gemini stopped.
@@ -320,9 +391,12 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     %r{\Ahttps://generativelanguage\.googleapis\.com/.*#{Regexp.escape(LlmChat::MODEL)}:streamGenerateContent}
   end
 
-  def stub_llm_stream(*chunks)
-    body = chunks.map do |text|
-      "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => text }] } }] }.to_json}\n\n"
+  # finish: Gemini's finishReason, carried on the last chunk as it is on the wire.
+  def stub_llm_stream(*chunks, finish: nil)
+    body = chunks.each_with_index.map do |text, index|
+      candidate = { "content" => { "parts" => [{ "text" => text }] } }
+      candidate["finishReason"] = finish if finish && index == chunks.size - 1
+      "data: #{{ 'candidates' => [candidate] }.to_json}\n\n"
     end.join
 
     stub_request(:post, stream_url)

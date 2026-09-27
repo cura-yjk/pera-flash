@@ -19,13 +19,17 @@ class LlmFailureTest < ActiveSupport::TestCase
     assert_equal :other, LlmFailure.reason(Faraday::ConnectionFailed.new("execution expired"))
   end
 
+  test "a reply Gemini blocked is stopped" do
+    assert_equal :stopped, LlmFailure.reason(PeraReply::Blocked.new("content_filter"))
+  end
+
   test "anything else is other" do
     assert_equal :other, LlmFailure.reason(RubyLLM::BadRequestError.new("bad"))
     assert_equal :other, LlmFailure.reason(RuntimeError.new("boom"))
   end
 
   test "every reason has an explanation" do
-    %i[overloaded rate_limited timeout other].each do |reason|
+    %i[overloaded rate_limited timeout stopped other].each do |reason|
       assert I18n.exists?("failures.#{reason}"), "failures.#{reason} is missing from en.yml"
     end
   end

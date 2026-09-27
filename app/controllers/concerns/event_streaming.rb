@@ -14,6 +14,12 @@ module EventStreaming
   # Raised to unwind out of the streaming block when the client has gone.
   class Stop < StandardError; end
 
+  # How often a stream that is waiting on Gemini says something. Heroku ends a
+  # response that has been silent for 55 seconds, and on 2026-09-27 Gemini took
+  # 29 to 80 seconds to answer. A setting rather than a constant so a test can
+  # shorten it.
+  mattr_accessor :heartbeat_seconds, default: 15
+
   private
 
   # Live runs every action here on a thread of its own, before_actions
@@ -47,6 +53,43 @@ module EventStreaming
     response.headers["Content-Type"] = "text/event-stream"
     response.headers["Cache-Control"] = "no-cache"
     response.headers["X-Accel-Buffering"] = "no"
+  end
+
+  # Heroku's router drops a request that has sent nothing within 30 seconds
+  # (H12), and a Pera reply sent nothing until Gemini's first word. On
+  # 2026-09-27 Gemini was silent for 30s, so the router's 503 reached the page
+  # at the same moment ruby_llm's own timeout fired, and the learner got the
+  # generic notice rather than the one saying Gemini took too long. A comment
+  # line -- which EventSource ignores -- commits the response first; after
+  # that the router allows 55s between writes. Card generation gets the same
+  # from the empty preview it sends before asking.
+  def open_event_stream
+    prepare_event_stream
+    response.stream.write(": open\n\n")
+  rescue ActionController::Live::ClientDisconnected, IOError
+    raise Stop
+  end
+
+  # Writes a comment every heartbeat_seconds for as long as the block runs, so
+  # the router never sees a silent response however long Gemini takes. From a
+  # thread of its own, because the request's thread is blocked inside the
+  # Gemini call. If the client has gone, the heartbeat just stops: the next
+  # write on the request's own thread notices and raises Stop.
+  def while_waiting
+    beating = Thread.new { heartbeat }
+    yield
+  ensure
+    beating&.kill
+    beating&.join
+  end
+
+  def heartbeat
+    loop do
+      sleep EventStreaming.heartbeat_seconds
+      response.stream.write(": waiting\n\n")
+    end
+  rescue ActionController::Live::ClientDisconnected, IOError
+    nil
   end
 
   # A client that has navigated away closes the socket mid-write; that is an

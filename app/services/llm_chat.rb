@@ -6,7 +6,11 @@
 # default the gem happened to ship, so a bundle update could change the model
 # with no deploy and no diff.
 module LlmChat
-  MODEL = "gemini-3.5-flash"
+  # 3.8 rather than 3.5 since 2026-09-27. 3.5-flash answered "experiencing
+  # high demand" (503) for much of 2026-09-25 to 09-27, and Google now answers
+  # a request for an older Flash with "use models/gemini-3.8-flash" -- the
+  # free tier is steered to the newest model, and older ones get what is left.
+  MODEL = "gemini-3.8-flash"
   PROVIDER = :gemini
 
   # Thinking off. Measured against the chat prompt, with thinking on:

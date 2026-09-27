@@ -60,7 +60,7 @@ Two classes in `app/models/` are **not** ActiveRecord:
   Kaminari or Pagy; don't add one without replacing this.
 
 **LLM usage (`LlmChat` -> `PeraPrompt` -> `PeraReply`)**: `LlmChat`
-(`app/services/llm_chat.rb`) is the single place that names a model — `gemini-3.5-flash` on
+(`app/services/llm_chat.rb`) is the single place that names a model — `gemini-3.8-flash` on
 `:gemini`, with thinking explicitly disabled (`thinkingBudget: 0`; the comment there records the
 measured latency difference). Everything calls `LlmChat.with_chat { |chat| ... }`, never
 `RubyLLM.chat` directly, so changing model or provider is a one-file change.

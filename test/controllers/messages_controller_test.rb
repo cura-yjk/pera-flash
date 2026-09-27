@@ -201,6 +201,22 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, ERB::Util.html_escape(I18n.t("messages.pending.slow"))
   end
 
+  # The learner sees one answer, not a failure and a Try again, when Gemini
+  # is busy the first time.
+  test "a busy Gemini is asked again, and the answer arrives" do
+    stub_request(:post, stream_url)
+      .to_return(status: 503, body: { error: { message: "high demand" } }.to_json).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
+                 body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'やっと!' }] } }] }.to_json}\n\n")
+    ask("are you busy?")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    assert_no_match "event: failed", response.body
+    assert_match "event: done", response.body
+    assert_equal "やっと!", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
   # Pera's replies were not logged at all, so a reply of just "Hello" to "How
   # does this app work?" could not be told apart from one cut short. One line
   # per reply now says how long it was and why Gemini stopped.

@@ -26,6 +26,9 @@ $btn-radius: 0.5rem;
   cursor: pointer;
 
   background-color: $pera-green;
+  // A dark label in both themes. Bootstrap takes a button's label colour from
+  // the body text, which dark mode makes light -- 2.68:1 on this green.
+  --bs-btn-color: #{$gray};
 }
 
 .pera-btn:hover {

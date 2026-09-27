@@ -13,18 +13,49 @@
   // Bootstrap's own muted grey is #6C757D, which is 4.26:1 here -- already
   // under the bar before dark mode is involved.
   --text-muted: #5A5A5A;
+  --text-warning: #664D03;
 
   --surface: #FFFFFF;
   --surface-border: rgba(0, 0, 0, 0.12);
+
+  // Bootstrap's own colour variables, pointed at the tokens above. Everything
+  // Bootstrap draws reads these, and none of them followed the theme: a hint
+  // under a field (.form-text) was near-black on the dark background, links
+  // kept Bootstrap's blue at 2.38:1, and a field marked valid turned $green
+  // (#1EDD88), 1.66:1 on the light one. Setting the variables fixes every
+  // component that uses them rather than one rule per class.
+  --bs-secondary-color: var(--text-muted);
+  --bs-link-color-rgb: 28, 115, 94;         // $pera-green-text
+  --bs-link-hover-color-rgb: 20, 84, 69;
+  --bs-form-valid-color: #{$pera-green-text};
+  --bs-form-valid-border-color: #{$pera-green-text};
+  // $red (#FD1015) as text: 3.8:1 here, 2.7:1 on the dark background.
+  --bs-form-invalid-color: #B02A37;
+  --text-danger: #B02A37;
 }
 
 .dark-mode {
   --text-body: #EBFFFA;
   --text-brand: #{$pera-green-text-dark};
   --text-muted: #C2C2C2;
+  // Bootstrap's own dark-theme value for its warning text.
+  --text-warning: #FFDA6A;
 
   --surface: #4A4A4A;
   --surface-border: rgba(255, 255, 255, 0.14);
+
+  --bs-body-color: var(--text-body);
+  --bs-body-color-rgb: 235, 255, 250;
+  // Again here, not only on :root: a variable that names another is resolved
+  // where it is declared, so :root's would carry the light theme's grey.
+  --bs-secondary-color: var(--text-muted);
+  --bs-link-color-rgb: 49, 196, 161;        // $pera-green-text-dark
+  --bs-link-hover-color-rgb: 124, 222, 200; // $pearl-aqua
+  --bs-form-valid-color: #{$pera-green-text-dark};
+  --bs-form-valid-border-color: #{$pera-green-text-dark};
+  // Lighter than Bootstrap's dark-theme #EA868F, which is 4.23:1 here.
+  --bs-form-invalid-color: #F1AEB5;
+  --text-danger: #F1AEB5;
 
   background-color: #3E3E3E;
   color: var(--text-body);
@@ -90,6 +121,17 @@
 
 .text-body-secondary {
   color: var(--text-muted) !important;
+}
+
+// "Already in your flashcards" on a generated card: Bootstrap's dark brown,
+// barely visible on the dark background.
+.text-warning-emphasis {
+  color: var(--text-warning) !important;
+}
+
+// A deck form's errors.
+.text-danger {
+  color: var(--text-danger) !important;
 }
 
 // A quiz option holds the answer, and the furigana inside it inherits this

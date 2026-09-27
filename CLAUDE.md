@@ -76,12 +76,17 @@ credential for a provider the app is **not** pointed at — don't infer the prov
 one request. ruby_llm's default retried timeouts, 5xx and 429s three more times, so a single tap on
 a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
 timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
-retry and still happens. Note Google applies free-tier limits per *project*, so keys created in the
+retry and still happens. **One exception, chat replies only:** a 503 "high demand" is asked again
+up to `PeraReply::BUSY_RETRIES` (3) times, after pauses of 3, 8 and 15s, inside the reply's 90s — on 2026-09-27 that
+was most failures, and moodwalk, on the same model, got its answers only through ruby_llm's
+default retries. Timeouts and other errors are still not retried. Note Google applies free-tier limits per *project*, so keys created in the
 same project share one allowance and rotating between them gains nothing.
 
 **When Gemini fails**, `LlmFailure.reason` sorts the error into `overloaded` (503), `rate_limited`
 (429 — per-minute or daily, which the error doesn't reliably say, so the copy covers both),
-`timeout` (a read timeout; a connection that never opens is `other`) or `other`, and the learner is
+`timeout` (a read timeout; a connection that never opens is `other`), `stopped` (Gemini ended the
+reply itself — `finish_reason` `content_filter`, raised as `PeraReply::Blocked` so the one-token
+"Hello" it produced is never saved as Pera's answer) or `other`, and the learner is
 told that (`failures.*` in `en.yml`) with a **Try again** button. For a chat reply, Try again reopens
 the reply stream, which answers the question already saved — never resend it. A generation that
 works but finds nothing to card is not a failure: it says so and marks the batch carded. Every
@@ -97,14 +102,21 @@ learner keeps failing, which is the app's durable memory in place of unbounded h
 **Streaming replies**: `MessagesController` includes `ActionController::Live`. The exchange is two
 requests: `#create` saves what the learner wrote and hands back an empty bubble, then `#stream`
 sends the reply as server-sent events, consumed by `reply_stream_controller.js`. The stream sets
-`X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump). Note the
+`X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump), and
+opens with an SSE comment before Gemini is asked, then sends another every
+`EventStreaming.heartbeat_seconds` (15) while it waits (`while_waiting`, on its own thread). Heroku
+drops a response with no first byte in 30s (H12) or silent for 55s after that; on 2026-09-27
+Gemini took 29–80s to answer, so the reply waits `PeraReply::TIMEOUT` (90s) rather than the
+app-wide 30s — still one request. After 10s with no words the page swaps "ペラ is writing" for
+`messages.pending.slow`. Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping
 the lookup meant a 404 committed a 200 on its way out. Live runs *every* action of a controller
 that includes `EventStreaming` on its own thread, before_actions too, so Devise's `throw :warden`
 escapes Warden: `EventStreaming#authenticate_user!` catches it and answers with Devise's failure
 app. Controller tests can't see this (Rails runs Live inline under test);
 `test/integration/signed_out_streaming_test.rb` puts the real thread back. Each event carries the whole reply-so-far,
-not a delta, so a mid-exchange key retry redraws instead of doubling the text. The browser does not
+not a delta — `PeraReply` yields it that way — so a busy retry or a key swap redraws instead of
+doubling the text. The browser does not
 show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed
 set by the backlog, with the newest characters fading in, and swaps in the finished message only
 once the reveal catches up. Sending scrolls the question up under the navbar once and holds a

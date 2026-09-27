@@ -2,18 +2,20 @@
     the finished message -- rendered server-side, because markdown and furigana
     cannot be rendered from a half-written string.
 
-    The failure notice goes into an attribute, so .to_str: rendered HTML is
+    The failure notice, and the line shown when Gemini is slow, go into
+    attributes, so .to_str: rendered HTML is
     marked safe and would go in unescaped, its quotes ending the attribute
     early and the rest spilling into the page as a stray notice and a "> . %>
 <div data-controller="reply-stream"
      data-reply-stream-url-value="<%= conversation_reply_path(conversation) %>"
-     data-reply-stream-failed-value="<%= render("messages/reply_failed").to_str %>">
+     data-reply-stream-failed-value="<%= render("messages/reply_failed").to_str %>"
+     data-reply-stream-slow-value="<%= render("messages/writing", label: t(".slow")).to_str %>">
   <%= image_tag "pera.png", alt: "Pera", id: "pera-chat" %>
   <div class="d-flex justify-content-start mb-5">
     <div class="px-3 pb-0 pt-3 assistant-message my-4">
       <div class="streaming-text" data-reply-stream-target="text"></div>
       <p class="mb-0 pera-green" data-reply-stream-target="cursor">
-        <i class="fa-solid fa-pen-nib"></i> <%= t(".writing") %><span class="writing-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+        <%= render "messages/writing", label: t(".writing") %>
       </p>
     </div>
   </div>

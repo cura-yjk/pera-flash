@@ -15,6 +15,11 @@ const MIN_SPEED = 40
 const FADE_CHARACTERS = 20
 const FADE_STEP = 4
 
+// How long to wait for the first words before saying Gemini is slow. With
+// thinking off they normally arrive in a second or two; on 2026-09-27 they
+// took 29 to 80 seconds, and a bare "is writing" for that long looks frozen.
+const SLOW_AFTER_MS = 10000
+
 // Streams Pera's reply into the page as it is generated.
 //
 // Each update arrives already rendered -- markdown, tables and furigana -- so
@@ -25,7 +30,7 @@ const FADE_STEP = 4
 // with it is choose how much of it to show.
 export default class extends Controller {
   static targets = ["text", "cursor", "more"]
-  static values = { url: String, failed: String }
+  static values = { url: String, failed: String, slow: String }
 
   connect() {
     // Nothing stopped a second message being sent while the first was still
@@ -51,6 +56,7 @@ export default class extends Controller {
     this.lastFrame = null
 
     this.source = new EventSource(this.urlValue)
+    this.slowTimer = setTimeout(() => this.showSlow(), SLOW_AFTER_MS)
 
     this.source.addEventListener("chunk", (event) => this.append(event))
     this.source.addEventListener("done", (event) => this.finish(event))
@@ -128,7 +134,16 @@ export default class extends Controller {
     question.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
+  // Only while nothing has arrived: once the words start, "is writing" is
+  // true again.
+  showSlow() {
+    if (this.total === 0 && this.slowValue) this.cursorTarget.innerHTML = this.slowValue
+  }
+
   append(event) {
+    this.stopSlowTimer()
+    if (this.total === 0) this.cursorTarget.innerHTML = this.writing
+
     const { html } = JSON.parse(event.data)
     const before = this.reply.textContent
 
@@ -244,8 +259,14 @@ export default class extends Controller {
   }
 
   close() {
+    this.stopSlowTimer()
     this.source?.close()
     this.source = null
+  }
+
+  stopSlowTimer() {
+    clearTimeout(this.slowTimer)
+    this.slowTimer = null
   }
 }
 

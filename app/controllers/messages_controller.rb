@@ -46,8 +46,6 @@ class MessagesController < ApplicationController
 
     return head :no_content if question.nil?
 
-    prepare_event_stream
-
     # The ensure belongs to the streaming, not to the whole action: wrapping the
     # lookup above meant a 404 closed the stream on its way out, committing a
     # 200 before the RecordNotFound could be turned into a response.
@@ -71,16 +69,8 @@ class MessagesController < ApplicationController
   # message rendered properly -- markdown, tables and furigana, which cannot be
   # rendered from a half-finished string mid-stream.
   def stream_reply(question)
-    reply = +""
-
-    finish_reply(PeraReply.new(@conversation, question).call do |text|
-      reply << text
-      # Re-rendered each update rather than sent as plain text: watching raw
-      # markdown scroll past and then be rewritten is worse than a table that
-      # is briefly one row short. Costs a few milliseconds and keeps one
-      # rendering path, so what streams in is what gets kept.
-      send_event("chunk", html: helpers.chat_html(reply))
-    end)
+    open_event_stream
+    finish_reply(while_waiting { streamed_reply(question) })
   rescue Stop
     # The student navigated away mid-reply. Nothing to report and nothing to
     # save -- the next thing they send starts a fresh exchange.
@@ -90,6 +80,16 @@ class MessagesController < ApplicationController
     # it: they are told why, and can try again for the same question.
     Rails.logger.error("Pera could not reply in conversation #{@conversation.id}: #{e.class}: #{e.message}")
     send_event("failed", html: reply_failed_html(LlmFailure.reason(e)))
+  end
+
+  def streamed_reply(question)
+    PeraReply.new(@conversation, question).call do |reply|
+      # Re-rendered each update rather than sent as plain text: watching raw
+      # markdown scroll past and then be rewritten is worse than a table that
+      # is briefly one row short. Costs a few milliseconds and keeps one
+      # rendering path, so what streams in is what gets kept.
+      send_event("chunk", html: helpers.chat_html(reply))
+    end
   end
 
   def reply_failed_html(reason)

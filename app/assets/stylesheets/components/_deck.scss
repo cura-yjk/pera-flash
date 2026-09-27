@@ -15,6 +15,10 @@
 
   background-color: $pera-green;
   border-radius: 50rem;
+
+  // .badge makes its number white, 2.78:1 on this green. The green buttons
+  // carry dark labels on the same fill, and so does this.
+  color: $gray;
 }
 
 // Enough to read as a card rather than a list row, with a name and a count to

@@ -7,6 +7,10 @@
 #
 # A 429 can mean the per-minute limit or the day's allowance, and the error
 # does not reliably say which, so rate_limited is worded to cover both.
+#
+# stopped is Gemini ending a reply itself (PeraReply::Blocked). It has done so
+# to questions as plain as "What should I learn first?", so the copy does not
+# accuse the learner of asking something they shouldn't.
 module LlmFailure
   module_function
 
@@ -15,6 +19,7 @@ module LlmFailure
     when RubyLLM::ServiceUnavailableError, RubyLLM::OverloadedError then :overloaded
     when RubyLLM::RateLimitError then :rate_limited
     when Faraday::TimeoutError then :timeout
+    when PeraReply::Blocked then :stopped
     else :other
     end
   end

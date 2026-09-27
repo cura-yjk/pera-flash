@@ -225,5 +225,6 @@ en:
     overloaded: "Gemini, the AI behind Pera, is busy right now. Try again in a minute."
     rate_limited: "Pera has reached its request limit for now. Try again in a minute — if it still fails, today's allowance is used up and resets at 16:00 JST."
     timeout: "Gemini took too long to answer. Try again in a moment."
+    stopped: "Gemini stopped before Pera could answer. Try again in a moment."
     other: "Pera couldn't be reached. Try again in a moment."
     try_again: "Try again"

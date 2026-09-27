@@ -17,6 +17,13 @@ class PeraReply
   # about teaching rather than becoming a list of failures.
   STRUGGLING_LIMIT = 5
 
+  # Gemini stopped the reply itself -- finish_reason content_filter, which
+  # ruby_llm also uses for RECITATION and the like. On 2026-09-26 and again on
+  # 2026-09-27 it did so one token in, to "How does this app work?" and "What
+  # should I learn first?", and "Hello" was saved as Pera's answer. Raised
+  # rather than returned, so the controller treats it as the failure it is.
+  class Blocked < StandardError; end
+
   def initialize(conversation, question)
     @conversation = conversation
     @question = question
@@ -31,7 +38,11 @@ class PeraReply
   def call(&on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
-    logged { LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) } }
+    reply = logged { LlmChat.with_chat { |chat| collect(prepare(chat), &on_text) } }
+    # After the log line, so it still says how far the reply got and why.
+    raise Blocked, "Gemini stopped the reply: #{@response.finish_reason}" if @response&.content_filtered?
+
+    reply
   end
 
   private

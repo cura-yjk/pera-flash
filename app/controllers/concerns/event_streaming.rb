@@ -49,6 +49,21 @@ module EventStreaming
     response.headers["X-Accel-Buffering"] = "no"
   end
 
+  # Heroku's router drops a request that has sent nothing within 30 seconds
+  # (H12), and a Pera reply sent nothing until Gemini's first word. On
+  # 2026-09-27 Gemini was silent for 30s, so the router's 503 reached the page
+  # at the same moment ruby_llm's own timeout fired, and the learner got the
+  # generic notice rather than the one saying Gemini took too long. A comment
+  # line -- which EventSource ignores -- commits the response first; after
+  # that the router allows 55s between writes. Card generation gets the same
+  # from the empty preview it sends before asking.
+  def open_event_stream
+    prepare_event_stream
+    response.stream.write(": open\n\n")
+  rescue ActionController::Live::ClientDisconnected, IOError
+    raise Stop
+  end
+
   # A client that has navigated away closes the socket mid-write; that is an
   # ordinary end to a stream, not an error worth reporting.
   def send_event(name, payload)

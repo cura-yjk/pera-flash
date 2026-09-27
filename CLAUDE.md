@@ -81,7 +81,9 @@ same project share one allowance and rotating between them gains nothing.
 
 **When Gemini fails**, `LlmFailure.reason` sorts the error into `overloaded` (503), `rate_limited`
 (429 — per-minute or daily, which the error doesn't reliably say, so the copy covers both),
-`timeout` (a read timeout; a connection that never opens is `other`) or `other`, and the learner is
+`timeout` (a read timeout; a connection that never opens is `other`), `stopped` (Gemini ended the
+reply itself — `finish_reason` `content_filter`, raised as `PeraReply::Blocked` so the one-token
+"Hello" it produced is never saved as Pera's answer) or `other`, and the learner is
 told that (`failures.*` in `en.yml`) with a **Try again** button. For a chat reply, Try again reopens
 the reply stream, which answers the question already saved — never resend it. A generation that
 works but finds nothing to card is not a failure: it says so and marks the batch carded. Every
@@ -97,7 +99,10 @@ learner keeps failing, which is the app's durable memory in place of unbounded h
 **Streaming replies**: `MessagesController` includes `ActionController::Live`. The exchange is two
 requests: `#create` saves what the learner wrote and hands back an empty bubble, then `#stream`
 sends the reply as server-sent events, consumed by `reply_stream_controller.js`. The stream sets
-`X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump). Note the
+`X-Accel-Buffering: no` (without it the proxy buffers and the reply arrives as one lump), and
+opens with an SSE comment before Gemini is asked: Heroku drops a request with no first byte in 30s
+(H12), which is also ruby_llm's timeout, so a silent Gemini got the router's 503 instead of the
+app's own timeout notice. Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping
 the lookup meant a 404 committed a 200 on its way out. Live runs *every* action of a controller
 that includes `EventStreaming` on its own thread, before_actions too, so Devise's `throw :warden`

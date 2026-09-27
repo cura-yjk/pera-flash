@@ -96,6 +96,36 @@ class PeraReplyTest < ActiveSupport::TestCase
     assert_equal [3, 8, 15], slept
   end
 
+  # Gemini can send part of an answer and then "busy" in the same stream. Asked
+  # again, it writes a different answer -- and the half already on screen was
+  # silently rewound and overwritten (2026-09-28), which looked like a glitch.
+  # The caller is told, so the page can say so.
+  test "says when an answer starts over after some of it was shown" do
+    stub_request(:post, STREAM_URL)
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
+                 body: sse("The first half") + busy_in_stream).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("A whole answer."))
+
+    events = []
+    reply = PeraReply.new(@conversation, @question)
+                     .call(on_restart: -> { events << :restart }) { |so_far| events << so_far }
+
+    assert_equal ["The first half", :restart, "A whole answer."], events
+    assert_equal "A whole answer.", reply
+  end
+
+  # Busy before a word was written is invisible to the learner: nothing to redo.
+  test "does not announce a restart when nothing had been shown" do
+    stub_request(:post, STREAM_URL)
+      .to_return(busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("ok"))
+
+    restarts = 0
+    PeraReply.new(@conversation, @question).call(on_restart: -> { restarts += 1 }) { |_| }
+
+    assert_equal 0, restarts
+  end
+
   # Only "busy" is worth asking again straight away. A timeout has already
   # spent its wait, and a bad request would fail the same way again.
   test "does not ask again after a timeout" do
@@ -221,6 +251,12 @@ class PeraReplyTest < ActiveSupport::TestCase
   def busy
     { status: 503, headers: { "Content-Type" => "application/json" },
       body: { error: { code: 503, message: "This model is currently experiencing high demand." } }.to_json }
+  end
+
+  # How Gemini reports an error partway through a stream that began with 200.
+  def busy_in_stream
+    "data: #{{ 'error' => { 'code' => 503, 'message' => 'This model is currently experiencing high demand.',
+                            'status' => 'UNAVAILABLE' } }.to_json}\n\n"
   end
 
   def sse(*chunks)

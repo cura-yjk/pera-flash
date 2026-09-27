@@ -83,7 +83,9 @@ class MessagesController < ApplicationController
   end
 
   def streamed_reply(question)
-    PeraReply.new(@conversation, question).call do |reply|
+    restart = -> { send_event("restart", {}) }
+
+    PeraReply.new(@conversation, question).call(on_restart: restart) do |reply|
       # Re-rendered each update rather than sent as plain text: watching raw
       # markdown scroll past and then be rewritten is worse than a table that
       # is briefly one row short. Costs a few milliseconds and keeps one

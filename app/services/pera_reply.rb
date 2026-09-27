@@ -61,9 +61,16 @@ class PeraReply
   # The reply so far rather than each new piece: a busy Gemini is asked again,
   # and a key out of quota is swapped for the next (LlmChat), and either way the
   # reply starts over. A caller adding pieces up would show it twice.
-  def call(&on_text)
+  #
+  # on_restart is called when an answer starts over after some of it was
+  # yielded: Gemini can write half an answer and then say "busy" in the same
+  # stream, and asked again it writes a different one. Without being told, the
+  # page rewound the half on screen and wrote over it (2026-09-28), which
+  # looked like a glitch.
+  def call(on_restart: nil, &on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
+    @on_restart = on_restart
     reply = logged { answer(&on_text) }
     # After the log line, so it still says how far the reply got and why.
     raise Blocked, "Gemini stopped the reply: #{@response.finish_reason}" if @response&.content_filtered?
@@ -126,6 +133,7 @@ class PeraReply
   end
 
   def collect(chat)
+    started_over
     reply = +""
 
     @response = chat.ask(@question.content) do |chunk|
@@ -133,10 +141,20 @@ class PeraReply
       next if text.empty?
 
       reply << text
+      @shown = true
       yield reply.dup
     end
 
     reply
+  end
+
+  # Each attempt begins in collect, so an earlier one having shown text means
+  # this one is starting over.
+  def started_over
+    return unless @shown
+
+    @shown = false
+    @on_restart&.call
   end
 
   # The newest MAX_HISTORY_MESSAGES, replayed oldest-first.

@@ -116,7 +116,10 @@ escapes Warden: `EventStreaming#authenticate_user!` catches it and answers with 
 app. Controller tests can't see this (Rails runs Live inline under test);
 `test/integration/signed_out_streaming_test.rb` puts the real thread back. Each event carries the whole reply-so-far,
 not a delta — `PeraReply` yields it that way — so a busy retry or a key swap redraws instead of
-doubling the text. The browser does not
+doubling the text. When an attempt starts over after some text was shown (Gemini can send half an
+answer and then a 503 in the same stream), `PeraReply` calls `on_restart` and the stream sends a
+`restart` event: the page clears the half and says Gemini stopped partway
+(`messages.pending.restarted`), instead of rewinding it in place. The browser does not
 show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed
 set by the backlog, with the newest characters fading in, and swaps in the finished message only
 once the reveal catches up. Sending scrolls the question up under the navbar once and holds a

@@ -43,14 +43,68 @@ class PeraReplyTest < ActiveSupport::TestCase
     assert_operator PeraReply::TIMEOUT, :>, RubyLLM.config.request_timeout
   end
 
-  test "yields the reply in pieces and returns the whole of it" do
+  # The reply so far, not each new piece: when Gemini is asked again the reply
+  # starts over, and a caller adding pieces up would show it twice.
+  test "yields the reply so far as it grows, and returns the whole of it" do
     stub_gemini("猫が", "好きです。", " Nicely done!")
 
-    pieces = []
-    whole = PeraReply.new(@conversation, @question).call { |text| pieces << text }
+    updates = []
+    whole = PeraReply.new(@conversation, @question).call { |so_far| updates << so_far }
 
-    assert_equal ["猫が", "好きです。", " Nicely done!"], pieces
+    assert_equal ["猫が", "猫が好きです。", "猫が好きです。 Nicely done!"], updates
     assert_equal "猫が好きです。 Nicely done!", whole
+  end
+
+  # --- when Gemini is busy ------------------------------------------------------
+
+  # "Experiencing high demand" (503) was most of the failures on 2026-09-27,
+  # and moodwalk -- same model, same evening -- got its answers by asking again.
+  test "asks again when Gemini is busy" do
+    stub_request(:post, STREAM_URL)
+      .to_return(busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("やっと!"))
+
+    reply = PeraReply.new(@conversation, @question).call { |_| }
+
+    assert_equal "やっと!", reply
+    assert_requested :post, STREAM_URL, times: 2
+  end
+
+  test "gives up after a few busy answers" do
+    stub_request(:post, STREAM_URL).to_return(busy)
+
+    assert_raises(RubyLLM::ServiceUnavailableError) { PeraReply.new(@conversation, @question).call { |_| } }
+    assert_requested :post, STREAM_URL, times: 1 + PeraReply::BUSY_RETRIES
+  end
+
+  # Only "busy" is worth asking again straight away. A timeout has already
+  # spent its wait, and a bad request would fail the same way again.
+  test "does not ask again after a timeout" do
+    stub_request(:post, STREAM_URL).to_raise(Faraday::TimeoutError.new("Net::ReadTimeout"))
+
+    assert_raises(Faraday::TimeoutError) { PeraReply.new(@conversation, @question).call { |_| } }
+    assert_requested :post, STREAM_URL, times: 1
+  end
+
+  # The learner is watching the whole time, so the retries share one budget.
+  test "does not ask again once the wait has run out" do
+    stub_request(:post, STREAM_URL).to_return do
+      travel PeraReply::TIMEOUT.seconds
+      busy
+    end
+
+    assert_raises(RubyLLM::ServiceUnavailableError) { PeraReply.new(@conversation, @question).call { |_| } }
+    assert_requested :post, STREAM_URL, times: 1
+  end
+
+  test "each busy answer is logged" do
+    stub_request(:post, STREAM_URL)
+      .to_return(busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("ok"))
+
+    log = capture_log { PeraReply.new(@conversation, @question).call { |_| } }
+
+    assert_match(/Gemini busy for conversation \d+ \(attempt 1 of #{1 + PeraReply::BUSY_RETRIES}\)/, log)
   end
 
   test "does not yield empty chunks" do
@@ -59,7 +113,7 @@ class PeraReplyTest < ActiveSupport::TestCase
     pieces = []
     PeraReply.new(@conversation, @question).call { |text| pieces << text }
 
-    assert_equal ["猫", "が好き"], pieces
+    assert_equal ["猫", "猫が好き"], pieces
   end
 
   test "replays the conversation oldest first" do
@@ -145,6 +199,25 @@ class PeraReplyTest < ActiveSupport::TestCase
 
   # One SSE frame per chunk, which is Gemini's streaming wire format. The
   # request is captured on the way past: it is the thing under test.
+  def busy
+    { status: 503, headers: { "Content-Type" => "application/json" },
+      body: { error: { code: 503, message: "This model is currently experiencing high demand." } }.to_json }
+  end
+
+  def sse(*chunks)
+    chunks.map { |text| "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => text }] } }] }.to_json}\n\n" }.join
+  end
+
+  def capture_log
+    output = StringIO.new
+    original = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(output)
+    yield
+    output.string
+  ensure
+    Rails.logger = original
+  end
+
   def stub_gemini(*chunks)
     body = chunks.map do |text|
       "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => text }] } }] }.to_json}\n\n"

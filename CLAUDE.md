@@ -76,7 +76,10 @@ credential for a provider the app is **not** pointed at — don't infer the prov
 one request. ruby_llm's default retried timeouts, 5xx and 429s three more times, so a single tap on
 a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
 timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
-retry and still happens. Note Google applies free-tier limits per *project*, so keys created in the
+retry and still happens. **One exception, chat replies only:** a 503 "high demand" is asked again
+up to `PeraReply::BUSY_RETRIES` (3) times, 2s apart, inside the reply's 90s — on 2026-09-27 that
+was most failures, and moodwalk, on the same model, got its answers only through ruby_llm's
+default retries. Timeouts and other errors are still not retried. Note Google applies free-tier limits per *project*, so keys created in the
 same project share one allowance and rotating between them gains nothing.
 
 **When Gemini fails**, `LlmFailure.reason` sorts the error into `overloaded` (503), `rate_limited`
@@ -112,7 +115,8 @@ that includes `EventStreaming` on its own thread, before_actions too, so Devise'
 escapes Warden: `EventStreaming#authenticate_user!` catches it and answers with Devise's failure
 app. Controller tests can't see this (Rails runs Live inline under test);
 `test/integration/signed_out_streaming_test.rb` puts the real thread back. Each event carries the whole reply-so-far,
-not a delta, so a mid-exchange key retry redraws instead of doubling the text. The browser does not
+not a delta — `PeraReply` yields it that way — so a busy retry or a key swap redraws instead of
+doubling the text. The browser does not
 show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed
 set by the backlog, with the newest characters fading in, and swaps in the finished message only
 once the reveal catches up. Sending scrolls the question up under the navbar once and holds a

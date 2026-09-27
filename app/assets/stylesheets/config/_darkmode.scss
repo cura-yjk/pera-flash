@@ -81,6 +81,17 @@
   color: var(--text-muted) !important;
 }
 
+// And the two meant to read as ordinary text. .text-body stayed Bootstrap's
+// near-black on the dark background: the "Pera couldn't reply" notice, which
+// sets it to escape the green of "ペラ is writing", was unreadable there.
+.text-body {
+  color: var(--text-body) !important;
+}
+
+.text-body-secondary {
+  color: var(--text-muted) !important;
+}
+
 // A quiz option holds the answer, and the furigana inside it inherits this
 // colour -- so Bootstrap's secondary grey at 4.37:1 took the readings down
 // with it. The border keeps the outline look; only the text changes.

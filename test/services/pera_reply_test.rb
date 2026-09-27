@@ -77,6 +77,25 @@ class PeraReplyTest < ActiveSupport::TestCase
     assert_requested :post, STREAM_URL, times: 1 + PeraReply::BUSY_RETRIES
   end
 
+  # A flat 2s used all four attempts in under ten seconds, shorter than Gemini
+  # stays busy.
+  test "waits longer before each busy retry" do
+    stub_request(:post, STREAM_URL).to_return(busy)
+    reply = PeraReply.new(@conversation, @question)
+    slept = []
+    reply.define_singleton_method(:sleep) { |seconds| slept << seconds }
+
+    begin
+      usual = PeraReply.busy_pauses
+      PeraReply.busy_pauses = [3, 8, 15]
+      assert_raises(RubyLLM::ServiceUnavailableError) { reply.call { |_| } }
+    ensure
+      PeraReply.busy_pauses = usual
+    end
+
+    assert_equal [3, 8, 15], slept
+  end
+
   # Only "busy" is worth asking again straight away. A timeout has already
   # spent its wait, and a bad request would fail the same way again.
   test "does not ask again after a timeout" do

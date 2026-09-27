@@ -77,7 +77,7 @@ one request. ruby_llm's default retried timeouts, 5xx and 429s three more times,
 a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
 timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
 retry and still happens. **One exception, chat replies only:** a 503 "high demand" is asked again
-up to `PeraReply::BUSY_RETRIES` (3) times, 2s apart, inside the reply's 90s — on 2026-09-27 that
+up to `PeraReply::BUSY_RETRIES` (3) times, after pauses of 3, 8 and 15s, inside the reply's 90s — on 2026-09-27 that
 was most failures, and moodwalk, on the same model, got its answers only through ruby_llm's
 default retries. Timeouts and other errors are still not retried. Note Google applies free-tier limits per *project*, so keys created in the
 same project share one allowance and rotating between them gains nothing.

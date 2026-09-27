@@ -45,8 +45,11 @@ class PeraReply
   BUSY_RETRIES = 3
   MIN_ATTEMPT_SECONDS = 10
 
-  # The pause before asking again. A setting so the tests need not sleep.
-  cattr_accessor :busy_pause_seconds, default: 2
+  # The pause before each retry, growing. A flat 2s spent all four attempts in
+  # under ten seconds (2026-09-27, locally) -- shorter than Gemini stays busy --
+  # while Try again forty seconds later was answered. These spread them over
+  # about thirty. A setting so the tests need not sleep.
+  cattr_accessor :busy_pauses, default: [3, 8, 15]
 
   def initialize(conversation, question)
     @conversation = conversation
@@ -89,7 +92,7 @@ class PeraReply
 
     Rails.logger.warn("Gemini busy for conversation #{@conversation.id} " \
                       "(attempt #{attempt} of #{1 + BUSY_RETRIES}); asking again")
-    sleep busy_pause_seconds
+    sleep busy_pauses.fetch(attempt - 1, busy_pauses.last)
     true
   end
 

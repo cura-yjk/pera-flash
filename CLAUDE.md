@@ -77,7 +77,7 @@ one request. ruby_llm's default retried timeouts, 5xx and 429s three more times,
 a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
 timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
 retry and still happens. **One exception, chat replies only:** a 503 "high demand" is asked again
-up to `PeraReply::BUSY_RETRIES` (3) times, after pauses of 3, 8 and 15s, inside the reply's 90s — on 2026-09-27 that
+up to `PeraReply::BUSY_RETRIES` (3) times, after pauses of 3, 8 and 15s, inside the reply's 120s — on 2026-09-27 that
 was most failures, and moodwalk, on the same model, got its answers only through ruby_llm's
 default retries. Timeouts and other errors are still not retried. Note Google applies free-tier limits per *project*, so keys created in the
 same project share one allowance and rotating between them gains nothing.
@@ -109,7 +109,7 @@ sends the reply as server-sent events, consumed by `reply_stream_controller.js`.
 opens with an SSE comment before Gemini is asked, then sends another every
 `EventStreaming.heartbeat_seconds` (15) while it waits (`while_waiting`, on its own thread). Heroku
 drops a response with no first byte in 30s (H12) or silent for 55s after that; on 2026-09-27
-Gemini took 29–80s to answer, so the reply waits `PeraReply::TIMEOUT` (90s) rather than the
+Gemini took 29–80s to answer, so the reply waits `PeraReply::TIMEOUT` (120s) rather than the
 app-wide 30s — still one request. After 10s with no words the page swaps "ペラ is writing" for
 `messages.pending.slow`. Note the
 `ensure` sits inside the action around the streaming only, not around the record lookup — wrapping

@@ -30,7 +30,10 @@ class PeraReply
   # keeps talking (EventStreaming#while_waiting), and on 2026-09-27 every
   # answer Gemini gave took 29 to 80 seconds. Waiting costs no quota -- it is
   # still one request.
-  TIMEOUT = 90
+  #
+  # 120 rather than 90 since 2026-09-28: 3.5-flash was measured answering
+  # after 93.9 seconds of silence, just past 90.
+  TIMEOUT = 120
 
   # How many more times to ask when Gemini answers "experiencing high demand"
   # (503). On 2026-09-27 that was most of the failures, some after 15 to 27

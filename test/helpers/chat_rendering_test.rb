@@ -52,6 +52,22 @@ class ChatRenderingTest < ActionView::TestCase
     assert_no_match(/\| Japanese Word/, html)
   end
 
+  # The shape of a real reply's Why line, 2026-09-28.
+  test "a LaTeX arrow is shown as a plain arrow" do
+    html = rendered('美味しい $\rightarrow$ 美味しかった $\rightarrow$ 美味しかったです')
+
+    assert_match(/美味しい → .*美味しかった → .*美味しかったです/, html)
+    assert_no_match(/\$|\\/, html)
+  end
+
+  test "a bare LaTeX arrow is shown as a plain arrow too" do
+    assert_match(/だ ⇒ でした/, rendered('だ \Rightarrow でした'))
+  end
+
+  test "a word that only starts like an arrow is left alone" do
+    assert_match(/\\today/, rendered('`\today`'))
+  end
+
   test "pipes in an ordinary sentence are left alone" do
     assert_no_match(/<table/, rendered("Choose one:\n| this | or that |"))
   end

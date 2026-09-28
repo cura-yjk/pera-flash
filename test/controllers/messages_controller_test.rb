@@ -220,32 +220,37 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, ERB::Util.html_escape(I18n.t("messages.pending.slow"))
   end
 
-  # The learner sees one answer, not a failure and a Try again, when Gemini
-  # is busy the first time.
-  test "a busy Gemini is asked again, and the answer arrives" do
-    stub_request(:post, stream_url)
-      .to_return(status: 503, body: { error: { message: "high demand" } }.to_json).then
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
-                 body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'やっと!' }] } }] }.to_json}\n\n")
+  # Busy is said at once, with Try again, rather than asked again behind the
+  # learner's back: that turned one failure into a minute of an answer being
+  # written, wiped and written again (2026-09-28).
+  test "a busy Gemini is asked once" do
+    stub_request(:post, stream_url).to_return(status: 503, body: { error: { message: "high demand" } }.to_json)
     ask("are you busy?")
 
     get conversation_reply_path(conversations(:lesson))
 
-    assert_no_match "event: failed", response.body
-    assert_match "event: done", response.body
-    assert_equal "やっと!", conversations(:lesson).messages.order(:created_at).last.content
+    assert_match "event: failed", response.body
+    assert_requested :post, stream_url, times: 1
   end
 
+  # A key running out partway through an answer moves to the next key, and the
+  # answer starts over there.
   test "the stream tells the page when an answer starts over" do
     half = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'The first half' }] } }] }.to_json}\n\n"
-    busy = "data: #{{ 'error' => { 'code' => 503, 'message' => 'high demand', 'status' => 'UNAVAILABLE' } }.to_json}\n\n"
+    spent = "data: #{{ 'error' => { 'code' => 429, 'message' => 'Quota exceeded.', 'status' => 'RESOURCE_EXHAUSTED' } }.to_json}\n\n"
     whole = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'A whole answer.' }] } }] }.to_json}\n\n"
     stub_request(:post, stream_url)
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + spent).then
       .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: whole)
     ask("tell me something")
 
-    get conversation_reply_path(conversations(:lesson))
+    begin
+      usual = ENV.fetch("GEMINI_API_KEYS", nil)
+      ENV["GEMINI_API_KEYS"] = "first-key,second-key"
+      get conversation_reply_path(conversations(:lesson))
+    ensure
+      ENV["GEMINI_API_KEYS"] = usual
+    end
 
     events = response.body.scan(/^event: (\w+)/).flatten
     assert_equal %w[chunk restart chunk done], events

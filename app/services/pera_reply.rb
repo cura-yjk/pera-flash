@@ -35,24 +35,12 @@ class PeraReply
   # after 93.9 seconds of silence, just past 90.
   TIMEOUT = 120
 
-  # How many more times to ask when Gemini answers "experiencing high demand"
-  # (503). On 2026-09-27 that was most of the failures, some after 15 to 27
-  # seconds of waiting, and moodwalk -- same model, same evening -- got its
-  # answers because ruby_llm's default retries asked again. Retries are off
-  # app-wide (config/initializers/ruby_llm.rb), so a timeout still costs one
-  # request; this bends that for "busy" alone, because it is the one failure
-  # that asking again a moment later often fixes.
-  #
-  # All attempts share TIMEOUT, since the learner is watching the whole time,
-  # and one is not started with less than MIN_ATTEMPT_SECONDS left.
-  BUSY_RETRIES = 3
-  MIN_ATTEMPT_SECONDS = 10
-
-  # The pause before each retry, growing. A flat 2s spent all four attempts in
-  # under ten seconds (2026-09-27, locally) -- shorter than Gemini stays busy --
-  # while Try again forty seconds later was answered. These spread them over
-  # about thirty. A setting so the tests need not sleep.
-  cattr_accessor :busy_pauses, default: [3, 8, 15]
+  # A busy Gemini (503) is not asked again. From 2026-09-27 it was, up to
+  # three times with growing pauses, and on 2026-09-28 that turned one failure
+  # into a minute of an answer being written, wiped and written again that
+  # still ended in failure -- Gemini would write half an answer and then say
+  # "busy" in the same stream. Busy is now told at once, with Try again; the
+  # wait above is for an answer that is slow, not one that was refused.
 
   def initialize(conversation, question)
     @conversation = conversation
@@ -61,15 +49,13 @@ class PeraReply
 
   # Yields the reply so far each time it grows, and returns the whole of it.
   #
-  # The reply so far rather than each new piece: a busy Gemini is asked again,
-  # and a key out of quota is swapped for the next (LlmChat), and either way the
-  # reply starts over. A caller adding pieces up would show it twice.
+  # The reply so far rather than each new piece: a key that runs out of quota
+  # partway through is swapped for the next (LlmChat), and the reply starts
+  # over there. A caller adding pieces up would show it twice.
   #
   # on_restart is called when an answer starts over after some of it was
-  # yielded: Gemini can write half an answer and then say "busy" in the same
-  # stream, and asked again it writes a different one. Without being told, the
-  # page rewound the half on screen and wrote over it (2026-09-28), which
-  # looked like a glitch.
+  # yielded, so the page can say why the text changed rather than rewinding it
+  # silently (2026-09-28).
   def call(on_restart: nil, &on_text)
     raise ArgumentError, "PeraReply streams; pass a block to receive the text" unless on_text
 
@@ -84,26 +70,7 @@ class PeraReply
   private
 
   def answer(&on_text)
-    deadline = Time.current + TIMEOUT
-    attempt = 1
-
-    begin
-      LlmChat.with_chat(timeout: (deadline - Time.current).ceil) { |chat| collect(prepare(chat), &on_text) }
-    rescue RubyLLM::ServiceUnavailableError, RubyLLM::OverloadedError
-      raise unless ask_again?(attempt, deadline)
-
-      attempt += 1
-      retry
-    end
-  end
-
-  def ask_again?(attempt, deadline)
-    return false if attempt > BUSY_RETRIES || deadline - Time.current < MIN_ATTEMPT_SECONDS
-
-    Rails.logger.warn("Gemini busy for conversation #{@conversation.id} " \
-                      "(attempt #{attempt} of #{1 + BUSY_RETRIES}); asking again")
-    sleep busy_pauses.fetch(attempt - 1, busy_pauses.last)
-    true
+    LlmChat.with_chat(timeout: TIMEOUT) { |chat| collect(prepare(chat), &on_text) }
   end
 
   # One line per reply: how long it was, how long it took, and why Gemini

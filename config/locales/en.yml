@@ -173,6 +173,7 @@ en:
     pending:
       writing: "ペラ is writing"
       slow: "Gemini is slow right now — ペラ is still waiting for an answer"
+      restarted: "Gemini stopped partway — ペラ is starting the answer again"
       more_below: "More below"
     form:
       placeholder: "Ask something..."

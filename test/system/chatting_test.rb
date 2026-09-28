@@ -4,7 +4,12 @@ require "application_system_test_case"
 # through the real pipeline -- SSE endpoint, Stimulus controller, server-side
 # rendering of each update -- without spending a request.
 class ChattingTest < ApplicationSystemTestCase
+  # Messages are rate limited per account, counted in Rails.cache, which the
+  # in-process server shares across tests: enough sends in a minute and the
+  # next test gets "sending messages faster than Pera can answer", whichever
+  # one it is. GeneratingFlashcardsTest clears it for the same reason.
   setup do
+    Rails.cache.clear
     @user = users(:learner)
     @conversation = conversations(:lesson)
     sign_in_as(@user)
@@ -46,6 +51,23 @@ class ChattingTest < ApplicationSystemTestCase
     assert_no_difference -> { @conversation.messages.where(role: "user").count } do
       click_and_confirm("Try again", expect: "Here I am!")
     end
+  end
+
+  # The half shown before Gemini gave up used to be rewound and overwritten in
+  # place. Only the finished answer is left.
+  test "an answer that starts over replaces the half already shown" do
+    half = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'The first half of something' }] } }] }.to_json}\n\n"
+    busy = "data: #{{ 'error' => { 'code' => 503, 'message' => 'high demand', 'status' => 'UNAVAILABLE' } }.to_json}\n\n"
+    whole = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'A whole new answer.' }] } }] }.to_json}\n\n"
+    stub_request(:post, %r{generativelanguage\.googleapis\.com/.*streamGenerateContent})
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: whole)
+
+    visit conversation_path(@conversation)
+    type_into("tell me something")
+    click_and_confirm("Send", expect: "A whole new answer.")
+
+    assert_no_text "The first half of something"
   end
 
   # The input box is fixed to the bottom of the window, and the newest message

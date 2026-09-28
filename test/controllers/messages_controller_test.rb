@@ -217,6 +217,29 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "やっと!", conversations(:lesson).messages.order(:created_at).last.content
   end
 
+  test "the stream tells the page when an answer starts over" do
+    half = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'The first half' }] } }] }.to_json}\n\n"
+    busy = "data: #{{ 'error' => { 'code' => 503, 'message' => 'high demand', 'status' => 'UNAVAILABLE' } }.to_json}\n\n"
+    whole = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'A whole answer.' }] } }] }.to_json}\n\n"
+    stub_request(:post, stream_url)
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: whole)
+    ask("tell me something")
+
+    get conversation_reply_path(conversations(:lesson))
+
+    events = response.body.scan(/^event: (\w+)/).flatten
+    assert_equal %w[chunk restart chunk done], events
+    assert_equal "A whole answer.", conversations(:lesson).messages.order(:created_at).last.content
+  end
+
+  test "the page has a notice ready for an answer that starts over" do
+    ask("hello?")
+
+    assert_includes response.body, "data-reply-stream-restarted-value"
+    assert_includes response.body, ERB::Util.html_escape(I18n.t("messages.pending.restarted"))
+  end
+
   # Pera's replies were not logged at all, so a reply of just "Hello" to "How
   # does this app work?" could not be told apart from one cut short. One line
   # per reply now says how long it was and why Gemini stopped.

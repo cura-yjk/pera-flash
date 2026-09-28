@@ -30,7 +30,7 @@ const SLOW_AFTER_MS = 10000
 // with it is choose how much of it to show.
 export default class extends Controller {
   static targets = ["text", "cursor", "more"]
-  static values = { url: String, failed: String, slow: String }
+  static values = { url: String, failed: String, slow: String, restarted: String }
 
   connect() {
     // Nothing stopped a second message being sent while the first was still
@@ -60,6 +60,7 @@ export default class extends Controller {
 
     this.source.addEventListener("chunk", (event) => this.append(event))
     this.source.addEventListener("done", (event) => this.finish(event))
+    this.source.addEventListener("restart", () => this.restart())
     this.source.addEventListener("failed", (event) => this.fail(JSON.parse(event.data).html))
     // Fires when the connection drops rather than closing cleanly. A reply
     // that was already swapped in has nothing left to fail.
@@ -132,6 +133,20 @@ export default class extends Controller {
 
     this.element.setAttribute("data-reply-room", "")
     question.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  // Gemini gave up partway and is writing the answer again, differently. The
+  // half on screen used to be rewound and written over in place, which looked
+  // like a glitch; now it goes, and the line under it says why.
+  restart() {
+    this.stopRevealing()
+    this.reply = document.createElement("div")
+    this.shown = 0
+    this.total = 0
+    this.lastFrame = null
+    this.textTarget.replaceChildren()
+    this.cursorTarget.innerHTML = this.restartedValue || this.writing
+    this.updateMore()
   }
 
   // Only while nothing has arrived: once the words start, "is writing" is

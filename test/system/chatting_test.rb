@@ -31,12 +31,11 @@ class ChattingTest < ApplicationSystemTestCase
 
   # Try again fetches the reply to the question already saved: the old advice
   # was to send it again, which saved it twice.
-  # Busy on every attempt PeraReply makes, then free by the time the learner
-  # taps Try again.
+  # Busy, then free by the time the learner taps Try again.
   test "a failed reply says why, and Try again fetches it without resending" do
     busy = { status: 503, body: { error: { message: "high demand" } }.to_json }
     stub_request(:post, %r{generativelanguage\.googleapis\.com/.*streamGenerateContent})
-      .to_return(*Array.new(1 + PeraReply::BUSY_RETRIES, busy)).then
+      .to_return(busy).then
       .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
                  body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Here I am!' }] } }] }.to_json}\n\n")
 
@@ -57,17 +56,22 @@ class ChattingTest < ApplicationSystemTestCase
   # place. Only the finished answer is left.
   test "an answer that starts over replaces the half already shown" do
     half = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'The first half of something' }] } }] }.to_json}\n\n"
-    busy = "data: #{{ 'error' => { 'code' => 503, 'message' => 'high demand', 'status' => 'UNAVAILABLE' } }.to_json}\n\n"
+    spent = "data: #{{ 'error' => { 'code' => 429, 'message' => 'Quota exceeded.', 'status' => 'RESOURCE_EXHAUSTED' } }.to_json}\n\n"
     whole = "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'A whole new answer.' }] } }] }.to_json}\n\n"
     stub_request(:post, %r{generativelanguage\.googleapis\.com/.*streamGenerateContent})
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + busy).then
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: half + spent).then
       .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: whole)
+    # The first key runs out partway through; the answer starts over on the second.
+    usual = ENV.fetch("GEMINI_API_KEYS", nil)
+    ENV["GEMINI_API_KEYS"] = "first-key,second-key"
 
     visit conversation_path(@conversation)
     type_into("tell me something")
     click_and_confirm("Send", expect: "A whole new answer.")
 
     assert_no_text "The first half of something"
+  ensure
+    ENV["GEMINI_API_KEYS"] = usual
   end
 
   # The input box is fixed to the bottom of the window, and the newest message

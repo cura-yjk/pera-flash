@@ -28,10 +28,6 @@ require "webmock/minitest"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
-# A busy Gemini is asked again after a pause (PeraReply). Every test that
-# stubs a 503 would otherwise sleep through each one.
-PeraReply.busy_pauses = [0]
-
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers

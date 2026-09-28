@@ -75,12 +75,11 @@ credential for a provider the app is **not** pointed at — don't infer the prov
 **No automatic retries** (`config.max_retries = 0` in the same initializer): one tap or message is
 one request. ruby_llm's default retried timeouts, 5xx and 429s three more times, so a single tap on
 a bad Gemini day spent four of the free tier's few daily requests and took two minutes to report a
-timeout. Failures show a notice asking the learner to try again. Moving to the next key is not a
-retry and still happens. **One exception, chat replies only:** a 503 "high demand" is asked again
-up to `PeraReply::BUSY_RETRIES` (3) times, after pauses of 3, 8 and 15s, inside the reply's 120s — on 2026-09-27 that
-was most failures, and moodwalk, on the same model, got its answers only through ruby_llm's
-default retries. Timeouts and other errors are still not retried. Note Google applies free-tier limits per *project*, so keys created in the
-same project share one allowance and rotating between them gains nothing.
+timeout. Failures show a notice asking the learner to try again — a 503 "high demand" included:
+chat replies retried it for a day (2026-09-27), and that turned one failure into a minute of an
+answer being written, wiped and rewritten that still failed, so it was taken out. Moving to the
+next key is not a retry and still happens. Note Google applies free-tier limits per *project*, so
+keys created in the same project share one allowance and rotating between them gains nothing.
 
 **When Gemini fails**, `LlmFailure.reason` sorts the error into `overloaded` (503), `rate_limited`
 (429 — per-minute or daily, which the error doesn't reliably say, so the copy covers both),
@@ -118,9 +117,9 @@ that includes `EventStreaming` on its own thread, before_actions too, so Devise'
 escapes Warden: `EventStreaming#authenticate_user!` catches it and answers with Devise's failure
 app. Controller tests can't see this (Rails runs Live inline under test);
 `test/integration/signed_out_streaming_test.rb` puts the real thread back. Each event carries the whole reply-so-far,
-not a delta — `PeraReply` yields it that way — so a busy retry or a key swap redraws instead of
-doubling the text. When an attempt starts over after some text was shown (Gemini can send half an
-answer and then a 503 in the same stream), `PeraReply` calls `on_restart` and the stream sends a
+not a delta — `PeraReply` yields it that way — so a key swap redraws instead of
+doubling the text. When an attempt starts over after some text was shown (a key running out partway
+through), `PeraReply` calls `on_restart` and the stream sends a
 `restart` event: the page clears the half and says Gemini stopped partway
 (`messages.pending.restarted`), instead of rewinding it in place. The browser does not
 show each event as it lands: it reveals the rendered HTML a few characters per frame, at a speed

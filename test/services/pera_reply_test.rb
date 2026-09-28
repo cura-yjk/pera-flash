@@ -57,77 +57,17 @@ class PeraReplyTest < ActiveSupport::TestCase
 
   # --- when Gemini is busy ------------------------------------------------------
 
-  # "Experiencing high demand" (503) was most of the failures on 2026-09-27,
-  # and moodwalk -- same model, same evening -- got its answers by asking again.
-  test "asks again when Gemini is busy" do
-    stub_request(:post, STREAM_URL)
-      .to_return(busy).then
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("やっと!"))
-
-    reply = PeraReply.new(@conversation, @question).call { |_| }
-
-    assert_equal "やっと!", reply
-    assert_requested :post, STREAM_URL, times: 2
-  end
-
-  test "gives up after a few busy answers" do
+  # Busy is told straight away, with Try again. Asking again on its own (up to
+  # three times, 2026-09-27) turned one failure into a minute of an answer
+  # being written, wiped and written again, which could still end in failure
+  # (2026-09-28). The wait for a slow answer is TIMEOUT; this is not that.
+  test "does not ask again when Gemini is busy" do
     stub_request(:post, STREAM_URL).to_return(busy)
 
     assert_raises(RubyLLM::ServiceUnavailableError) { PeraReply.new(@conversation, @question).call { |_| } }
-    assert_requested :post, STREAM_URL, times: 1 + PeraReply::BUSY_RETRIES
+    assert_requested :post, STREAM_URL, times: 1
   end
 
-  # A flat 2s used all four attempts in under ten seconds, shorter than Gemini
-  # stays busy.
-  test "waits longer before each busy retry" do
-    stub_request(:post, STREAM_URL).to_return(busy)
-    reply = PeraReply.new(@conversation, @question)
-    slept = []
-    reply.define_singleton_method(:sleep) { |seconds| slept << seconds }
-
-    begin
-      usual = PeraReply.busy_pauses
-      PeraReply.busy_pauses = [3, 8, 15]
-      assert_raises(RubyLLM::ServiceUnavailableError) { reply.call { |_| } }
-    ensure
-      PeraReply.busy_pauses = usual
-    end
-
-    assert_equal [3, 8, 15], slept
-  end
-
-  # Gemini can send part of an answer and then "busy" in the same stream. Asked
-  # again, it writes a different answer -- and the half already on screen was
-  # silently rewound and overwritten (2026-09-28), which looked like a glitch.
-  # The caller is told, so the page can say so.
-  test "says when an answer starts over after some of it was shown" do
-    stub_request(:post, STREAM_URL)
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
-                 body: sse("The first half") + busy_in_stream).then
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("A whole answer."))
-
-    events = []
-    reply = PeraReply.new(@conversation, @question)
-                     .call(on_restart: -> { events << :restart }) { |so_far| events << so_far }
-
-    assert_equal ["The first half", :restart, "A whole answer."], events
-    assert_equal "A whole answer.", reply
-  end
-
-  # Busy before a word was written is invisible to the learner: nothing to redo.
-  test "does not announce a restart when nothing had been shown" do
-    stub_request(:post, STREAM_URL)
-      .to_return(busy).then
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("ok"))
-
-    restarts = 0
-    PeraReply.new(@conversation, @question).call(on_restart: -> { restarts += 1 }) { |_| }
-
-    assert_equal 0, restarts
-  end
-
-  # Only "busy" is worth asking again straight away. A timeout has already
-  # spent its wait, and a bad request would fail the same way again.
   test "does not ask again after a timeout" do
     stub_request(:post, STREAM_URL).to_raise(Faraday::TimeoutError.new("Net::ReadTimeout"))
 
@@ -135,25 +75,42 @@ class PeraReplyTest < ActiveSupport::TestCase
     assert_requested :post, STREAM_URL, times: 1
   end
 
-  # The learner is watching the whole time, so the retries share one budget.
-  test "does not ask again once the wait has run out" do
-    stub_request(:post, STREAM_URL).to_return do
-      travel PeraReply::TIMEOUT.seconds
-      busy
-    end
+  # --- when a key runs out partway through ------------------------------------
 
-    assert_raises(RubyLLM::ServiceUnavailableError) { PeraReply.new(@conversation, @question).call { |_| } }
-    assert_requested :post, STREAM_URL, times: 1
+  # Moving to the next key is not a retry: the spent key's request cannot be
+  # answered at all. If it runs out partway through an answer, the answer
+  # starts over on the next key, and the caller is told so the page can say so.
+  test "says when an answer starts over after some of it was shown" do
+    with_two_keys do
+      stub_request(:post, STREAM_URL).with(headers: { "X-Goog-Api-Key" => "first-key" })
+        .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
+                   body: sse("The first half") + quota_in_stream)
+      stub_request(:post, STREAM_URL).with(headers: { "X-Goog-Api-Key" => "second-key" })
+        .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("A whole answer."))
+
+      events = []
+      reply = PeraReply.new(@conversation, @question)
+                       .call(on_restart: -> { events << :restart }) { |so_far| events << so_far }
+
+      assert_equal ["The first half", :restart, "A whole answer."], events
+      assert_equal "A whole answer.", reply
+    end
   end
 
-  test "each busy answer is logged" do
-    stub_request(:post, STREAM_URL)
-      .to_return(busy).then
-      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("ok"))
+  # Out of quota before a word was written is invisible: nothing to redo.
+  test "does not announce a restart when nothing had been shown" do
+    with_two_keys do
+      stub_request(:post, STREAM_URL).with(headers: { "X-Goog-Api-Key" => "first-key" })
+        .to_return(status: 429, headers: { "Content-Type" => "application/json" },
+                   body: { error: { code: 429, message: "quota", status: "RESOURCE_EXHAUSTED" } }.to_json)
+      stub_request(:post, STREAM_URL).with(headers: { "X-Goog-Api-Key" => "second-key" })
+        .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" }, body: sse("ok"))
 
-    log = capture_log { PeraReply.new(@conversation, @question).call { |_| } }
+      restarts = 0
+      PeraReply.new(@conversation, @question).call(on_restart: -> { restarts += 1 }) { |_| }
 
-    assert_match(/Gemini busy for conversation \d+ \(attempt 1 of #{1 + PeraReply::BUSY_RETRIES}\)/, log)
+      assert_equal 0, restarts
+    end
   end
 
   test "does not yield empty chunks" do
@@ -253,10 +210,18 @@ class PeraReplyTest < ActiveSupport::TestCase
       body: { error: { code: 503, message: "This model is currently experiencing high demand." } }.to_json }
   end
 
-  # How Gemini reports an error partway through a stream that began with 200.
-  def busy_in_stream
-    "data: #{{ 'error' => { 'code' => 503, 'message' => 'This model is currently experiencing high demand.',
-                            'status' => 'UNAVAILABLE' } }.to_json}\n\n"
+  # How Gemini reports a spent quota partway through a stream that began with 200.
+  def quota_in_stream
+    "data: #{{ 'error' => { 'code' => 429, 'message' => 'Quota exceeded.',
+                            'status' => 'RESOURCE_EXHAUSTED' } }.to_json}\n\n"
+  end
+
+  def with_two_keys
+    usual = ENV.fetch("GEMINI_API_KEYS", nil)
+    ENV["GEMINI_API_KEYS"] = "first-key,second-key"
+    yield
+  ensure
+    ENV["GEMINI_API_KEYS"] = usual
   end
 
   def sse(*chunks)

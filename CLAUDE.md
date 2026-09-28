@@ -184,7 +184,7 @@ language: a learner practising writes Japanese, so "the language the student wri
 the language being taught, and beginners got feedback they could not read.
 
 **Frontend**: server-rendered ERB + Bootstrap 5 + Hotwire (Turbo + Stimulus) + importmap — no
-Node/webpack/yarn build step. Forms use `simple_form`. Thirteen Stimulus controllers in
+Node/webpack/yarn build step. Forms use `simple_form`. Twelve Stimulus controllers in
 `app/javascript/controllers/` cover the chat UX (autogrow, enter-submit, char count, scroll,
 reply streaming, flashcard streaming), studying (reveal, reveal-state), live search and dark mode. The app ships as a
 PWA (`app/views/pwa/manifest.json.erb`, `service-worker.js`).

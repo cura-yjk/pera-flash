@@ -7,12 +7,12 @@
   <%= simple_form_for [conversation, message],
     html: {
       data: {
-        controller: 'reset-form enter-submit load autogrow char-count',
+        controller: 'reset-form enter-submit autogrow char-count',
         enter_submit_target: 'form',
         char_count_limit_value: Message::MAX_USER_CONTENT_LENGTH,
         char_count_template_value: t(".characters_left", count: "%{count}"),
-        action: 'turbo:submit-start->reset-form#submit submit->load#start ' \
-                'keydown->enter-submit#submit input->autogrow#resize input->char-count#update'
+        action: 'turbo:submit-start->reset-form#submit keydown->enter-submit#submit ' \
+                'input->autogrow#resize input->char-count#update'
       },
       class: 'chat-composer',
       id: 'chat-form'
@@ -36,9 +36,6 @@
           silently swallowing keystrokes at 2,000 characters is worse. %>
       <p class="chat-count small text-muted mb-0" hidden
          data-char-count-target="counter"></p>
-
-      <i class="fa-solid fa-spinner fa-spin-pulse hidden" id="load-icon"
-         data-load-target="icon" aria-hidden="true"></i>
 
       <%# A button rather than an input[type=submit], because the label is an
           icon now. title as well as aria-label: Capybara's button selector

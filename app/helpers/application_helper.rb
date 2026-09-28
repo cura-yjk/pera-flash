@@ -42,9 +42,26 @@ module ApplicationHelper
   MARKDOWN_ATTRIBUTES = %w[href title class colspan rowspan].freeze
 
   def render_markdown(text)
-    html = Kramdown::Document.new(separate_tables(text.to_s), input: "GFM", syntax_highlighter: "rouge").to_html
+    markdown = separate_tables(plain_arrows(text.to_s))
+    html = Kramdown::Document.new(markdown, input: "GFM", syntax_highlighter: "rouge").to_html
 
     sanitize(html, tags: MARKDOWN_TAGS, attributes: MARKDOWN_ATTRIBUTES)
+  end
+
+  LATEX_ARROWS = {
+    "rightarrow" => "→", "to" => "→", "longrightarrow" => "→", "Rightarrow" => "⇒",
+    "leftarrow" => "←", "Leftarrow" => "⇐", "leftrightarrow" => "↔"
+  }.freeze
+  LATEX_ARROW_NAMES = LATEX_ARROWS.keys.join("|")
+  LATEX_ARROW = /\$\s*\\(#{LATEX_ARROW_NAMES})\s*\$|\\(#{LATEX_ARROW_NAMES})(?![A-Za-z])/
+
+  # Gemini sometimes writes a step in a conjugation as LaTeX -- 美味しい
+  # $\rightarrow$ 美味しかった, in a real reply on 2026-09-28 -- and the chat
+  # has no LaTeX, so the learner read the dollar signs and backslash as they
+  # were. The prompt asks for a plain → now, but a prompt is a request, and
+  # replies saved before it asked still hold the LaTeX.
+  def plain_arrows(text)
+    text.gsub(LATEX_ARROW) { |match| LATEX_ARROWS[match[/[A-Za-z]+/]] }
   end
 
   TABLE_ROW = /\A\s*\|.*\|\s*\z/

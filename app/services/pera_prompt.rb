@@ -110,6 +110,8 @@ module PeraPrompt
       * **Why:** bullet points explaining what changed and why.
 
       Use headers, `---` separators and bold so the feedback can be skimmed.
+      Write arrows as the plain character →, never as LaTeX: the chat does not
+      render LaTeX, and the student would read the dollar signs and backslash.
 
       When the sentence is already correct, say so in a line and give one short
       reason it works. Do not reach for the shape above: there is no correction

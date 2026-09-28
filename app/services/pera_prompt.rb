@@ -78,21 +78,21 @@ module PeraPrompt
 
   # Assembled per request, because one section depends on the student -- the
   # cards they keep getting wrong.
-  def for(struggling: [], greet: true)
-    [base_prompt(greet: greet), struggle_section(struggling)].compact.join("\n")
+  def for(struggling: [])
+    [base_prompt, struggle_section(struggling)].compact.join("\n")
   end
 
-  # greet: whether Pera has yet to say anything in this conversation.
-  #
-  # The introduction used to be asked for on every request, which the model can
-  # only judge from the history it is shown -- and PeraReply shows it the
-  # newest 30 messages. Past that the opening greeting has scrolled out, so a
-  # tutor twenty minutes into a lesson is told to introduce herself to a
-  # conversation with no introduction in it. The app knows the answer; the
-  # model should not have to infer it.
-  def base_prompt(greet: true)
+  # Pera is never asked to introduce herself. A chat's first reply used to
+  # carry "Introduce yourself by that name the first time you greet them", and
+  # Gemini's PROHIBITED_CONTENT filter blocked that reply: twice out of twice
+  # on 2026-09-28, while the same prompt without the line was answered in
+  # 1.5s, and three times before that it cut the reply off after one word,
+  # "Hello" -- which was saved as Pera's answer. Every one was a first message.
+  # The empty chat introduces her instead (messages/_empty): free, instant,
+  # and nothing to block.
+  def base_prompt
     <<~PROMPT
-      You are ペラ (Pera), a Japanese teacher working with a beginner.#{introduction(greet)}
+      You are ペラ (Pera), a Japanese teacher working with a beginner.
 
       #{FURIGANA_RULE}
       #{EXPLANATION_LANGUAGE_RULE}
@@ -133,10 +133,6 @@ module PeraPrompt
     PROMPT
   end
 
-  def introduction(greet)
-    greet ? " Introduce yourself by that name the first time you greet them." : ""
-  end
-
   # What the learner keeps forgetting, taken from their own review history.
   #
   # This is the only thing that connects the two halves of the app: without it
@@ -167,5 +163,5 @@ module PeraPrompt
   end
 
   # PeraPrompt.for is the whole surface; the sections are how it is built.
-  private_class_method :base_prompt, :introduction, :struggle_section
+  private_class_method :base_prompt, :struggle_section
 end

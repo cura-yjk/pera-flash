@@ -350,33 +350,18 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # The introduction is asked for once. The model cannot judge "the first time"
-  # for itself: it sees the newest 30 messages, so deep into a lesson the
-  # opening greeting has scrolled out and it would be told to introduce herself
-  # all over again.
-  test "asks Pera to introduce herself only before she has spoken" do
+  # The first reply in a chat used to ask Pera to introduce herself, and
+  # Gemini blocked it (PROHIBITED_CONTENT) or cut it off at "Hello". The page
+  # introduces her instead.
+  test "the first reply does not ask Pera to introduce herself" do
     stub_llm_stream("ok")
-    # A first exchange also names the conversation, which is a second call.
-    stub_llm_success("A first hello")
     fresh = users(:learner).conversations.create!
 
     ask("はじめまして", fresh)
     get conversation_reply_path(fresh)
 
     assert_requested :post, stream_url do |request|
-      request.body.include?("Introduce")
-    end
-  end
-
-  test "does not ask again once Pera has replied" do
-    stub_llm_stream("ok")
-    conversation = conversations(:lesson)
-
-    ask("ねこがすきです", conversation)
-    get conversation_reply_path(conversation)
-
-    assert_requested :post, stream_url do |request|
-      !request.body.include?("Introduce")
+      !request.body.match?(/introduce yourself/i)
     end
   end
 

@@ -4,8 +4,8 @@ Pera Flash is a Japanese tutor you chat with. Write a sentence at whatever level
 ペラ (Pera) corrects it and explains the grammar — then any correction can become a flashcard,
 reviewed on a spaced-repetition schedule until it sticks.
 
-_DROP SCREENSHOT HERE_
-<br>
+<img src="docs/screenshots/chat.png" alt="Pera correcting とても美味しいでした to とても美味しかったです, with furigana over the kanji, a vocabulary table and an explanation of the い-adjective past tense">
+
 App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 
 ## What it does
@@ -30,12 +30,16 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 - Organise them into decks, search across them as you type, edit or delete any of them
 - Export a deck as CSV, with the headers Anki expects
 
+<img src="docs/screenshots/cards.png" alt="A deck of three cards made from the chat, including 美味しい and 〜かったです">
+
 **Studying**
 - Review on a spaced-repetition schedule — grade a card *again*, *good* or *easy* and it comes back
   when you're about to forget it, not before
 - Quiz yourself multiple-choice, with the wrong answers drawn from your own other cards so they're
   plausibly confusable
 - Study everything at once, or one deck at a time
+
+<img src="docs/screenshots/review.png" alt="Reviewing a card with its answer shown, graded Again, Good or Easy">
 
 **Elsewhere**
 - Installs to a phone's home screen as a PWA

@@ -11,3 +11,6 @@
     </p>
   </div>
 <% end %>
+<%# The batch is over: nothing left to generate from until the next message. %>
+<%= turbo_stream.update "flashcard-btn" do %>
+<% end %>

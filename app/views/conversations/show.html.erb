@@ -15,7 +15,7 @@
     <%= render @messages %>
   </div>
   <div class="d-flex justify-content-end my-3" id="flashcard-btn">
-    <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages %>
+    <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages_for_flashcards %>
   </div>
   <div id="flashcard-preview"></div>
   <div id="new_message" class="fixed-bottom chat-dock">

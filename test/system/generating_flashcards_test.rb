@@ -29,6 +29,9 @@ class GeneratingFlashcardsTest < ApplicationSystemTestCase
     assert_difference -> { @conversation.flashcards.count }, 2 do
       click_and_confirm("Save to Flashcards", expect: "2 cards added!")
     end
+    # Everything said so far is carded: nothing to generate from until the
+    # next message.
+    assert_no_button "Generate flashcards"
   end
 
   # Save stays off until the list is complete: saving half of it would lose
@@ -65,6 +68,8 @@ class GeneratingFlashcardsTest < ApplicationSystemTestCase
     click_and_confirm("Generate flashcards", expect: "Nothing to make cards from")
 
     assert_no_button "Save to Flashcards"
+    # The batch is over, so there is nothing left to generate from.
+    assert_no_button "Generate flashcards"
   end
 
   test "a failed generation says so and saves nothing" do

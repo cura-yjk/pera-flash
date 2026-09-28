@@ -1,3 +1,6 @@
 <%= turbo_stream.update "flashcard-preview" do %>
   <%= render "conversations/nothing_to_card" %>
 <% end %>
+<%# The batch is over: nothing left to generate from until the next message. %>
+<%= turbo_stream.update "flashcard-btn" do %>
+<% end %>

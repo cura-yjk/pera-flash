@@ -243,6 +243,14 @@ class FlashcardsControllerTest < ActionDispatch::IntegrationTest
     assert_empty @conversation.reload.messages_for_flashcards
   end
 
+  # The page drops the button with the save, not on the next visit.
+  test "saving takes the Generate flashcards button away" do
+    post conversation_flashcards_path(@conversation), params: saving("犬", "dog"), as: :turbo_stream
+
+    assert_includes response.body, %(target="flashcard-btn")
+    assert_no_match(/action="#{generate_flashcards_conversation_path(@conversation)}"/, response.body)
+  end
+
   test "redirects back to the conversation when asked for HTML" do
     post conversation_flashcards_path(@conversation), params: saving("猫", "Cat")
 

@@ -122,6 +122,41 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # --- the Generate flashcards button ---------------------------------------
+
+  # It showed whenever the chat had any messages, so straight after a save it
+  # sat there offering to card what had just been carded, and pressing it only
+  # said "You're all caught up".
+  test "the chat offers to generate only when something is new since the last batch" do
+    conversation = conversations(:lesson)
+
+    get conversation_path(conversation)
+    assert_select "form[action=?]", generate_flashcards_conversation_path(conversation), count: 1
+
+    conversation.mark_carded!
+    get conversation_path(conversation)
+    assert_select "form[action=?]", generate_flashcards_conversation_path(conversation), count: 0
+  end
+
+  test "a generation with nothing to card takes the button away" do
+    stub_llm_success([])
+
+    post generate_flashcards_conversation_path(conversations(:lesson)), as: :turbo_stream
+
+    assert_includes response.body, %(target="flashcard-btn")
+    assert_no_match(/action="#{generate_flashcards_conversation_path(conversations(:lesson))}"/, response.body)
+  end
+
+  test "nothing new takes the button away" do
+    conversation = conversations(:lesson)
+    conversation.mark_carded!
+
+    post generate_flashcards_conversation_path(conversation), as: :turbo_stream
+
+    assert_includes response.body, %(target="flashcard-btn")
+    assert_no_match(/action="#{generate_flashcards_conversation_path(conversation)}"/, response.body)
+  end
+
   # Previously this cost a full generation to discover there was nothing new.
   # The old assertions only checked what was sent, never what came back -- so
   # they passed while every generated card arrived blank. ruby_llm 2.0 returns

@@ -147,7 +147,9 @@ repeats one — or an earlier card in the batch — is marked in the preview, an
 (the learner may have edited it) and skips it. "Since the last batch" keys off
 `conversations.carded_at`, stamped by `mark_carded!` *after* the "✅ N cards added" message, so an
 all-duplicate save still ends the batch and the confirmation is never new material; conversations
-carded before the column existed fall back to their newest card.
+carded before the column existed fall back to their newest card. The **Generate flashcards** button
+follows the same rule: it renders from `messages_for_flashcards`, so it goes when a batch ends (saved,
+nothing to card, nothing new) and comes back with the next message.
 
 **Spaced repetition (`Flashcard`)**: an SM-2 variant, all local. `GRADES` are `again`/`good`/`easy`;
 `review!(grade)` updates `interval_days`, `ease` (`STARTING_EASE` 2.5, floor `MINIMUM_EASE` 1.3) and

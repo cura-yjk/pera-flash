@@ -1,3 +1,8 @@
+<%# messages is what there is to card: Conversation#messages_for_flashcards, so
+    the button goes once a batch is saved and comes back with the next message.
+    It showed whenever the chat had any messages, and straight after a save it
+    offered to card what had just been carded. The Try again in a failed
+    generation passes all of them -- the material is still there. %>
 <% if messages.any? %>
   <%# flashcard_stream_controller sends this itself so the cards can stream in.
       Without JavaScript it is an ordinary Turbo form and they arrive together.

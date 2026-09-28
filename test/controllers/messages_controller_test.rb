@@ -33,6 +33,15 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
   # #create saves the question and hands back an empty bubble; the reply
   # arrives over the stream, so nothing waits on the model here.
+  # What was just said is new material, even straight after a save.
+  test "sending a message brings the Generate flashcards button back" do
+    conversations(:lesson).mark_carded!
+
+    ask("もっと教えて")
+
+    assert_match(/action="#{generate_flashcards_conversation_path(conversations(:lesson))}"/, response.body)
+  end
+
   test "posting a message saves it without calling the LLM" do
     ask("What does 猫 mean?")
 

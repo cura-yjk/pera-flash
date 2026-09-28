@@ -4,7 +4,7 @@ Pera Flash is a Japanese tutor you chat with. Write a sentence at whatever level
 ペラ (Pera) corrects it and explains the grammar — then any correction can become a flashcard,
 reviewed on a spaced-repetition schedule until it sticks.
 
-<img src="docs/screenshots/chat.png" alt="Pera correcting とても美味しいでした to とても美味しかったです, with furigana over the kanji, a vocabulary table and an explanation of the い-adjective past tense">
+<img src="docs/screenshots/landing.png" alt="The Pera Flash landing page: Pera the robot beside a chat about 〜たことがある and the three flashcards made from it">
 
 App home: https://pera-flash-3683e7b80a56.herokuapp.com/
 
@@ -21,6 +21,8 @@ App home: https://pera-flash-3683e7b80a56.herokuapp.com/
   you can go back to it
 - When Gemini is busy or out of quota, Pera says which, and a **Try again** button picks the reply
   back up without resending your message
+
+<img src="docs/screenshots/chat.png" alt="Pera correcting とても美味しいでした to とても美味しかったです, with furigana over the kanji, a vocabulary table and an explanation of the い-adjective past tense">
 
 **Flashcards**
 - Turn any conversation into cards: they stream in one at a time as Pera writes them, with the

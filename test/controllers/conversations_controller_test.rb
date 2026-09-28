@@ -122,6 +122,23 @@ class ConversationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Marked so the next message can clear them (messages/create) -- and the
+  # preview is not, so unsaved cards survive it.
+  test "notices about a generation are marked, the preview is not" do
+    conversation = conversations(:lesson)
+    rendered = lambda do |partial, **locals|
+      ApplicationController.render(partial: partial, locals: { conversation: conversation }.merge(locals))
+    end
+
+    assert_includes rendered.("conversations/nothing_to_card"), "data-flashcard-notice"
+    assert_includes rendered.("conversations/generation_failed", reason: :overloaded), "data-flashcard-notice"
+    assert_not_includes rendered.("conversations/flashcard_preview", flashcards: [], streaming: true), "data-flashcard-notice"
+
+    conversation.mark_carded!
+    post generate_flashcards_conversation_path(conversation), as: :turbo_stream
+    assert_includes response.body, "data-flashcard-notice"
+  end
+
   # --- the Generate flashcards button ---------------------------------------
 
   # It showed whenever the chat had any messages, so straight after a save it

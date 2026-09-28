@@ -33,6 +33,16 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
   # #create saves the question and hands back an empty bubble; the reply
   # arrives over the stream, so nothing waits on the model here.
+  # A notice about the last generation -- nothing to card, nothing new, failed
+  # -- stayed under the chat while Pera answered the next message, reading as
+  # if it were about that one (2026-09-28). An unsaved preview is left alone:
+  # its cards are still worth saving.
+  test "sending a message clears an old flashcard notice, not a preview" do
+    ask("もう一つ")
+
+    assert_includes response.body, %(<turbo-stream action="remove" targets="[data-flashcard-notice]">)
+  end
+
   # What was just said is new material, even straight after a save.
   test "sending a message brings the Generate flashcards button back" do
     conversations(:lesson).mark_carded!

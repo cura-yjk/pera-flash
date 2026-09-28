@@ -94,7 +94,10 @@ Pera reply logs one `Pera reply for conversation …` line with its length, time
 
 `PeraPrompt` holds everything Pera is told before a conversation starts, including `FURIGANA_RULE`,
 which is deliberately **shared** between the chat and the flashcard generator so a word taught in
-chat and the card made from it are annotated identically. `PeraReply` decides what the model sees:
+chat and the card made from it are annotated identically. It never asks Pera to introduce herself:
+that line, sent with a chat's first reply, was blocked by Gemini's `PROHIBITED_CONTENT` filter or
+cut off at "Hello" every time we caught it, and the empty chat (`messages/_empty`) introduces her
+instead. `PeraReply` decides what the model sees:
 `MAX_HISTORY_MESSAGES` (30) bounds the replayed history — every reply used to replay everything, so
 a chat's cost grew with the square of its length — and `STRUGGLING_LIMIT` (5) injects the cards the
 learner keeps failing, which is the app's durable memory in place of unbounded history.

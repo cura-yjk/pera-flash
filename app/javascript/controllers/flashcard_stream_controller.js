@@ -98,6 +98,9 @@ export default class extends Controller {
       case "empty":
         this.ended = true
         this.preview.innerHTML = data.html
+        // Nothing worth a card still ends the batch, so there is nothing left
+        // to generate from until the next message brings the button back.
+        if (name === "empty") document.getElementById("flashcard-btn")?.replaceChildren()
         break
     }
   }

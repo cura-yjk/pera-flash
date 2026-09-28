@@ -1,7 +1,7 @@
 <%# Shown when nothing has been said since the last flashcards were made, so
     there is nothing to generate. Costs no LLM call. %>
 <%= turbo_stream.update "flashcard-preview" do %>
-  <div class="my-5 response">
+  <div class="my-5 response" data-flashcard-notice>
     <div class="d-flex align-items-center gap-2 mb-3">
       <i class="fa-solid fa-circle-check fs-4 pera-green me-2"></i>
       <h3 class="mb-0 pera-green"><%= t(".title") %></h3>
@@ -10,4 +10,7 @@
       <%= t(".explanation") %>
     </p>
   </div>
+<% end %>
+<%# The batch is over: nothing left to generate from until the next message. %>
+<%= turbo_stream.update "flashcard-btn" do %>
 <% end %>

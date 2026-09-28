@@ -12,6 +12,10 @@
   <%= render "messages/message", message: @message %>
   <%= render "messages/pending", conversation: @conversation %>
 <% end %>
+<%# A notice about the last generation (data-flashcard-notice) would sit under
+    Pera's reply to this message, reading as if it were about it. An unsaved
+    preview is left alone: its cards are still worth saving. %>
+<%= turbo_stream.remove_all "[data-flashcard-notice]" %>
 <%= turbo_stream.update "flashcard-btn" do %>
-  <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages %>
+  <%= render "flashcards/btn", conversation: @conversation, messages: @conversation.messages_for_flashcards %>
 <% end %>

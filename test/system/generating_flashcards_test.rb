@@ -29,6 +29,9 @@ class GeneratingFlashcardsTest < ApplicationSystemTestCase
     assert_difference -> { @conversation.flashcards.count }, 2 do
       click_and_confirm("Save to Flashcards", expect: "2 cards added!")
     end
+    # Everything said so far is carded: nothing to generate from until the
+    # next message.
+    assert_no_button "Generate flashcards"
   end
 
   # Save stays off until the list is complete: saving half of it would lose
@@ -65,6 +68,17 @@ class GeneratingFlashcardsTest < ApplicationSystemTestCase
     click_and_confirm("Generate flashcards", expect: "Nothing to make cards from")
 
     assert_no_button "Save to Flashcards"
+    # The batch is over, so there is nothing left to generate from.
+    assert_no_button "Generate flashcards"
+
+    # And the notice goes with the next message, rather than sitting under
+    # Pera's reply to it.
+    stub_request(:post, %r{generativelanguage\.googleapis\.com/.*streamGenerateContent})
+      .to_return(status: 200, headers: { "Content-Type" => "text/event-stream" },
+                 body: "data: #{{ 'candidates' => [{ 'content' => { 'parts' => [{ 'text' => 'Next answer.' }] } }] }.to_json}\n\n")
+    type_into("one more question")
+    click_and_confirm("Send", expect: "Next answer.")
+    assert_no_text "Nothing to make cards from"
   end
 
   test "a failed generation says so and saves nothing" do
